@@ -1,0 +1,16 @@
+{
+  "name": "@ssu/config",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=24.14.0"
+  },
+  "exports": {
+    "./tailwind": "./tailwind/tailwind.config.ts",
+    "./tsconfig/base.json": "./tsconfig/base.json"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}

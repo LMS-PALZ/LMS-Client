@@ -1,0 +1,24 @@
+{
+  "name": "@ssu/api",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=24.14.0"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint src --deny-warnings",
+    "test": "echo skip"
+  },
+  "dependencies": {
+    "@ssu/types": "file:../types"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@ssu/schema",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=24.14.0"
+  },
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint src --deny-warnings"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
