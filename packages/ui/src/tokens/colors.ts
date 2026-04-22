@@ -1,0 +1,20 @@
+/** Brand palette — single source for non-Tailwind usage */
+export const brandColors = {
+  green: "#0C693A",
+  greenLight: "#39B44B",
+  amber: "#F49221",
+  green50: "#F0F9F4",
+  green100: "#D1EFE0",
+  green200: "#A3DEC1",
+  green900: "#084D2B",
+  amber50: "#FEF6EC",
+  amber100: "#FDEBD0",
+  amber700: "#C47218",
+  neutral50: "#F8FAFC",
+  neutral100: "#F1F5F9",
+  neutral200: "#E2E8F0",
+  neutral400: "#94A3B8",
+  neutral600: "#475569",
+  neutral800: "#1E293B",
+  neutral900: "#0F172A",
+} as const;
