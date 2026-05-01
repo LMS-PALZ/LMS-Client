@@ -128,7 +128,6 @@ export async function signupStudent(
   | { ok: false; code: LoginErrorCode; message: string }
 > {
   try {
-    // Replace with your actual API endpoint
     const response = await fetch("/api/auth/signup", {
       method: "POST",
       headers: {
@@ -154,7 +153,7 @@ export async function signupStudent(
       ok: true,
       user: data.user,
     };
-  } catch (error) {
+  } catch {
     return {
       ok: false,
       code: "invalid",
