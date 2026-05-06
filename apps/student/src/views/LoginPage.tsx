@@ -3,8 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLoginMutation, useSession } from "@ssu/queries";
 import { loginSchema } from "@ssu/schema";
-import { AlertBanner, AuthLayout, Button, FormField, Input } from "@ssu/ui";
+import {
+  AlertBanner,
+  AuthLayout,
+  Button,
+  Checkbox,
+  FormField,
+  Input,
+  Spinner,
+} from "@ssu/ui";
 import { Eye, EyeClosed } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -61,10 +70,16 @@ export function LoginPage() {
   return (
     <AuthLayout>
       <div className="flex flex-col items-center">
-        <div className="w-[120px] py-7" >
-          <img src="/firstlogo.png" alt="Chiggy Nsofor Foundation" loading='eager' />
+        <div className="w-[120px] py-7">
+          <img
+            src="/firstlogo.png"
+            alt="Chiggy Nsofor Foundation"
+            loading="eager"
+          />
         </div>
-        <h1 className="text-sm text-[24px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">Welcome back!</h1>
+        <h1 className="text-sm text-[24px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
+          Welcome back!
+        </h1>
         <p className="text-sm text-neutral-900 mb-6">
           Sign in to continue to your dashboard.
         </p>
@@ -74,7 +89,12 @@ export function LoginPage() {
           </div>
         )}
         <form onSubmit={onSubmit} className="space-y-6 w-full max-w-sm">
-          <FormField id="email" label="Email" error={errors.email?.message} className="text-sm">
+          <FormField
+            id="email"
+            label="Email"
+            error={errors.email?.message}
+            className="text-sm"
+          >
             <Input
               id="email"
               type="email"
@@ -115,14 +135,35 @@ export function LoginPage() {
               </button>
             </div>
           </FormField>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Checkbox id="rememberMe" {...register("rememberMe")} />
+              <label
+                htmlFor="rememberMe"
+                className="text-sm text-neutral-700 cursor-pointer"
+              >
+                Remember me
+              </label>
+            </div>
+            <Link
+              href="/forgetpassword"
+              className="text-sm text-[#0D693B] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Button
             type="submit"
             variant="primary"
             size="lg"
             className="w-full rounded-[30px] text-[var(--color-surface)]"
-            loading={isSubmitting || login.isPending}
+            disabled={isSubmitting || login.isPending}
           >
-            Login
+            {isSubmitting || login.isPending ? (
+              <Spinner className="h-5 w-5 animate-spin" />
+            ) : (
+              "Login"
+            )}
           </Button>
         </form>
       </div>

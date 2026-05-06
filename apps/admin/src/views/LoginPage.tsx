@@ -3,7 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLoginMutation, useSession } from "@ssu/queries";
 import { loginSchema } from "@ssu/schema";
-import { AlertBanner, AuthLayout, Button, FormField, Input } from "@ssu/ui";
+import {
+  AlertBanner,
+  AuthLayout,
+  Button,
+  FormField,
+  Input,
+  Spinner,
+} from "@ssu/ui";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -15,7 +22,7 @@ type FormValues = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
-  const login = useLoginMutation("admin");
+  const login = useLoginMutation();
   const [showPw, setShowPw] = useState(false);
   const [banner, setBanner] = useState<{
     variant: "error" | "warning";
@@ -113,9 +120,13 @@ export function LoginPage() {
             variant="primary"
             size="lg"
             className="w-full"
-            loading={isSubmitting || login.isPending}
+            disabled={isSubmitting || login.isPending}
           >
-            Sign in
+            {isSubmitting || login.isPending ? (
+              <Spinner className="h-5 w-5 animate-spin" />
+            ) : (
+              "Sign in"
+            )}
           </Button>
         </form>
       </div>
