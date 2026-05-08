@@ -8,20 +8,20 @@ const RESEND_SECONDS = 59;
 
 export default function Page() {
     const [code, setCode] = useState<string[]>(() => Array(CODE_LENGTH).fill(""));
-    const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+    const [countDown, setCountDown] = useState(RESEND_SECONDS);
     const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
     useEffect(() => {
-        if (secondsLeft === 0) {
+        if (countDown === 0) {
             return;
         }
 
         const timeout = window.setTimeout(() => {
-            setSecondsLeft((current) => Math.max(0, current - 1));
+            setCountDown((current) => Math.max(0, current - 1));
         }, 1000);
 
         return () => window.clearTimeout(timeout);
-    }, [secondsLeft]);
+    }, [setCountDown]);
 
     const isComplete = code.every((digit) => digit !== "");
 
@@ -77,12 +77,12 @@ export default function Page() {
     };
 
     const handleResend = () => {
-        if (secondsLeft > 0) {
+        if (countDown > 0) {
             return;
         }
 
         setCode(Array(CODE_LENGTH).fill(""));
-        setSecondsLeft(RESEND_SECONDS);
+        setCountDown(RESEND_SECONDS);
         inputRefs.current[0]?.focus();
     };
 
@@ -138,11 +138,11 @@ export default function Page() {
                         <button
                             type="button"
                             onClick={handleResend}
-                            disabled={secondsLeft > 0}
+                            disabled={countDown > 0}
                             className="font-semibold text-[#2F6F45] disabled:cursor-default disabled:opacity-100"
                         >
                             {secondsLeft > 0
-                                ? `Resend code in 0:${secondsLeft.toString().padStart(2, "0")}`
+                                ? `Resend code in 0:${countDown.toString().padStart(2, "0")}`
                                 : "Resend code"}
                         </button>
                     </p>
