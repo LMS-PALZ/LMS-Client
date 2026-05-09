@@ -3,7 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLoginMutation, useSession } from "@ssu/queries";
 import { loginSchema } from "@ssu/schema";
-import { AlertBanner, AuthLayout, Button, FormField, Input } from "@ssu/ui";
+import {
+  AlertBanner,
+  AuthLayout,
+  Button,
+  FormField,
+  Input,
+  Spinner,
+} from "@ssu/ui";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -112,9 +119,15 @@ export function LoginPage() {
             variant="primary"
             size="lg"
             className="w-full"
-            loading={isSubmitting || login.isPending}
+            disabled={isSubmitting || login.isPending}
           >
-            Sign in
+            {isSubmitting || login.isPending ? (
+              <div className="flex items-center justify-center gap-2">
+                <Spinner className="sm" />
+              </div>
+            ) : (
+              "Sign in"
+            )}
           </Button>
         </form>
       </div>

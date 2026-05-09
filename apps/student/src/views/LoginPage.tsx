@@ -3,8 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLoginMutation, useSession } from "@ssu/queries";
 import { loginSchema } from "@ssu/schema";
-import { AlertBanner, AuthLayout, Button, FormField, Input } from "@ssu/ui";
-import { Eye, EyeOff } from "lucide-react";
+import {
+  AlertBanner,
+  AuthLayout,
+  Button,
+  Checkbox,
+  FormField,
+  Input,
+  Spinner,
+} from "@ssu/ui";
+import { Eye, EyeClosed } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -15,7 +24,7 @@ type FormValues = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
-  const login = useLoginMutation("student");
+  const login = useLoginMutation();
   const [showPw, setShowPw] = useState(false);
   const [banner, setBanner] = useState<{
     variant: "error" | "warning";
@@ -60,30 +69,47 @@ export function LoginPage() {
 
   return (
     <AuthLayout>
-      <div>
-        <h1 className="text-h1 text-neutral-900 mb-2">Student sign in</h1>
-        <p className="text-small text-neutral-500 mb-6">
-          Demo: <strong>student@skillscaleup.dev</strong> — any password.
+      <div className="flex flex-col items-center">
+        <div className="w-[120px] py-7">
+          <img
+            src="/firstlogo.png"
+            alt="Chiggy Nsofor Foundation"
+            loading="eager"
+          />
+        </div>
+        <h1 className="text-sm text-[24px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
+          Welcome back!
+        </h1>
+        <p className="text-sm text-neutral-900 mb-6">
+          Sign in to continue to your dashboard.
         </p>
         {banner && (
           <div className="mb-4">
             <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
           </div>
         )}
-        <form onSubmit={onSubmit} className="space-y-4">
-          <FormField id="email" label="Email" error={errors.email?.message}>
+        <form onSubmit={onSubmit} className="space-y-6 w-full max-w-sm">
+          <FormField
+            id="email"
+            label="Email"
+            error={errors.email?.message}
+            className="text-sm"
+          >
             <Input
               id="email"
               type="email"
               autoComplete="email"
               disabled={isSubmitting}
               {...register("email")}
+              placeholder="Enter your email address"
+              className="rounded-[12px] placeholder:text-sm"
             />
           </FormField>
           <FormField
             id="password"
             label="Password"
             error={errors.password?.message}
+            className="text-sm"
           >
             <div className="relative">
               <Input
@@ -92,6 +118,8 @@ export function LoginPage() {
                 autoComplete="current-password"
                 disabled={isSubmitting}
                 {...register("password")}
+                placeholder="Enter your password"
+                className="rounded-[12px] placeholder:text-sm"
               />
               <button
                 type="button"
@@ -100,21 +128,42 @@ export function LoginPage() {
                 aria-label={showPw ? "Hide password" : "Show password"}
               >
                 {showPw ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
                   <Eye className="h-4 w-4" />
+                ) : (
+                  <EyeClosed className="h-4 w-4" />
                 )}
               </button>
             </div>
           </FormField>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Checkbox id="rememberMe" {...register("rememberMe")} />
+              <label
+                htmlFor="rememberMe"
+                className="text-sm text-neutral-700 cursor-pointer"
+              >
+                Remember me
+              </label>
+            </div>
+            <Link
+              href="/forgetpassword"
+              className="text-sm text-[#0D693B] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Button
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full"
-            loading={isSubmitting || login.isPending}
+            className="w-full rounded-[30px] text-[var(--color-surface)]"
+            disabled={isSubmitting || login.isPending}
           >
-            Sign in
+            {isSubmitting || login.isPending ? (
+              <Spinner className="h-5 w-5 animate-spin" />
+            ) : (
+              "Login"
+            )}
           </Button>
         </form>
       </div>

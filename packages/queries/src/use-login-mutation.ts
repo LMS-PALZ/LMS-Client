@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UserRole } from "@ssu/types";
 import { loginDemo, writeSession } from "@ssu/api";
 import { sessionKey } from "./keys";
 
-export function useLoginMutation(expectedRole: UserRole) {
+export function useLoginMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { email: string; password: string }) => {
-      const res = await loginDemo(input.email, input.password, expectedRole);
+      const res = await loginDemo(input.email, input.password, "student");
       return res;
     },
     onSuccess: (data) => {
