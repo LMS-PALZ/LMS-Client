@@ -11,8 +11,8 @@ export function useLoginMutation() {
     },
     onSuccess: (data) => {
       if (!data.ok) return;
-      writeSession(data.user);
-      void qc.setQueryData(sessionKey, data.user);
+      writeSession(data.data);
+      void qc.setQueryData(sessionKey, data.data);
     },
   });
 }
