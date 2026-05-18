@@ -1,28 +1,38 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type User = {
+interface SignupUser {
   id: string;
-  name: string;
   email: string;
-};
+  role: string;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  program?: string;
+}
 
-type SignupStore = {
-  user: User | null;
+interface SignupStore {
+  user: SignupUser | null;
 
-  setUser: (user: User) => void;
+  setUser: (user: SignupUser) => void;
 
   clearUser: () => void;
-};
+}
 
 export const useSignupStore = create<SignupStore>()(
   persist(
     (set) => ({
       user: null,
 
-      setUser: (user) => set({ user }),
+      setUser: (user) =>
+        set({
+          user,
+        }),
 
-      clearUser: () => set({ user: null }),
+      clearUser: () =>
+        set({
+          user: null,
+        }),
     }),
     {
       name: "signup-storage",

@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login, writeSession } from "@ssu/api";
+import { adminlogin, writeSession } from "@ssu/api";
 import { sessionKey } from "./keys";
 
 export function useLoginMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { email: string; password: string }) => {
-      const res = await login(input.email, input.password);
+      const res = await adminlogin(input.email, input.password);
       return res;
     },
     onSuccess: (data) => {

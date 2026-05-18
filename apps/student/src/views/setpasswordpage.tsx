@@ -8,40 +8,28 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeClosed } from "lucide-react";
 import type { z } from "zod";
-import { AlertBanner } from "../molecules/AlertBanner";
-import { AuthLayout } from "../layouts/AuthLayout";
-import { Button } from "../atoms/Button";
-import { FormField } from "../molecules/FormField";
-import { Input } from "../atoms/Input";
-import { Spinner } from "../atoms/Spinner";
-// import type { UserRole } from "@ssu/types";
 
-interface ResetPasswordFormProps {
-  // role: UserRole;
-  onSuccessRedirect?: string;
-  requireSessionCheck?: boolean;
-  logoSrc?: string;
-  title?: string;
-  description?: string;
-}
+import { AlertBanner } from "@ssu/ui";
+import { AuthLayout } from "@ssu/ui";
+import { Button } from "@ssu/ui";
+import { FormField } from "@ssu/ui";
+import { Input } from "@ssu/ui";
+import { Spinner } from "@ssu/ui";
 
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
-export function ResetPasswordForm({
-  // role,
-  onSuccessRedirect = "/login",
-  requireSessionCheck = true,
-  logoSrc = "/firstlogo.png",
-  title = "Set new password",
-  description = "Enter a new password below to change your password",
-}: ResetPasswordFormProps) {
+export default function SetPasswordPage() {
   const router = useRouter();
+
   const { data: session, isLoading: sessionLoading } = useSession();
-  const resetPassword = useResetPasswordMutation();
+
+  const setPassword = useResetPasswordMutation();
+
   const [banner, setBanner] = useState<{
     variant: "error" | "warning" | "success";
     message: string;
   } | null>(null);
+
   const [showPw, setShowPw] = useState(false);
 
   const {
@@ -50,14 +38,17 @@ export function ResetPasswordForm({
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { password: "", confirmPassword: "" },
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const onSubmit = handleSubmit(async (values) => {
     setBanner(null);
 
     try {
-      const res = await resetPassword.mutateAsync({
+      const res = await setPassword.mutateAsync({
         password: values.password,
         confirmPassword: values.confirmPassword,
       });
@@ -65,19 +56,26 @@ export function ResetPasswordForm({
       if (res.ok) {
         setBanner({
           variant: "success",
-          message: res.message || "Password reset successfully",
+          message: res.message || "Password set successfully",
         });
+
+        localStorage.removeItem("reset-email");
+
         setTimeout(() => {
-          router.replace(onSuccessRedirect);
+          router.replace("/login");
         }, 2000);
+
         return;
       }
-      setBanner({ variant: "error", message: res.message });
+
+      setBanner({
+        variant: "error",
+        message: res.message,
+      });
     } catch (error: any) {
       setBanner({
         variant: "error",
-        message:
-          error?.message || "Failed to reset password. Please try again.",
+        message: error?.message || "Failed to set password. Please try again.",
       });
     }
   });
@@ -86,7 +84,7 @@ export function ResetPasswordForm({
     return null;
   }
 
-  if (requireSessionCheck && session) {
+  if (session) {
     return null;
   }
 
@@ -94,23 +92,28 @@ export function ResetPasswordForm({
     <AuthLayout>
       <div className="flex flex-col items-center">
         <div className="w-[120px] py-7">
-          <img src={logoSrc} alt="" loading="eager" />
+          <img src="/firstlogo.png" alt="Logo" loading="eager" />
         </div>
-        <h1 className="text-sm text-[26px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
-          {title}
+
+        <h1 className="mb-3 text-[26px] font-bold text-[#1F2937] sm:text-[23px]">
+          Set your password
         </h1>
-        <p className="text-sm text-neutral-900 mb-6 text-center">
-          {description}
+
+        <p className="mb-6 max-w-[380px] text-center text-neutral-900 text-sm">
+          Create a password to secure your account and continue to your profile
+          setup.
         </p>
+
         {banner && (
           <div className="mb-4 text-center">
             <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
           </div>
         )}
-        <form onSubmit={onSubmit} className="space-y-6 w-full max-w-sm">
+
+        <form onSubmit={onSubmit} className="w-full max-w-sm space-y-6">
           <FormField
             id="password"
-            label="Password"
+            label="Choose a Password"
             error={errors.password?.message}
           >
             <div className="relative">
@@ -123,6 +126,7 @@ export function ResetPasswordForm({
                 placeholder="Enter your password"
                 className="rounded-[12px]"
               />
+
               <button
                 type="button"
                 className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-neutral-500 hover:bg-neutral-100"
@@ -137,6 +141,7 @@ export function ResetPasswordForm({
               </button>
             </div>
           </FormField>
+
           <FormField
             id="confirmPassword"
             label="Confirm Password"
@@ -149,9 +154,10 @@ export function ResetPasswordForm({
                 autoComplete="new-password"
                 disabled={isSubmitting}
                 {...register("confirmPassword")}
-                placeholder="Re-enter your new password"
+                placeholder="Re-enter your password"
                 className="rounded-[12px]"
               />
+
               <button
                 type="button"
                 className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-neutral-500 hover:bg-neutral-100"
@@ -166,17 +172,18 @@ export function ResetPasswordForm({
               </button>
             </div>
           </FormField>
+
           <Button
             type="submit"
             variant="primary"
             size="lg"
             className="w-full rounded-[30px] text-[var(--color-surface)]"
-            disabled={isSubmitting || resetPassword.isPending}
+            disabled={isSubmitting || setPassword.isPending}
           >
-            {isSubmitting || resetPassword.isPending ? (
+            {isSubmitting || setPassword.isPending ? (
               <Spinner className="h-5 w-5 animate-spin" />
             ) : (
-              "Reset Password"
+              "Continue"
             )}
           </Button>
         </form>

@@ -24,7 +24,7 @@ type FormValues = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
-  const login = useLoginMutation("student");
+  const login = useLoginMutation();
   const [showPw, setShowPw] = useState(false);
   const [banner, setBanner] = useState<{
     variant: "error" | "warning";
@@ -46,7 +46,7 @@ export function LoginPage() {
     }
   }, [session, router]);
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = async (values: FormValues) => {
     setBanner(null);
     const res = await login.mutateAsync(values);
     if (res.ok) {
@@ -58,7 +58,9 @@ export function LoginPage() {
       return;
     }
     setBanner({ variant: "error", message: res.message });
-  });
+  };
+
+  const handleFormSubmit = handleSubmit(onSubmit);
 
   if (sessionLoading) {
     return null;
@@ -77,7 +79,7 @@ export function LoginPage() {
             loading="eager"
           />
         </div>
-        <h1 className="text-sm text-[24px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
+        <h1 className="text-sm text-[26px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
           Welcome back!
         </h1>
         <p className="text-sm text-neutral-900 mb-6">
@@ -88,7 +90,7 @@ export function LoginPage() {
             <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
           </div>
         )}
-        <form onSubmit={onSubmit} className="space-y-6 w-full max-w-sm">
+        <form onSubmit={handleFormSubmit} className="space-y-6 w-full max-w-sm">
           <FormField
             id="email"
             label="Email"

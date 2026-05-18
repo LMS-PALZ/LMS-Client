@@ -3,5 +3,5 @@
 import { ResetPasswordForm } from "@ssu/ui";
 
 export function ResetPasswordPage() {
-  return <ResetPasswordForm />;
+  return <ResetPasswordForm role="trainer" />;
 }

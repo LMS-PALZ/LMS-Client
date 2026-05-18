@@ -1,22 +1,46 @@
 import { z } from "zod";
 
+/* =========================
+   LOGIN
+========================= */
 export const loginSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+
   password: z.string().min(1, "Password is required"),
-  rememberMe: z.boolean().optional(),
+
+  rememberMe: z
+    .union([z.boolean(), z.string()])
+    .transform((val) => val === true || val === "on")
+    .optional(),
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
-const registerStudentFieldsSchema = z.object({
+/* =========================
+   BASE USER FIELDS
+========================= */
+const baseUserFields = z.object({
   firstName: z.string().min(1, "First name is required"),
+
   lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Enter a valid email address"),
+
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+
   password: z.string().min(8, "Use at least 8 characters"),
+
   confirmPassword: z.string().min(1, "Confirm your password"),
 });
 
-export const registerStudentSchema = registerStudentFieldsSchema.refine(
+/* =========================
+   STUDENT REGISTER
+========================= */
+export const registerStudentSchema = baseUserFields.refine(
   (data) => data.password === data.confirmPassword,
   {
     message: "Passwords must match",
@@ -26,7 +50,10 @@ export const registerStudentSchema = registerStudentFieldsSchema.refine(
 
 export type RegisterStudentFormValues = z.infer<typeof registerStudentSchema>;
 
-export const registerTrainerSchema = registerStudentFieldsSchema
+/* =========================
+   TRAINER REGISTER
+========================= */
+export const registerTrainerSchema = baseUserFields
   .extend({
     skills: z.string().min(1, "List your skills"),
   })
@@ -37,15 +64,25 @@ export const registerTrainerSchema = registerStudentFieldsSchema
 
 export type RegisterTrainerFormValues = z.infer<typeof registerTrainerSchema>;
 
+/* =========================
+   FORGOT PASSWORD
+========================= */
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
 });
 
 export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
+/* =========================
+   RESET PASSWORD
+========================= */
 export const resetPasswordSchema = z
   .object({
     password: z.string().min(8, "Use at least 8 characters"),
+
     confirmPassword: z.string().min(1, "Confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -55,6 +92,9 @@ export const resetPasswordSchema = z
 
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
+/* =========================
+   SUBMISSIONS
+========================= */
 export const submissionLinkSchema = z.object({
   url: z.string().url("Enter a valid URL"),
 });
@@ -63,29 +103,75 @@ export const submissionTextSchema = z.object({
   text: z.string().min(1, "Enter your response").max(10_000),
 });
 
+/* =========================
+   COURSE DETAILS
+========================= */
 export const courseDetailsStepSchema = z.object({
   title: z.string().min(1, "Title is required"),
+
   description: z.string().min(1, "Description is required"),
+
   category: z.string().min(1, "Category is required"),
+
   durationHours: z.coerce.number().min(0).optional(),
 });
 
+/* =========================
+   GRADE SUBMISSION
+========================= */
 export const gradeSubmissionSchema = z.object({
   score: z.coerce.number().min(0).max(100),
+
   feedback: z.string().min(1, "Feedback is required before saving"),
 });
 
 export type GradeSubmissionFormValues = z.infer<typeof gradeSubmissionSchema>;
 
+/* =========================
+   SIGNUP (UPDATED FIXED VERSION)
+========================= */
+export const signUpSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+
+  last_name: z.string().min(1, "Last name is required"),
+
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+
+  phone_number: z
+    .string()
+    .transform((val) => val.replace(/\s/g, "")) // remove spaces
+    .refine((val) => /^\d+$/.test(val), {
+      message: "Phone number must contain only numbers",
+    })
+    .refine((val) => val.length === 11, {
+      message: "Phone number must be exactly 11 digits",
+    }),
+
+  program: z.string().min(1, "Please select a course"),
+});
+
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
 
-export const signUpSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Enter a valid email address"),
-  phoneNumber: z
-    .string()
-    .min(10, "Enter a valid phone number")
-    .max(15, "Phone number too long"),
-  course: z.string().min(1, "Please select a course"),
+/* =========================
+   CONFIRM CODE
+========================= */
+export const confirmCodeSchema = z.object({
+  code: z.string().min(1, "Confirmation code is required"),
 });
+
+export type ConfirmCodeFormValues = z.infer<typeof confirmCodeSchema>;
+
+/* =========================
+   RESEND CODE
+========================= */
+export const resendCodeSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+});
+
+export type ResendCodeFormValues = z.infer<typeof resendCodeSchema>;

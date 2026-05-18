@@ -1,1 +1,1 @@
-export * from "./use-signup-store";
+export * from "./user-signup-store";
