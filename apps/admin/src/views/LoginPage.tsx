@@ -22,7 +22,7 @@ type FormValues = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
-  const login = useLoginMutation();
+  const login = useLoginMutation("admin");
   const [showPw, setShowPw] = useState(false);
   const [banner, setBanner] = useState<{
     variant: "error" | "warning";
