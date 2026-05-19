@@ -14,10 +14,8 @@ import { Button } from "../atoms/Button";
 import { FormField } from "../molecules/FormField";
 import { Input } from "../atoms/Input";
 import { Spinner } from "../atoms/Spinner";
-// import type { UserRole } from "@ssu/types";
 
 interface ResetPasswordFormProps {
-  // role: UserRole;
   onSuccessRedirect?: string;
   requireSessionCheck?: boolean;
   logoSrc?: string;
@@ -28,8 +26,7 @@ interface ResetPasswordFormProps {
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordForm({
-  // role,
-  onSuccessRedirect = "/login",
+  onSuccessRedirect = "/success",
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
   title = "Set new password",
@@ -96,7 +93,7 @@ export function ResetPasswordForm({
         <div className="w-[120px] py-7">
           <img src={logoSrc} alt="" loading="eager" />
         </div>
-        <h1 className="text-sm text-[26px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
+        <h1 className="text-sm text-[24px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
           {title}
         </h1>
         <p className="text-sm text-neutral-900 mb-6 text-center">

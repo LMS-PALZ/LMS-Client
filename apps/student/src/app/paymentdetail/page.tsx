@@ -1,10 +1,11 @@
 "use client";
 
-import { Button } from "@ssu/ui";
+import { Button, Spinner } from "@ssu/ui";
 import { Mail, Phone, User, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getProgramOptionByName } from "@/lib/program-options";
 import { useSignupStore } from "@ssu/store";
+import { useState } from "react";
 
 const DEFAULT_PROGRAM_DETAILS = {
   duration: "6 months",
@@ -29,6 +30,14 @@ function formatCurrentDate() {
 
 export default function Page() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleContinue = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      router.push("/welcome");
+    }, 3000);
+  };
 
   const user = useSignupStore((state) => state.user);
 
@@ -54,7 +63,7 @@ export default function Page() {
         </div>
 
         <div className="mx-auto max-w-[300px]">
-          <h1 className="mb-3 text-sm font-bold text-[#1F2937] sm:text-[23px]">
+          <h1 className="mb-3 text-[24px] font-bold text-[#1F2937] sm:text-[23px]">
             Confirm your payment
           </h1>
 
@@ -146,9 +155,14 @@ export default function Page() {
           variant="primary"
           size="lg"
           className="mt-10 min-w-[280px] rounded-full px-10 text-lg text-[var(--color-surface)]"
-          onClick={() => router.push("/welcome")}
+          onClick={handleContinue}
+          disabled={isLoading}
         >
-          Continue to payment
+          {isLoading ? (
+            <Spinner className="h-5 w-5 animate-spin" />
+          ) : (
+            "Continue to payment"
+          )}
         </Button>
       </div>
     </div>

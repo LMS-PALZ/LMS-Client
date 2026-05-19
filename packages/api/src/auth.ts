@@ -15,7 +15,7 @@ export async function login(
   | { ok: false; code: LoginErrorCode; message: string }
 > {
   try {
-    const url = `${API_BASE_URL}/api/v1/auth/login`;
+    const url = `${API_BASE_URL}/api/v1/students/auth/login`;
 
     const res = await axios.post(url, { email, password });
 
@@ -72,7 +72,7 @@ export async function signupStudent(input: {
   }
 }
 
-///////reset password
+///////resetpassword
 export type ResetPasswordErrorCode = "invalid" | "server_error";
 
 export async function resetPassword(
@@ -145,7 +145,7 @@ export async function verifyStudentEmail(
   | { ok: false; code: VerifyEmailErrorCode; message: string }
 > {
   try {
-    const url = `${API_BASE_URL}/api/v1/auth/verify`;
+    const url = `${API_BASE_URL}/api/v1/students/auth/verify`;
 
     await axios.post(url, {
       email,
@@ -178,7 +178,7 @@ export async function resendOtp(
   | { ok: false; code: ResendOtpErrorCode; message: string }
 > {
   try {
-    const url = `${API_BASE_URL}/api/v1/auth/resend`;
+    const url = `${API_BASE_URL}/api/v1/students/auth/resend`;
 
     await axios.post(url, { email });
 

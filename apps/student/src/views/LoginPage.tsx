@@ -15,7 +15,7 @@ import {
 import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
@@ -26,8 +26,10 @@ export function LoginPage() {
   const { data: session, isLoading: sessionLoading } = useSession();
   const login = useLoginMutation();
   const [showPw, setShowPw] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const [banner, setBanner] = useState<{
-    variant: "error" | "warning";
+    variant: "error" | "warning" | "success";
     message: string;
   } | null>(null);
 
@@ -40,24 +42,43 @@ export function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
-  useEffect(() => {
-    if (session) {
-      router.replace("/");
-    }
-  }, [session, router]);
+  if (session && !banner) {
+    return null;
+  }
 
   const onSubmit = async (values: FormValues) => {
     setBanner(null);
+
     const res = await login.mutateAsync(values);
-    if (res.ok) {
+
+    if (!res.ok) {
+      if (res.code === "pending_approval") {
+        setBanner({
+          variant: "warning",
+          message: res.message,
+        });
+
+        return;
+      }
+
+      setBanner({
+        variant: "error",
+        message: res.message,
+      });
+
+      return;
+    }
+
+    setBanner({
+      variant: "success",
+      message: "Login successful!",
+    });
+
+    setIsRedirecting(true);
+
+    setTimeout(() => {
       router.replace("/");
-      return;
-    }
-    if (res.code === "pending_approval") {
-      setBanner({ variant: "warning", message: res.message });
-      return;
-    }
-    setBanner({ variant: "error", message: res.message });
+    }, 2000);
   };
 
   const handleFormSubmit = handleSubmit(onSubmit);
@@ -65,7 +86,7 @@ export function LoginPage() {
   if (sessionLoading) {
     return null;
   }
-  if (session) {
+  if (session && !isRedirecting) {
     return null;
   }
 
@@ -79,7 +100,7 @@ export function LoginPage() {
             loading="eager"
           />
         </div>
-        <h1 className="text-sm text-[26px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
+        <h1 className="text-sm text-[25px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
           Welcome back!
         </h1>
         <p className="text-sm text-neutral-900 mb-6">
@@ -162,7 +183,9 @@ export function LoginPage() {
             disabled={isSubmitting || login.isPending}
           >
             {isSubmitting || login.isPending ? (
-              <Spinner className="h-5 w-5 animate-spin" />
+              <span className="flex items-center gap-2">
+                <Spinner className="h-5 w-5 animate-spin" />
+              </span>
             ) : (
               "Login"
             )}

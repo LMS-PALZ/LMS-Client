@@ -98,7 +98,7 @@ export function SetPasswordForm({
       <div className="w-[120px] py-7">
         <img src={logoSrc} alt="" loading="eager" />
       </div>
-      <h1 className="text-sm text-[26px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
+      <h1 className="text-sm text-[24px] font-bold text-[#1F2937] mb-3 sm:text-[23px]">
         {title}
       </h1>
       <p className="text-neutral-900 mb-6 max-w-[380px] text-center">

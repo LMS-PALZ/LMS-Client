@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useResetPasswordMutation, useSession } from "@ssu/queries";
+import { useSetPasswordMutation, useSession } from "@ssu/queries";
 import { resetPasswordSchema } from "@ssu/schema";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,15 +15,19 @@ import { Button } from "@ssu/ui";
 import { FormField } from "@ssu/ui";
 import { Input } from "@ssu/ui";
 import { Spinner } from "@ssu/ui";
+import { useSignupStore } from "@ssu/store";
 
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
 export default function SetPasswordPage() {
   const router = useRouter();
 
+  const user = useSignupStore((state) => state.user);
+  console.log("Using email for set password:", user?.email);
+
   const { data: session, isLoading: sessionLoading } = useSession();
 
-  const setPassword = useResetPasswordMutation();
+  const setPassword = useSetPasswordMutation();
 
   const [banner, setBanner] = useState<{
     variant: "error" | "warning" | "success";
@@ -50,7 +54,6 @@ export default function SetPasswordPage() {
     try {
       const res = await setPassword.mutateAsync({
         password: values.password,
-        confirmPassword: values.confirmPassword,
       });
 
       if (res.ok) {

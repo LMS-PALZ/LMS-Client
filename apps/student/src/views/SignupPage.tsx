@@ -22,7 +22,6 @@ type FormValues = z.infer<typeof signUpSchema>;
 
 export function SignupPage() {
   const router = useRouter();
-
   const { data: session, isLoading: sessionLoading } = useSession();
 
   const {
@@ -61,6 +60,10 @@ export function SignupPage() {
 
   const selectedProgram = watch("program");
 
+  if (session && !banner) {
+    return null;
+  }
+
   const onSubmit = handleSubmit(async (values) => {
     setBanner(null);
 
@@ -71,8 +74,10 @@ export function SignupPage() {
         variant: "error",
         message: res.message,
       });
+
       return;
     }
+
     setBanner({
       variant: "success",
       message: res.message,
@@ -82,7 +87,7 @@ export function SignupPage() {
 
     setTimeout(() => {
       router.replace("/confirmcode");
-    }, 4000);
+    }, 2000);
   });
 
   useEffect(() => {
@@ -99,11 +104,11 @@ export function SignupPage() {
     };
   }, []);
 
-  if (sessionLoading) {
+  if (session && !banner) {
     return null;
   }
 
-  if (session) {
+  if (sessionLoading) {
     return null;
   }
 
@@ -118,7 +123,7 @@ export function SignupPage() {
           />
         </div>
 
-        <h1 className="mb-3 text-[26px] font-bold text-[#1F2937] sm:text-[23px]">
+        <h1 className="mb-3 text-[25px] font-bold text-[#1F2937] sm:text-[23px]">
           Let's begin your journey
         </h1>
 
@@ -226,9 +231,8 @@ export function SignupPage() {
                     selectedProgram ? "text-[#1F2937]" : "text-[#B3BDC9]"
                   }
                 >
-                  {programs?.data?.items?.find(
-                    (item) => item.slug === selectedProgram,
-                  )?.title || "Select your preferred program"}
+                  {programs?.find((item) => item.slug === selectedProgram)
+                    ?.title || "Select your preferred program"}
                 </span>
 
                 {programsLoading ? (

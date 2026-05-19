@@ -9,19 +9,12 @@ export function useConfirmCodeMutation() {
 
   return useMutation({
     mutationFn: async (input: ConfirmCodeFormValues) => {
-      // const email = email;
-
       if (!email) {
         throw new Error("User email not found");
       }
-      console.log("Confirm code mutation input:", input);
+
       const res = await verifyStudentEmail(email, input.code);
-      console.log("Confirm code mutation response:", res);
       return res;
-    },
-    onSuccess: (data) => {
-      if (!data.ok) return;
-      // localStorage.removeItem("user-email");
     },
   });
 }
