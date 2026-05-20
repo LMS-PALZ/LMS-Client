@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSignupMutation, usePrograms, useSession } from "@ssu/queries";
+import { useSignupMutation, usePrograms } from "@ssu/queries";
 import { signUpSchema } from "@ssu/schema";
 import {
   AlertBanner,
@@ -22,7 +22,6 @@ type FormValues = z.infer<typeof signUpSchema>;
 
 export function SignupPage() {
   const router = useRouter();
-  const { data: session, isLoading: sessionLoading } = useSession();
 
   const {
     data: programs,
@@ -59,10 +58,6 @@ export function SignupPage() {
   });
 
   const selectedProgram = watch("program");
-
-  if (session && !banner) {
-    return null;
-  }
 
   const onSubmit = handleSubmit(async (values) => {
     setBanner(null);
@@ -103,14 +98,6 @@ export function SignupPage() {
       document.removeEventListener("mousedown", handlePointerDown);
     };
   }, []);
-
-  if (session && !banner) {
-    return null;
-  }
-
-  if (sessionLoading) {
-    return null;
-  }
 
   return (
     <AuthLayout>
