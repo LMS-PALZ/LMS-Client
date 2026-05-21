@@ -1,34 +1,29 @@
 import { useMutation } from "@tanstack/react-query";
+import { resetPassword } from "@ssu/api";
 
 export function useResetPasswordMutation() {
-    return useMutation({
-        mutationFn: async (input: {
-            email?: string;
-            token?: string;
-            password: string;
-            confirmPassword: string;
-        }) => {
-            const response = await fetch("/api/auth/reset-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(input),
-            });
+  return useMutation({
+    mutationFn: async (input: {
+      password: string;
+      confirmPassword: string;
+    }) => {
+      const email = localStorage.getItem("reset-email");
 
-            const data = await response.json();
+      if (!email) {
+        throw new Error("Reset email not found");
+      }
 
-            if (!response.ok) {
-                return {
-                    ok: false,
-                    message: data.message || "Failed to reset password",
-                };
-            }
+      const res = await resetPassword(email, input.password);
 
-            return {
-                ok: true,
-                message: data.message || "Password reset successfully",
-            };
-        },
-    });
+      if (!res.ok) {
+        throw new Error(res.message);
+      }
+
+      return res;
+    },
+
+    onSuccess: () => {
+      localStorage.removeItem("reset-email");
+    },
+  });
 }

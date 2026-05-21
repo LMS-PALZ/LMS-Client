@@ -30,8 +30,10 @@ export * from "./organisms/TopHeader";
 export * from "./organisms/PageHeader";
 export * from "./organisms/StepWizard";
 export * from "./organisms/NotificationDropdown";
+export * from "./organisms/LoginForm";
 export * from "./organisms/ForgotPasswordForm";
 export * from "./organisms/ResetPasswordForm";
+export * from "./organisms/SetPasswordForm";
 
 export * from "./layouts/AuthLayout";
 export * from "./layouts/DashboardLayout";

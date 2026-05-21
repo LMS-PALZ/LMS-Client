@@ -26,7 +26,7 @@ interface ResetPasswordFormProps {
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordForm({
-  onSuccessRedirect = "/login",
+  onSuccessRedirect = "/success",
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
   title = "Set new password",
@@ -53,19 +53,30 @@ export function ResetPasswordForm({
   const onSubmit = handleSubmit(async (values) => {
     setBanner(null);
 
-    const res = await resetPassword.mutateAsync({
-      password: values.password,
-      confirmPassword: values.confirmPassword,
-    });
+    try {
+      const res = await resetPassword.mutateAsync({
+        password: values.password,
+        confirmPassword: values.confirmPassword,
+      });
 
-    if (res.ok) {
-      setBanner({ variant: "success", message: res.message });
-      setTimeout(() => {
-        router.replace(onSuccessRedirect);
-      }, 2000);
-      return;
+      if (res.ok) {
+        setBanner({
+          variant: "success",
+          message: res.message || "Password reset successfully",
+        });
+        setTimeout(() => {
+          router.replace(onSuccessRedirect);
+        }, 2000);
+        return;
+      }
+      setBanner({ variant: "error", message: res.message });
+    } catch (error: any) {
+      setBanner({
+        variant: "error",
+        message:
+          error?.message || "Failed to reset password. Please try again.",
+      });
     }
-    setBanner({ variant: "error", message: res.message });
   });
 
   if (sessionLoading) {
@@ -135,7 +146,7 @@ export function ResetPasswordForm({
                 autoComplete="new-password"
                 disabled={isSubmitting}
                 {...register("confirmPassword")}
-                placeholder="Confirm your password"
+                placeholder="Re-enter your new password"
                 className="rounded-[12px]"
               />
               <button

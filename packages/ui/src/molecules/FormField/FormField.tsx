@@ -21,7 +21,7 @@ export function FormField({
   description,
 }: FormFieldProps) {
   const childWithError = isValidElement(children)
-    ? cloneElement(children, { error: !!error } as any)
+    ? cloneElement(children, { error: !!error || undefined } as any)
     : children;
 
   return (

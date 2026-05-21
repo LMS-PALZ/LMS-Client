@@ -16,7 +16,7 @@
     "incremental": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": []
+    "types": ["node"]
   },
   "exclude": ["node_modules"]
 }

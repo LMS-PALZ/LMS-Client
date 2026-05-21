@@ -1,29 +1,26 @@
 import { useMutation } from "@tanstack/react-query";
+import { forgetPassword } from "@ssu/api";
 
-export function useForgotPasswordMutation() {
+export function useForgotPasswordMutation(
+  onSuccessRedirect?: (path: string) => void,
+) {
   return useMutation({
     mutationFn: async (input: { email: string }) => {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      });
+      const res = await forgetPassword(input.email);
 
-      const data = await response.json();
+      return res;
+    },
 
-      if (!response.ok) {
-        return {
-          ok: false,
-          message: data.message || "Failed to send reset email",
-        };
+    onSuccess: (data, variables) => {
+      if (!data.ok) {
+        console.error("Forgot password failed:", data.message);
+
+        return;
       }
 
-      return {
-        ok: true,
-        message: data.message || "Reset email sent successfully",
-      };
+      localStorage.setItem("reset-email", variables.email);
+
+      onSuccessRedirect?.("/reset-password");
     },
   });
 }
