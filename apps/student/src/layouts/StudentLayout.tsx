@@ -45,8 +45,7 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
 
 export function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const profileCompleted = true;
-
+  const profileCompleted = false;
   return (
     <DashboardLayout
       sidebar={
