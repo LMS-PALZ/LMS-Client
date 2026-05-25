@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { getClassroomCourseById } from "@/lib/classroom-data";
-import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
+import { ClassroomResourcesPage } from "@/views/Classroom/ClassroomResourcesPage";
 
 export default async function Page({
   params,
@@ -15,5 +15,5 @@ export default async function Page({
     notFound();
   }
 
-  return <ClassroomOverviewPage course={course} />;
+  return <ClassroomResourcesPage course={course} />;
 }

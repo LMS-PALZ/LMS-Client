@@ -7,21 +7,32 @@ import {
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
 import {
-  BookOpen,
   CalendarDays,
   ClipboardList,
-  LayoutDashboard,
+  GraduationCap,
+  House,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderBar } from "../components/HeaderBar";
+import { AccountSetupModal } from "../views/ProfileSetting/AccountSetupModal";
 
 const items: NavigationSidebarItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/assignments", label: "Assignments", icon: ClipboardList },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
+  { href: "/", label: "Home", icon: House },
+  { href: "/schedule", label: "Calendar", icon: CalendarDays },
+  {
+    href: "/courses",
+    label: "My Classroom",
+    icon: GraduationCap,
+    section: "Learning",
+  },
+  {
+    href: "/assignments",
+    label: "Assessments",
+    icon: ClipboardList,
+    section: "Learning",
+  },
 ];
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
@@ -34,6 +45,7 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
 
 export function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const profileCompleted = true;
 
   return (
     <DashboardLayout
@@ -42,14 +54,10 @@ export function StudentLayout({ children }: { children: ReactNode }) {
           pathname={pathname}
           items={items}
           LinkComponent={RouterLink}
-          header={
-            <span className="text-white font-bold text-h4 truncate px-1">
-              SSU Student
-            </span>
-          }
         />
       }
       header={<HeaderBar />}
+      overlay={!profileCompleted ? <AccountSetupModal /> : null}
     >
       {children}
     </DashboardLayout>

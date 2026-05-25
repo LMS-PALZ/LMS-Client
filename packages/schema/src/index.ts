@@ -162,6 +162,7 @@ export const confirmCodeSchema = z.object({
   code: z.string().min(1, "Confirmation code is required"),
 });
 
+<<<<<<< HEAD
 export type ConfirmCodeFormValues = z.infer<typeof confirmCodeSchema>;
 
 /* =========================
@@ -175,3 +176,61 @@ export const resendCodeSchema = z.object({
 });
 
 export type ResendCodeFormValues = z.infer<typeof resendCodeSchema>;
+=======
+export const accountSetupStepOneSchema = z
+  .object({
+    day: z.string(),
+    month: z.string(),
+    year: z.string(),
+    gender: z.string().min(1, "Please select your gender"),
+    employmentStatus: z.string().min(1, "Please select your employment status"),
+  })
+  .refine((data) => !!data.day && !!data.month && !!data.year, {
+    path: ["dateOfBirth"],
+    message: "Please enter your date of birth",
+  });
+
+export type AccountSetupStepOneValues = z.infer<
+  typeof accountSetupStepOneSchema
+>;
+
+export const accountSetupStepTwoSchema = z.object({
+  address: z.string().trim().min(1, "Please enter your address"),
+  stateOfResidence: z
+    .string()
+    .trim()
+    .min(1, "Please select your state of residence"),
+  city: z.string().trim().min(1, "Please enter your city"),
+});
+
+export type AccountSetupStepTwoValues = z.infer<
+  typeof accountSetupStepTwoSchema
+>;
+
+function isFileLike(value: unknown): value is File {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    "size" in value &&
+    "type" in value
+  );
+}
+
+export const accountSetupStepThreeSchema = z.object({
+  profilePhoto: z
+    .custom<File>(isFileLike, {
+      message: "Please upload your profile photo",
+    })
+    .refine((file) => file.size <= 2 * 1024 * 1024, {
+      message: "Your photo must be 2MB or less",
+    })
+    .refine((file) => file.type.startsWith("image/"), {
+      message: "Please upload a valid image file",
+    }),
+});
+
+export type AccountSetupStepThreeValues = z.infer<
+  typeof accountSetupStepThreeSchema
+>;
+>>>>>>> ca7d7ed (feat: add account setup steps and progress components)
