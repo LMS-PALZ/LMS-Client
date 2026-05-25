@@ -162,7 +162,6 @@ export const confirmCodeSchema = z.object({
   code: z.string().min(1, "Confirmation code is required"),
 });
 
-<<<<<<< HEAD
 export type ConfirmCodeFormValues = z.infer<typeof confirmCodeSchema>;
 
 /* =========================
@@ -176,7 +175,7 @@ export const resendCodeSchema = z.object({
 });
 
 export type ResendCodeFormValues = z.infer<typeof resendCodeSchema>;
-=======
+
 export const accountSetupStepOneSchema = z
   .object({
     day: z.string(),
@@ -233,4 +232,3 @@ export const accountSetupStepThreeSchema = z.object({
 export type AccountSetupStepThreeValues = z.infer<
   typeof accountSetupStepThreeSchema
 >;
->>>>>>> ca7d7ed (feat: add account setup steps and progress components)
