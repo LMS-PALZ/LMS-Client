@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
-
 import { getClassroomCourseById } from "@/lib/classroom-data";
 import { ClassroomResourcesPage } from "@/views/Classroom/ClassroomResourcesPage";
+import { EmptyState } from "@ssu/ui";
+import { Megaphone } from "lucide-react";
 
 export default async function Page({
   params,
@@ -12,8 +12,13 @@ export default async function Page({
   const course = getClassroomCourseById(id);
 
   if (!course) {
-    notFound();
+    return (
+      <EmptyState
+        icon={Megaphone}
+        title="You don't have any Resources yet"
+        description="When you do, they'll show up here"
+      />
+    );
   }
-
   return <ClassroomResourcesPage course={course} />;
 }

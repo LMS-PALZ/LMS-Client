@@ -2,6 +2,8 @@
 
 import { cn } from "@ssu/utils";
 import { CalendarDays, NotebookText, SquareCheckBig } from "lucide-react";
+import { EmptyState } from "@ssu/ui";
+import { Megaphone } from "lucide-react";
 
 export interface Assignment {
   id: number;
@@ -46,21 +48,11 @@ export function Assignments({
       </div>
 
       {assignments.length === 0 ? (
-        <div className="flex  flex-col items-center justify-center text-center">
-          <img
-            src="/empty-assignment.png"
-            alt="empty"
-            className="mb-5 h-12 w-12 opacity-40"
-          />
-
-          <h3 className="text-[14px] font-semibold text-[#1D1D1D]">
-            You don’t have any assignment yet
-          </h3>
-
-          <p className="mt-2 text-[14px] text-[#6B7280]">
-            When you do, they’ll show up here
-          </p>
-        </div>
+        <EmptyState
+          icon={Megaphone}
+          title="You don’t have any assignment yet"
+          description="When you do, they’ll show up here"
+        />
       ) : (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {assignments.map((assignment) => (

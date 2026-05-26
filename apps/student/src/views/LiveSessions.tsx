@@ -2,6 +2,8 @@
 
 import { cn } from "@ssu/utils";
 import { CalendarDays, Clock3, ChevronRight } from "lucide-react";
+import { EmptyState } from "@ssu/ui";
+import { Megaphone } from "lucide-react";
 
 export interface Session {
   id: number;
@@ -34,21 +36,11 @@ export function LiveSessions({
       </h2>
 
       {sessions.length === 0 ? (
-        <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[28px] bg-transparent text-center">
-          <img
-            src="/empty-class.png"
-            alt="empty"
-            className="mb-5 h-16 w-16 opacity-40"
-          />
-
-          <h3 className="text-[16px] font-semibold text-[#1D1D1D]">
-            You don’t have any classes yet
-          </h3>
-
-          <p className="mt-2 text-[12px] text-[#6B7280]">
-            When you do, they’ll show up here
-          </p>
-        </div>
+        <EmptyState
+          icon={Megaphone}
+          title="YYou don’t have any classes yet"
+          description="When you do, they’ll show up here"
+        />
       ) : (
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-3">
           {sessions.map((session) => (

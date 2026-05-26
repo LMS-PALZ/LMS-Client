@@ -2,15 +2,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-interface CustomSelectProps {
-  placeholder: string;
-  options: string[];
-  value: string;
-  onChange: (value: string) => void;
-  error?: string;
-  showErrorMessage?: boolean;
-}
+import type { CustomSelectProps } from "@ssu/types";
 
 export function CustomSelect({
   placeholder,

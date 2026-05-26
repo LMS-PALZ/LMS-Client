@@ -29,16 +29,11 @@ export function HeaderBar() {
         <div className="flex items-center gap-2 md:gap-3">
           <button className="relative flex h-11 w-11 items-center justify-center rounded-[50%] hover:bg-[#F4F4F5]">
             <Bell className="h-5 w-5 text-[#1D1D1D]" />
-
             <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#EF4444]" />
           </button>
 
           <div className="flex items-center gap-3 rounded-2xl">
-            <img
-              src={user.image || "/default-avatar.png"}
-              alt="avatar"
-              className="h-11 w-11 rounded-full object-cover"
-            />
+            <span className="h-9 w-9 rounded-full object-cover bg-blue-300" />
           </div>
         </div>
       )}
