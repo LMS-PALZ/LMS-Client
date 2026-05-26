@@ -1,5 +1,5 @@
-import { AssignmentsPage } from "@/views/AssignmentsPage";
+import { Assignments } from "@/views/AssignmentsPage";
 
 export default function Page() {
-  return <AssignmentsPage />;
+  return <Assignments />;
 }

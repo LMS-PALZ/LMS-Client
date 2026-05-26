@@ -52,8 +52,15 @@ export const mockAssignments: AssignmentListItem[] = [
 export const mockNotifications: NotificationDto[] = [
   {
     id: "n1",
-    message: "Your submission was graded.",
-    createdAt: new Date().toISOString(),
+    message: "Your assignment for 6th May has been graded.",
+    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    read: false,
+  },
+  {
+    id: "n2",
+    message:
+      "This is to inform you that there won't be a live class on 9/05/2026",
+    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
     read: false,
   },
 ];

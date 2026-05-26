@@ -1,5 +1,5 @@
 import { getClassroomCourseById } from "@/lib/classroom-data";
-import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
+import { ClassroomResourcesPage } from "@/views/Classroom/ClassroomResourcesPage";
 import { EmptyState } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
 
@@ -15,10 +15,10 @@ export default async function Page({
     return (
       <EmptyState
         icon={Megaphone}
-        title="You don't have any on going live sessions yet"
+        title="You don't have any Resources yet"
         description="When you do, they'll show up here"
       />
     );
   }
-  return <ClassroomOverviewPage course={course} />;
+  return <ClassroomResourcesPage course={course} />;
 }

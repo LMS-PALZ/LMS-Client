@@ -51,3 +51,12 @@ export interface NotificationDto {
   createdAt: string;
   read: boolean;
 }
+
+export interface CustomSelectProps {
+  placeholder: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  showErrorMessage?: boolean;
+}

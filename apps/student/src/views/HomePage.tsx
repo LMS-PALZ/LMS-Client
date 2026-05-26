@@ -1,60 +1,85 @@
 "use client";
 
-import { useEnrolledCourses, useSession } from "@ssu/queries";
-import { AlertBanner, EmptyState, PageHeader, Skeleton } from "@ssu/ui";
-import { BookOpen } from "lucide-react";
-import { useEffect, useState } from "react";
-import { CourseCard } from "../components/CourseCard";
+import WelcomeCard from "@/views/Overall";
+import { LiveSessions } from "@/views/LiveSessions";
+import { Assignments } from "@/views/AssignmentsPage";
 
-function greeting(first: string) {
-  const h = new Date().getHours();
-  if (h < 12) return `Good morning, ${first}`;
-  if (h < 18) return `Good afternoon, ${first}`;
-  return `Good evening, ${first}`;
-}
+export default function HomePage() {
+  const sessions = [
+    {
+      id: 1,
+      title: "Social Media Strategy: Viral Campaigns",
+      time: "10:00am",
+      date: "10/12",
+      status: "live" as const,
+      joinable: true,
+    },
+    {
+      id: 2,
+      title: "Social Media Strategy: Viral Campaigns",
+      time: "10:00am",
+      date: "10/12",
+      status: "upcoming" as const,
+      joinable: false,
+    },
+    {
+      id: 3,
+      title: "Social Media Strategy: Viral Campaigns",
+      time: "10:00am",
+      date: "10/12",
+      status: "upcoming" as const,
+      joinable: false,
+    },
+  ];
 
-export function HomePage() {
-  const { data: user } = useSession();
-  const q = useEnrolledCourses();
-  const first = user?.firstName ?? "there";
-  const [greetingTitle, setGreetingTitle] = useState(`Hello, ${first} 👋`);
-
-  useEffect(() => {
-    setGreetingTitle(`${greeting(first)} 👋`);
-  }, [first]);
+  const assignments = [
+    {
+      id: 1,
+      title: "Social Media Strategy: Viral Campaigns",
+      topic: "Understanding The Market",
+      score: 70,
+      date: "10/12",
+      due: true,
+    },
+    {
+      id: 2,
+      title: "Social Media Strategy: Viral Campaigns",
+      topic: "Understanding The Market",
+      score: 70,
+      date: "10/12",
+      due: true,
+    },
+    {
+      id: 3,
+      title: "Social Media Strategy: Viral Campaigns",
+      topic: "Understanding The Market",
+      score: 70,
+      date: "10/12",
+    },
+    {
+      id: 4,
+      title: "Social Media Strategy: Viral Campaigns",
+      topic: "Understanding The Market",
+      score: 70,
+      date: "10/12",
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      <PageHeader title={greetingTitle} />
-      {q.isError && (
-        <AlertBanner variant="error" title="We could not load your courses">
-          Please try again.
-        </AlertBanner>
-      )}
-      <section>
-        <h2 className="text-h2 text-neutral-900 mb-3">Enrolled courses</h2>
-        {q.isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-64 rounded-xl" />
-            <Skeleton className="h-64 rounded-xl" />
-          </div>
-        ) : !q.data?.length ? (
-          <EmptyState icon={BookOpen} title="No courses yet" />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {q.data.map((c) => (
-              <CourseCard
-                key={c.id}
-                id={c.id}
-                title={c.title}
-                trainerName={c.trainerName}
-                progressPercent={c.progressPercent}
-                bannerUrl={c.bannerUrl}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+    <div className="min-h-screen bg-yellow-400">
+      <main className=" flex-1 bg-[#FAFAFA]">
+        <div className="text-center">
+          <h1 className="text-[15px] font-bold text-[#1D1D1D] md:text-[25px]">
+            Good evening, Chiroma!
+          </h1>
+        </div>
+
+        <section className="mt-10 grid gap-10 xl:grid-cols-[1fr_1.4fr] bg-[#F8F9FA] pt-3 pb-3">
+          <WelcomeCard progress={50} />
+          <LiveSessions sessions={sessions} />
+        </section>
+        <Assignments assignments={assignments} />
+      </main>
     </div>
   );
 }
