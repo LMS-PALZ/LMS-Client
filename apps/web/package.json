@@ -1,0 +1,50 @@
+{
+  "name": "@ssu/web",
+  "private": true,
+  "engines": {
+    "node": ">=24.14.0"
+  },
+  "version": "0.0.0",
+  "scripts": {
+    "prebuild": "node ../../scripts/generate-web-routes.mjs",
+    "predev": "node ../../scripts/generate-web-routes.mjs",
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "oxlint src --deny-warnings --react-plugin --jest-plugin"
+  },
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@hookform/resolvers": "^3.9.1",
+    "@ssu/api": "file:../../packages/api",
+    "@ssu/config": "file:../../packages/config",
+    "@ssu/queries": "file:../../packages/queries",
+    "@ssu/schema": "file:../../packages/schema",
+    "@ssu/store": "file:../../packages/store",
+    "@ssu/types": "file:../../packages/types",
+    "@ssu/ui": "file:../../packages/ui",
+    "@ssu/utils": "file:../../packages/utils",
+    "@tanstack/react-query": "^5.62.8",
+    "class-variance-authority": "^0.7.1",
+    "googleapis": "^144.0.0",
+    "lucide-react": "^0.469.0",
+    "next": "^16.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.54.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@ssu/config": "file:../../packages/config",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}

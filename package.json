@@ -15,6 +15,8 @@
     "build:student": "npm run build -w @ssu/student",
     "build:admin": "npm run build -w @ssu/admin",
     "build:qa": "npm run build -w @ssu/admin && npm run build -w @ssu/student",
+    "build:web": "npm run build -w @ssu/web",
+    "dev:web": "npm run dev -w @ssu/web",
     "lint": "oxlint . --deny-warnings --react-plugin --jest-plugin",
     "typecheck": "tsc --noEmit -p packages/types/tsconfig.json && tsc --noEmit -p packages/utils/tsconfig.json && tsc --noEmit -p packages/schema/tsconfig.json && tsc --noEmit -p packages/api/tsconfig.json && tsc --noEmit -p packages/queries/tsconfig.json && tsc --noEmit -p packages/ui/tsconfig.json && tsc --noEmit -p apps/student/tsconfig.json && tsc --noEmit -p apps/tutor/tsconfig.json && tsc --noEmit -p apps/admin/tsconfig.json",
     "verify": "npm run lint && npm run typecheck && npm run test --workspaces --if-present",

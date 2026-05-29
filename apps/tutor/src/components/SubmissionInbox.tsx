@@ -2,6 +2,7 @@
 
 import { DataTable, Badge, Button } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
+import { tutorPath } from "@ssu/config/portal-paths";
 import Link from "next/link";
 
 type Row = {
@@ -30,7 +31,7 @@ const columns: ColumnDef<Row>[] = [
     header: "Actions",
     cell: () => (
       <Button variant="secondary" size="sm" asChild>
-        <Link href="/assignments/a1/submissions">Review</Link>
+        <Link href={tutorPath("/assignments/a1/submissions")}>Review</Link>
       </Button>
     ),
   },

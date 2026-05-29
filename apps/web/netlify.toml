@@ -1,0 +1,25 @@
+[build]
+  base = "/"
+  command = "npm install && npm run build -w @ssu/web"
+
+[build.environment]
+  NODE_VERSION = "24.14.0"
+  NEXT_PUBLIC_PORTAL_MODE = "unified"
+
+[[redirects]]
+  from = "/login"
+  to = "/admin/login"
+  status = 302
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/login"
+  status = 302
+
+[[redirects]]
+  from = "/tutor"
+  to = "/tutor/login"
+  status = 302
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

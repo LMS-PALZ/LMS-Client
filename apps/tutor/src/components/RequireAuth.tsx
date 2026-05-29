@@ -1,5 +1,6 @@
 "use client";
 
+import { tutorPath } from "@ssu/config/portal-paths";
 import { useSession } from "@ssu/queries";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
@@ -10,7 +11,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace("/login");
+      router.replace(tutorPath("/login"));
     }
   }, [isLoading, user, router]);
 

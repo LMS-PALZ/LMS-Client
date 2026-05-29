@@ -1,5 +1,6 @@
 "use client";
 
+import { adminPath } from "@ssu/config/portal-paths";
 import {
   DashboardLayout,
   NavigationSidebar,
@@ -19,11 +20,19 @@ import type { ReactNode } from "react";
 import { HeaderBar } from "../components/HeaderBar";
 
 const items: NavigationSidebarItem[] = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/trainers/pending", label: "Trainer approvals", icon: UserCheck },
-  { href: "/programs", label: "Programs", icon: BookOpen },
-  { href: "/announcements", label: "Announcements", icon: Megaphone },
+  { href: adminPath(), label: "Overview", icon: LayoutDashboard },
+  { href: adminPath("/users"), label: "Users", icon: Users },
+  {
+    href: adminPath("/trainers/pending"),
+    label: "Trainer approvals",
+    icon: UserCheck,
+  },
+  { href: adminPath("/programs"), label: "Programs", icon: BookOpen },
+  {
+    href: adminPath("/announcements"),
+    label: "Announcements",
+    icon: Megaphone,
+  },
 ];
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
