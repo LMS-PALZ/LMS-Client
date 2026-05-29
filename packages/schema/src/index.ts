@@ -86,6 +86,17 @@ export const signUpSchema = z.object({
   phoneNumber: z
     .string()
     .min(10, "Enter a valid phone number")
-    .max(15, "Phone number too long"),
-  course: z.string().min(1, "Please select a course"),
+    .max(15, "Phone number too long")
+    .refine(
+      (value) => {
+        const digits = value.replace(/\D/g, "");
+        if (digits.startsWith("234")) {
+          return digits.length >= 12 && digits.length <= 13;
+        }
+        return /^0[789]\d{9}$/.test(digits);
+      },
+      { message: "Use a valid Nigerian number (e.g. 08012345678)" },
+    ),
+  /** Program id from `GET /api/v1/programs/available` (resolved on the server if needed). */
+  program: z.string().min(1, "Please select a program"),
 });

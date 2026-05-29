@@ -10,7 +10,7 @@ export function SubmissionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Assignment ${id} — Submissions`}
+        title={`Assignment ${id}: Submissions`}
         breadcrumbs={[
           { label: "Assignments", href: "/assignments" },
           { label: "Submissions" },

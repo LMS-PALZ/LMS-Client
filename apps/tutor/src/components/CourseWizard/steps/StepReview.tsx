@@ -15,11 +15,13 @@ export function StepReview({ values, modules }: StepReviewProps) {
     <div className="rounded-xl border bg-white p-4 shadow-card space-y-3 text-body">
       <div>
         <p className="text-small text-neutral-500">Title</p>
-        <p className="font-semibold text-neutral-900">{values.title || "—"}</p>
+        <p className="font-semibold text-neutral-900">
+          {values.title || "N/A"}
+        </p>
       </div>
       <div>
         <p className="text-small text-neutral-500">Category</p>
-        <p>{values.category || "—"}</p>
+        <p>{values.category || "N/A"}</p>
       </div>
       <div>
         <p className="text-small text-neutral-500">Modules</p>

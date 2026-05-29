@@ -2,27 +2,37 @@
 
 import {
   DashboardLayout,
-  NavigationSidebar,
-  type NavigationSidebarItem,
+  StudentSidebar,
+  useSidebarCollapsed,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
 import {
-  BookOpen,
   CalendarDays,
   ClipboardList,
-  LayoutDashboard,
+  GraduationCap,
+  HelpCircle,
+  Home,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderBar } from "../components/HeaderBar";
 
-const items: NavigationSidebarItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/assignments", label: "Assignments", icon: ClipboardList },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
+const mainItems = [
+  { href: "/home", label: "Home", icon: Home },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ];
+
+const learningItems = [
+  { href: "/classroom", label: "My Classroom", icon: GraduationCap },
+  { href: "/assessments", label: "Assessments", icon: ClipboardList },
+];
+
+const supportItem = {
+  href: "/support",
+  label: "Support",
+  icon: HelpCircle,
+};
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   return (
@@ -32,23 +42,32 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   );
 }
 
+function StudentSidebarWrapper() {
+  const pathname = usePathname();
+  const { toggle } = useSidebarCollapsed();
+
+  return (
+    <StudentSidebar
+      pathname={pathname}
+      mainItems={mainItems}
+      learningItems={learningItems}
+      supportItem={supportItem}
+      logoSrc="/logo.png"
+      LinkComponent={RouterLink}
+      onToggleCollapse={toggle}
+    />
+  );
+}
+
 export function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
 
   return (
     <DashboardLayout
-      sidebar={
-        <NavigationSidebar
-          pathname={pathname}
-          items={items}
-          LinkComponent={RouterLink}
-          header={
-            <span className="text-white font-bold text-h4 truncate px-1">
-              SSU Student
-            </span>
-          }
-        />
-      }
+      variant="student"
+      fullWidthMain={isSessionPage}
+      sidebar={<StudentSidebarWrapper />}
       header={<HeaderBar />}
     >
       {children}

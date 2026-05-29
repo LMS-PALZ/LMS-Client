@@ -70,7 +70,7 @@ export function LoginPage() {
       <div>
         <h1 className="text-h1 text-neutral-900 mb-2">Tutor sign in</h1>
         <p className="text-small text-neutral-500 mb-6">
-          Demo: <strong>trainer@skillscaleup.dev</strong> — any password.
+          Demo: <strong>trainer@skillscaleup.dev</strong> with any password.
         </p>
         {banner && (
           <div className="mb-4">

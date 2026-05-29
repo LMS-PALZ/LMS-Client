@@ -8,8 +8,6 @@ import {
   readStudentSignupDetails,
   type StudentSignupDetails,
 } from "@/lib/signup-details";
-import { getProgramOptionByName } from "@/lib/program-options";
-
 const DEFAULT_PROGRAM_DETAILS = {
   duration: "6 months",
   startDate: "June 5th, 2026",
@@ -43,8 +41,10 @@ export default function Page() {
     return `${signupDetails.firstName} ${signupDetails.lastName}`.trim();
   }, [signupDetails]);
 
-  const selectedCourse = signupDetails?.course || "Selected program";
-  const selectedProgram = getProgramOptionByName(selectedCourse);
+  const selectedCourse =
+    signupDetails?.programName ?? signupDetails?.program ?? "Selected program";
+  const applicationFee =
+    signupDetails?.applicationFee ?? DEFAULT_PROGRAM_DETAILS.applicationFee;
   const email = signupDetails?.email || "your@email.com";
   const phoneNumber = signupDetails?.phoneNumber || "0700 000 0000";
 
@@ -137,10 +137,7 @@ export default function Page() {
                     Application fee
                   </h2>
                   <p className="font-semibold leading-8 text-[#2F6F45] sm:text-[16px]">
-                    {formatCurrency(
-                      selectedProgram?.fee ??
-                        DEFAULT_PROGRAM_DETAILS.applicationFee,
-                    )}
+                    {formatCurrency(applicationFee)}
                   </p>
                 </div>
               </div>

@@ -1,7 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSignupMutation, useSession } from "@ssu/queries";
+import {
+  useAvailablePrograms,
+  useSignupMutation,
+  useSession,
+} from "@ssu/queries";
 import { signUpSchema } from "@ssu/schema";
 import {
   AlertBanner,
@@ -12,12 +16,13 @@ import {
   Spinner,
 } from "@ssu/ui";
 import { Check, ChevronDown } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
+import type { AvailableProgram } from "@ssu/types";
 import { writeStudentSignupDetails } from "@/lib/signup-details";
-import { studentProgramOptions } from "@/lib/program-options";
 
 type FormValues = z.infer<typeof signUpSchema>;
 
@@ -25,6 +30,7 @@ export function SignupPage() {
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
   const signup = useSignupMutation();
+  const programsQuery = useAvailablePrograms();
   const [banner, setBanner] = useState<{
     variant: "error" | "warning";
     message: string;
@@ -45,17 +51,32 @@ export function SignupPage() {
       lastName: "",
       email: "",
       phoneNumber: "",
-      course: "",
+      program: "",
     },
   });
-  const selectedProgram = watch("course");
+  const selectedProgramId = watch("program");
+
+  const programOptions: AvailableProgram[] = useMemo(
+    () => programsQuery.data ?? [],
+    [programsQuery.data],
+  );
+
+  const selectedProgram = useMemo(
+    () => programOptions.find((p) => p.id === selectedProgramId) ?? null,
+    [programOptions, selectedProgramId],
+  );
 
   const onSubmit = handleSubmit(async (values) => {
     setBanner(null);
     const res = await signup.mutateAsync(values);
     if (res.ok) {
-      writeStudentSignupDetails(values);
-      router.replace("/paymentdetail");
+      const program = programOptions.find((p) => p.id === values.program);
+      writeStudentSignupDetails({
+        ...values,
+        applicationFee: program?.applicationFee,
+        programName: program?.name,
+      });
+      router.replace("/confirmcode");
       return;
     }
     if (res.code === "pending_approval") {
@@ -64,6 +85,12 @@ export function SignupPage() {
     }
     setBanner({ variant: "error", message: res.message });
   });
+
+  useEffect(() => {
+    if (session) {
+      router.replace("/home");
+    }
+  }, [session, router]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -100,8 +127,15 @@ export function SignupPage() {
           It only takes a moment to begin.
         </p>
         {banner && (
-          <div className="mb-5 w-full">
+          <div className="mb-5 w-full max-w-sm">
             <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
+          </div>
+        )}
+        {programsQuery.isError && (
+          <div className="mb-5 w-full max-w-sm">
+            <AlertBanner variant="error">
+              Could not load programs. Refresh the page and try again.
+            </AlertBanner>
           </div>
         )}
         <form onSubmit={onSubmit} className="space-y-6 w-full max-w-sm">
@@ -173,17 +207,21 @@ export function SignupPage() {
             />
           </FormField>
           <FormField
-            id="course"
+            id="program"
             label="Program"
-            error={errors.course?.message}
+            error={errors.program?.message}
             className="text-sm"
           >
             <div ref={programMenuRef} className="relative">
-              <input type="hidden" {...register("course")} />
+              <input type="hidden" {...register("program")} />
               <button
-                id="course"
+                id="program"
                 type="button"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  programsQuery.isLoading ||
+                  programOptions.length === 0
+                }
                 onClick={() => setIsProgramOpen((current) => !current)}
                 className="flex h-11 w-full items-center justify-between rounded-[12px] border border-[#D7DFEC] bg-white px-4 text-left text-[17px] text-[#1F2937] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-haspopup="listbox"
@@ -194,23 +232,26 @@ export function SignupPage() {
                     selectedProgram ? "text-[#1F2937]" : "text-[#B3BDC9]"
                   }
                 >
-                  {selectedProgram || "Select your preferred program"}
+                  {programsQuery.isLoading
+                    ? "Loading programs…"
+                    : (selectedProgram?.name ??
+                      "Select your preferred program")}
                 </span>
                 <ChevronDown
                   className={`h-5 w-5 text-[#1F2937] transition-transform ${isProgramOpen ? "rotate-180" : ""}`}
                 />
               </button>
-              {isProgramOpen && (
+              {isProgramOpen && programOptions.length > 0 && (
                 <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[250px] overflow-y-auto rounded-[18px] border border-[#EEF2F7] bg-white py-2 shadow-[0_20px_40px_rgba(15,23,42,0.10)]">
-                  {studentProgramOptions.map((program) => {
-                    const isSelected = selectedProgram === program.name;
+                  {programOptions.map((program) => {
+                    const isSelected = selectedProgramId === program.id;
                     return (
                       <button
-                        key={program.name}
+                        key={program.id}
                         type="button"
                         className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-[#F8FAFC]"
                         onClick={() => {
-                          setValue("course", program.name, {
+                          setValue("program", program.id, {
                             shouldDirty: true,
                             shouldTouch: true,
                             shouldValidate: true,
@@ -224,9 +265,11 @@ export function SignupPage() {
                           />
                           <span>{program.name}</span>
                         </span>
-                        <span className="text-[17px] text-[#7A8594]">
-                          N{program.fee.toLocaleString()}
-                        </span>
+                        {program.applicationFee > 0 && (
+                          <span className="text-[17px] text-[#7A8594]">
+                            N{program.applicationFee.toLocaleString()}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -248,16 +291,16 @@ export function SignupPage() {
             )}
           </Button>
         </form>
-        <div className="pt-4 text-center text-sm">
-          Already have an account?{" "}
-          <strong
-            className="cursor-pointer text-[#094D2B]"
-            onClick={() => router.push("/login")}
+        <p className="pt-4 pb-2 text-center text-sm text-neutral-700">
+          Already registered for a program?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-[#094D2B] hover:underline"
           >
-            {" "}
-            Login here
-          </strong>
-        </div>
+            Login to your dashboard
+          </Link>
+        </p>
+        <div className="mb-8" aria-hidden />
       </div>
     </AuthLayout>
   );

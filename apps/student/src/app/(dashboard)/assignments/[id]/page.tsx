@@ -1,5 +1,10 @@
-import { AssignmentDetailPage } from "@/views/AssignmentDetailPage";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return <AssignmentDetailPage />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  redirect(`/assessments/${id}`);
 }

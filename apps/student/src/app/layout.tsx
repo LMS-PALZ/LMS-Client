@@ -1,23 +1,17 @@
-import type { Metadata } from "next";
+import { createSiteMetadata } from "@ssu/config/site-metadata";
+import { PlusJakartaFontLinks } from "@ssu/ui";
 import type { ReactNode } from "react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { AppProviders } from "@/providers";
 import "./globals.css";
 
-const fontSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-export const metadata: Metadata = {
-  title: "Skill Scale Up — Student",
-  description: "Skill Scale Up LMS — student workspace",
-};
+export const metadata = createSiteMetadata("student");
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={fontSans.variable}>
+    <html lang="en">
+      <head>
+        <PlusJakartaFontLinks />
+      </head>
       <body>
         <AppProviders>{children}</AppProviders>
       </body>

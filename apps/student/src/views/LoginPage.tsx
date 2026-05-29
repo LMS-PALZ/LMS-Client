@@ -42,7 +42,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (session) {
-      router.replace("/");
+      router.replace("/home");
     }
   }, [session, router]);
 
@@ -50,7 +50,7 @@ export function LoginPage() {
     setBanner(null);
     const res = await login.mutateAsync(values);
     if (res.ok) {
-      router.replace("/");
+      router.replace("/home");
       return;
     }
     if (res.code === "pending_approval") {
@@ -165,6 +165,16 @@ export function LoginPage() {
               "Login"
             )}
           </Button>
+          <p className="pt-2 pb-2 text-center text-sm text-neutral-700">
+            Yet to register for a program?{" "}
+            <Link
+              href="/"
+              className="font-semibold text-[#0D693B] hover:underline"
+            >
+              Get started here
+            </Link>
+          </p>
+          <div className="mb-8" aria-hidden />
         </form>
       </div>
     </AuthLayout>

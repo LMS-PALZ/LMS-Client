@@ -9,3 +9,7 @@ export * from "./use-assignments";
 export * from "./use-notifications";
 export * from "./use-sessions";
 export * from "./use-admin";
+export * from "./use-google-classroom";
+export * from "./use-student-progress";
+export * from "./use-curriculum";
+export * from "./use-available-programs";

@@ -7,6 +7,32 @@ Monorepo for the **Skill Scale Up** learning management system front end. Three 
 - **Node.js** >= 24.14.0 (see root `package.json` `engines`; use `.nvmrc` / `.node-version` for **24.14.0**)
 - **Package manager:** this repo is usually installed with **npm** (workspaces). The `packageManager` field pins **pnpm** for Corepack if you prefer pnpm.
 
+## Link previews & browser tab (favicon)
+
+Each app uses `public/firstlogo.png` for the **Chrome tab icon** and **Open Graph** previews (title, description, logo when you share a link).
+
+Set the public origin in `.env.local` so share URLs resolve correctly:
+
+| App     | `NEXT_PUBLIC_SITE_URL` (local) |
+| ------- | ------------------------------ |
+| Student | `http://localhost:5173`        |
+| Tutor   | `http://localhost:5174`        |
+| Admin   | `http://localhost:5175`        |
+
+Use your deployed HTTPS URL in production (e.g. `https://student.skillscaleup.org`).
+
+For the **student** app, copy env vars into `apps/student/.env.local` (Next.js reads env from the app folder, not the monorepo root).
+
+## Student signup API
+
+Signup uses [POST `/api/v1/students/auth/signup`](https://base-api.skillscaleup.org/api-docs/#/Student/post_api_v1_students_auth_signup) via the Next.js BFF at `/api/auth/signup`.
+
+- Programs load from `GET /api/v1/programs/available` (dropdown shows API titles and fees).
+- The `program` field must be a **program id** from that list (not a display label).
+- Phone numbers must be Nigerian format like `08012345678` (`+234…` is normalized on the server).
+
+Set `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org` in `apps/student/.env.local`.
+
 ## Install
 
 From the repository root:
@@ -61,3 +87,27 @@ There is also `pending@skillscaleup.dev` (tutor, pending approval) for testing t
 - **`packages/schema`**, **`packages/types`**, **`packages/utils`**, **`packages/config`** — Zod schemas, shared types, helpers, Tailwind/TS config.
 
 For full product and UX requirements, see **`instruction.md`** in this repository.
+
+## Build troubleshooting
+
+### `Another next build process is already running` (student app)
+
+This usually means **`npm run dev` is still running** for the student app, or a stale lock was left behind.
+
+1. Stop the dev server (Ctrl+C in that terminal).
+2. Remove the lock if needed:
+
+```bash
+rm -f apps/student/.next/dev/lock
+npm run build
+```
+
+Do not run `npm run dev` and `npm run build` for the **same app** at the same time.
+
+For QA deploy (student + admin only, sequential):
+
+```bash
+npm run build:qa
+```
+
+Fonts load in the browser at runtime (not during `next build`). Users need network access when viewing the app for Plus Jakarta Sans; system fonts are used until the stylesheet loads.

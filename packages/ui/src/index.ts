@@ -1,4 +1,5 @@
 export * from "./tokens";
+export * from "./fonts";
 
 export * from "./atoms/Button";
 export * from "./atoms/Badge";
@@ -22,8 +23,28 @@ export * from "./molecules/FileDropzone";
 export * from "./molecules/CourseCard";
 export * from "./molecules/AssignmentCard";
 export * from "./molecules/UserRow";
+export * from "./molecules/StatusBadge";
+export * from "./molecules/SemiCircleGauge";
+export * from "./molecules/WelcomeCard";
+export * from "./molecules/DashboardEmptyState";
+export * from "./molecules/SessionCard";
+export * from "./molecules/AssignmentSummaryCard";
+export * from "./molecules/InfoMetric";
+export * from "./molecules/EnrolledCourseHero";
+export * from "./molecules/ClassroomCourseCard";
+export * from "./molecules/PillTabs";
+export * from "./molecules/CurriculumAccordion";
+export * from "./molecules/CountdownBlocks";
+export * from "./molecules/VideoSessionFrame";
+export * from "./molecules/RecordingListItem";
+export * from "./molecules/ConnectGoogleBanner";
+export * from "./molecules/GreetingTitle";
+export * from "./molecules/SectionHeader";
 
 export * from "./organisms/DataTable";
+export * from "./organisms/BrandLogo";
+export * from "./organisms/StudentSidebar";
+export * from "./organisms/DashboardTopBar";
 export * from "./organisms/Modal";
 export * from "./organisms/NavigationSidebar";
 export * from "./organisms/TopHeader";
@@ -35,4 +56,9 @@ export * from "./organisms/ResetPasswordForm";
 
 export * from "./layouts/AuthLayout";
 export * from "./layouts/DashboardLayout";
+export {
+  SidebarCollapseContext,
+  useSidebarCollapsed,
+  type DashboardLayoutVariant,
+} from "./layouts/DashboardLayout/DashboardLayout";
 export * from "./layouts/FullPageLayout";

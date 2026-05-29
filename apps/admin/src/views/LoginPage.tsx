@@ -70,7 +70,7 @@ export function LoginPage() {
       <div>
         <h1 className="text-h1 text-neutral-900 mb-2">Admin sign in</h1>
         <p className="text-small text-neutral-500 mb-6">
-          Demo: <strong>admin@skillscaleup.dev</strong> — any non-empty
+          Demo: <strong>admin@skillscaleup.dev</strong> with any non-empty
           password.
         </p>
         {banner && (
