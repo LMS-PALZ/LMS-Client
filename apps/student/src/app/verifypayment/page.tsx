@@ -1,11 +1,11 @@
 "use client";
 
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useVerifyPayment } from "@ssu/queries";
 import { Spinner } from "@ssu/ui";
-import { useEffect } from "react";
 
-export default function PaymentVerifyPage() {
+function PaymentVerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
@@ -63,5 +63,22 @@ export default function PaymentVerifyPage() {
         </>
       )}
     </div>
+  );
+}
+
+function PaymentVerifyFallback() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+      <Spinner className="h-8 w-8 animate-spin text-[#4E845F]" />
+      <p className="text-[15px] text-[#6B7280]">Verifying your payment...</p>
+    </div>
+  );
+}
+
+export default function PaymentVerifyPage() {
+  return (
+    <Suspense fallback={<PaymentVerifyFallback />}>
+      <PaymentVerifyContent />
+    </Suspense>
   );
 }
