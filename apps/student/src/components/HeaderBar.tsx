@@ -15,30 +15,8 @@ import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@ssu/ui";
 import { useSignupStore } from "@ssu/store";
-// import { mockNotifications } from "@ssu/api";
-
-interface NotificationItem {
-  id: string;
-  message: string;
-  createdAt: string;
-  read: boolean;
-}
-
-const mockNotifications: NotificationItem[] = [
-  {
-    id: "n1",
-    message: "Your assignment for 6th May has been graded.",
-    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    read: false,
-  },
-  {
-    id: "n2",
-    message:
-      "This is to inform you that there won't be a live class on 9/05/2026",
-    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    read: false,
-  },
-];
+import { mockNotifications } from "@ssu/api";
+import { NotificationItem } from "@ssu/types";
 
 function timeAgo(dateStr: string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -57,7 +35,8 @@ export function HeaderBar() {
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] =
+    useState<NotificationItem[]>(mockNotifications);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
