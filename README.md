@@ -92,12 +92,12 @@ For full product and UX requirements, see **`instruction.md`** in this repositor
 
 Production URL example: `https://testcnflms.netlify.app` should deploy **`apps/web`** (not `apps/admin` alone).
 
-| Setting               | Value                                                                  |
-| --------------------- | ---------------------------------------------------------------------- |
-| **Base directory**    | `apps/web` (or leave empty if `netlify.toml` sets `base = "apps/web"`) |
-| **Package directory** | `apps/web` or repo root                                                |
-| **Build command**     | empty (uses `netlify.toml`)                                            |
-| **Publish directory** | **empty** (do not set `apps/admin/.next`)                              |
+| Setting               | Value                                                                          |
+| --------------------- | ------------------------------------------------------------------------------ |
+| **Base directory**    | `apps/web` (or leave empty if `netlify.toml` sets `base = "apps/web"`)         |
+| **Package directory** | `apps/web` or repo root                                                        |
+| **Build command**     | empty (uses `netlify.toml`)                                                    |
+| **Publish directory** | **empty** in the UI. `netlify.toml` sets `publish = ".next"` under `apps/web`. |
 
 The build runs `npm run build -w @ssu/web` and generates routes with `scripts/generate-web-routes.mjs`.
 
