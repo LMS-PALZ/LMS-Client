@@ -3,6 +3,7 @@
 import { AuthLayout, Button } from "@ssu/ui";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { studentPath } from "@/lib/studentRoutes";
 
 export default function PasswordChangedPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function PasswordChangedPage() {
             type="button"
             variant="primary"
             size="lg"
-            onClick={() => router.push("/login")}
+            onClick={() => router.push(studentPath("/login"))}
             className="w-full rounded-[30px] text-[var(--color-surface)] hover:bg-[#456F4D]"
           >
             Login

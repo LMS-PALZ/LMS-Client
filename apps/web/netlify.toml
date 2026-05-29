@@ -9,6 +9,16 @@
   NEXT_PUBLIC_SITE_URL = "https://testcnflms.netlify.app"
 
 [[redirects]]
+  from = "/signup"
+  to = "/student/signup"
+  status = 302
+
+[[redirects]]
+  from = "/home"
+  to = "/student/home"
+  status = 302
+
+[[redirects]]
   from = "/login"
   to = "/admin/login"
   status = 302

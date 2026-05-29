@@ -3,6 +3,7 @@
 import { Button } from "@ssu/ui";
 import { Briefcase, FolderClosed, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { studentPath } from "@/lib/studentRoutes";
 
 const welcomeHighlights = [
   {
@@ -72,7 +73,7 @@ export default function Page() {
           variant="primary"
           size="lg"
           className="mt-10 h-[60px] rounded-full px-10 text-[15px] text-[var(--color-surface)] sm:min-w-[210px]"
-          onClick={() => router.push("/setpassword")}
+          onClick={() => router.push(studentPath("/setpassword"))}
         >
           Let&apos;s get started
         </Button>

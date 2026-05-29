@@ -12,6 +12,7 @@ import type {
   ClassroomWeek,
   ClassroomLesson,
 } from "@/lib/classroom-data";
+import { studentPath } from "@/lib/studentRoutes";
 
 interface ClassroomCourseLayoutShellProps {
   course: ClassroomCourseDetail;
@@ -38,18 +39,18 @@ export function ClassroomCourseLayoutShell({
     () => [
       {
         label: "Overview",
-        href: `/courses/${course.id}`,
-        active: pathname === `/courses/${course.id}`,
+        href: studentPath(`/courses/${course.id}`),
+        active: pathname === studentPath(`/courses/${course.id}`),
       },
       {
         label: "Recording",
-        href: `/courses/${course.id}/recording`,
-        active: pathname === `/courses/${course.id}/recording`,
+        href: studentPath(`/courses/${course.id}/recording`),
+        active: pathname === studentPath(`/courses/${course.id}/recording`),
       },
       {
         label: "Resources",
-        href: `/courses/${course.id}/resources`,
-        active: pathname === `/courses/${course.id}/resources`,
+        href: studentPath(`/courses/${course.id}/resources`),
+        active: pathname === studentPath(`/courses/${course.id}/resources`),
       },
     ],
     [course.id, pathname],
@@ -113,7 +114,7 @@ export function ClassroomCourseLayoutShell({
           // ── Normal course view ──
           <>
             <Link
-              href="/courses"
+              href={studentPath("/courses")}
               className="inline-flex items-center gap-2 text-[15px] font-bold text-[#4E845F] transition hover:opacity-80"
             >
               <ChevronLeft className="h-5 w-5" />

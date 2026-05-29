@@ -7,6 +7,7 @@ import {
   useGoogleConnectionStatus,
   useUpcomingSessions,
 } from "@ssu/queries";
+import { studentPath } from "@/lib/studentRoutes";
 import {
   AlertBanner,
   ClassroomCourseCard,
@@ -174,7 +175,7 @@ export function ClassroomHubPage() {
                 weeks={curriculum.data ?? []}
                 onLessonClick={(lesson) => {
                   if (lesson.sessionId) {
-                    router.push(`/classroom/${lesson.sessionId}`);
+                    router.push(studentPath(`/classroom/${lesson.sessionId}`));
                   }
                 }}
               />

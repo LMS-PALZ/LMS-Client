@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeClosed } from "lucide-react";
 import type { z } from "zod";
+import { studentPath } from "@/lib/studentRoutes";
 
 import { AlertBanner } from "@ssu/ui";
 import { AuthLayout } from "@ssu/ui";
@@ -65,7 +66,7 @@ export default function SetPasswordPage() {
         localStorage.removeItem("reset-email");
 
         setTimeout(() => {
-          router.replace("/login");
+          router.replace(studentPath("/login"));
         }, 2000);
 
         return;

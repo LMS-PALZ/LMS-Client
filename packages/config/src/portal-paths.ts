@@ -1,5 +1,6 @@
 const ADMIN_BASE = "/admin";
 const TUTOR_BASE = "/tutor";
+const STUDENT_BASE = "/student";
 
 function isUnifiedDeploy(): boolean {
   return process.env.NEXT_PUBLIC_PORTAL_MODE === "unified";
@@ -23,8 +24,10 @@ export function tutorPath(path: string = ""): string {
 }
 
 export function studentPath(path: string = ""): string {
-  if (path === "") return "/signup";
-  return path.startsWith("/") ? path : `/${path}`;
+  if (path === "" || path === "/signup") {
+    return withPortalBase(STUDENT_BASE, "/signup");
+  }
+  return withPortalBase(STUDENT_BASE, path);
 }
 
-export { ADMIN_BASE, TUTOR_BASE };
+export { ADMIN_BASE, TUTOR_BASE, STUDENT_BASE };

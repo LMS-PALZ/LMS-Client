@@ -8,6 +8,7 @@ import {
   useStudentProgress,
   useUpcomingSessions,
 } from "@ssu/queries";
+import { studentPath } from "@/lib/studentRoutes";
 import {
   AlertBanner,
   AssignmentSummaryCard,
@@ -122,7 +123,7 @@ export function HomePage() {
           title="Assignments"
           action={
             <Link
-              href="/assessments"
+              href={studentPath("/assessments")}
               className="text-small font-semibold text-brand-green hover:underline"
             >
               View more
@@ -157,7 +158,7 @@ export function HomePage() {
                 score={70}
                 dueDate={formatDate(a.dueAt)}
                 showDueBadge={a.status === "overdue"}
-                onClick={() => router.push(`/assessments/${a.id}`)}
+                onClick={() => router.push(studentPath(`/assessments/${a.id}`))}
               />
             ))}
           </div>

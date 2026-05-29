@@ -1,6 +1,7 @@
 "use client";
 
 import { CourseCard as CourseCardUi } from "@ssu/ui";
+import { studentPath } from "@/lib/studentRoutes";
 import { useRouter } from "next/navigation";
 
 export function CourseCard(props: {
@@ -17,7 +18,7 @@ export function CourseCard(props: {
       trainerName={props.trainerName}
       progressPercent={props.progressPercent}
       bannerUrl={props.bannerUrl}
-      onContinue={() => router.push(`/courses/${props.id}`)}
+      onContinue={() => router.push(studentPath(`/courses/${props.id}`))}
     />
   );
 }

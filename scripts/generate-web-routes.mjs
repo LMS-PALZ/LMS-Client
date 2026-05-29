@@ -7,7 +7,11 @@ const root = path.join(__dirname, "..");
 const webAppDir = path.join(root, "apps/web/src/app");
 
 const portals = [
-  { name: "student", prefix: "", appDir: path.join(root, "apps/student/src/app") },
+  {
+    name: "student",
+    prefix: "student",
+    appDir: path.join(root, "apps/student/src/app"),
+  },
   { name: "admin", prefix: "admin", appDir: path.join(root, "apps/admin/src/app") },
   { name: "tutor", prefix: "tutor", appDir: path.join(root, "apps/tutor/src/app") },
 ];
@@ -135,6 +139,16 @@ function main() {
       fs.writeFileSync(outFile, content);
     }
   }
+
+  fs.writeFileSync(
+    path.join(webAppDir, "page.tsx"),
+    `import { redirect } from "next/navigation";
+
+export default function SiteRootPage() {
+  redirect("/student/signup");
+}
+`,
+  );
 
   console.log("Generated unified web routes in apps/web/src/app");
 }
