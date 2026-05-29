@@ -66,7 +66,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-yellow-400">
+    <div className="min-h-screen">
       <main className=" flex-1 bg-[#FAFAFA]">
         <div className="text-center">
           <h1 className="text-[15px] font-bold text-[#1D1D1D] md:text-[25px]">

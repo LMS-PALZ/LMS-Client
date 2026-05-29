@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import type {
   ClassroomCourseDetail,
   ClassroomWeek,
+  ClassroomLesson,
 } from "@/lib/classroom-data";
 
 interface ClassroomCourseLayoutShellProps {
@@ -24,8 +25,13 @@ export function ClassroomCourseLayoutShell({
   children,
 }: ClassroomCourseLayoutShellProps) {
   const pathname = usePathname();
+
   const [openWeeks, setOpenWeeks] = useState(
     () => new Set(weeks.filter((week) => week.expanded).map((week) => week.id)),
+  );
+
+  const [selectedLesson, setSelectedLesson] = useState<ClassroomLesson | null>(
+    null,
   );
 
   const tabs = useMemo(
@@ -63,57 +69,103 @@ export function ClassroomCourseLayoutShell({
 
   return (
     <div className="grid gap-3 xl:grid-cols-[1.9fr_0.78fr]">
-      <div className="rounded-[20px] flex flex-col bg-white p-2 md:p-8">
-        <Link
-          href="/courses"
-          className="inline-flex items-center gap-2 text-[15px] font-bold text-[#4E845F] transition hover:opacity-80"
-        >
-          <ChevronLeft className="h-5 w-5" />
-          Back
-        </Link>
+      {/* Main content area */}
+      <div className="flex flex-col rounded-[20px] bg-white p-2 md:p-8">
+        {selectedLesson ? (
+          // ── Lesson detail view ──
+          <>
+            <button
+              type="button"
+              onClick={() => setSelectedLesson(null)}
+              className="inline-flex items-center gap-2 text-[15px] font-bold text-[#4E845F] transition hover:opacity-80"
+            >
+              <ChevronLeft className="h-5 w-5" />
+              Back
+            </button>
 
-        <div className="mt-8 inline-flex w-[230px] items-center justify-center rounded-full bg-[#F3F6F8] px-2 py-2 text-[14px] text-[#6B7280]">
-          <span className="mr-2 h-3 w-3 rounded-full bg-[#436E53]" />
-          {course.sessionLabel}
-          <span className="mx-2 text-[#D1D5DB]">|</span>
-          {course.sessionDuration}
-        </div>
-        <div className="mt-4 overflow-hidden rounded-[22px] bg-black">
-          <img
-            src={course.imageUrl}
-            alt={course.title}
-            className="h-auto w-full object-cover"
-          />
-        </div>
+            <div className="mt-8">
+              <p className="text-[12px] font-medium text-[#7A8594]">Lesson</p>
 
-        <h1 className="mt-4 text-[22px] font-semibold text-[#1D1D1D] md:text-[24px]">
-          Client Communications Essentials
-        </h1>
+              <h1 className="mt-2 text-[22px] font-semibold text-[#1D1D1D] md:text-[24px]">
+                {selectedLesson.title}
+              </h1>
 
-        <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-3">
-          <div className="flex w-[300px] flex-row items-center justify-between bg-[#ECF0F7] p-2 rounded-[12px]">
-            {tabs.map((tab) => (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={cn(
-                  "rounded-[9px] px-3 py-1 text-[12px] font-medium transition",
-                  tab.active
-                    ? "border border-[#D4E2D8] bg-white text-[#4E845F]"
-                    : "text-[#2F3540] hover:bg-white",
-                )}
-              >
-                {tab.label}
-              </Link>
-            ))}
-          </div>
+              {selectedLesson.subtitle && (
+                <p className="mt-2 text-[15px] text-[#6B7280]">
+                  {selectedLesson.subtitle}
+                </p>
+              )}
 
-          <div className="mt-6">{children}</div>
-        </div>
+              {selectedLesson.description && (
+                <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-5">
+                  <p className="text-[15px] leading-7 text-[#495057]">
+                    {selectedLesson.description}
+                  </p>
+                </div>
+              )}
+
+              {selectedLesson.content && (
+                <div className="mt-4">{selectedLesson.content}</div>
+              )}
+            </div>
+          </>
+        ) : (
+          // ── Normal course view ──
+          <>
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-2 text-[15px] font-bold text-[#4E845F] transition hover:opacity-80"
+            >
+              <ChevronLeft className="h-5 w-5" />
+              Back
+            </Link>
+
+            <div className="mt-8 inline-flex w-[230px] items-center justify-center rounded-full bg-[#F3F6F8] px-2 py-2 text-[14px] text-[#6B7280]">
+              <span className="mr-2 h-3 w-3 rounded-full bg-[#436E53]" />
+              {course.sessionLabel}
+              <span className="mx-2 text-[#D1D5DB]">|</span>
+              {course.sessionDuration}
+            </div>
+
+            <div className="mt-4 overflow-hidden rounded-[22px] bg-black">
+              <img
+                src={course.imageUrl}
+                alt={course.title}
+                className="h-auto w-full object-cover"
+              />
+            </div>
+
+            <h1 className="mt-4 text-[22px] font-semibold text-[#1D1D1D] md:text-[24px]">
+              {course.title}
+            </h1>
+
+            <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-3">
+              <div className="flex w-[300px] flex-row items-center justify-between rounded-[12px] bg-[#ECF0F7] p-2">
+                {tabs.map((tab) => (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={cn(
+                      "rounded-[9px] px-3 py-1 text-[12px] font-medium transition",
+                      tab.active
+                        ? "border border-[#D4E2D8] bg-white text-[#4E845F]"
+                        : "text-[#2F3540] hover:bg-white",
+                    )}
+                  >
+                    {tab.label}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="mt-6">{children}</div>
+            </div>
+          </>
+        )}
       </div>
 
+      {/* Sidebar */}
       <aside className="rounded-[18px] bg-white p-3 md:p-4">
-        <h2 className="text-[15px] font-semibold text-[#1D1D1D] md:text-[15px]">
+        <h2 className="text-[15px] font-semibold text-[#1D1D1D]">
           {course.title}
         </h2>
 
@@ -148,7 +200,12 @@ export function ClassroomCourseLayoutShell({
                 {expanded && week.lessons.length > 0 && (
                   <div className="mt-5 space-y-5">
                     {week.lessons.map((lesson) => (
-                      <div key={lesson.id} className="flex items-start gap-3">
+                      <button
+                        key={lesson.id}
+                        type="button"
+                        onClick={() => setSelectedLesson(lesson)}
+                        className="flex w-full items-start gap-3 text-left transition hover:opacity-80"
+                      >
                         <div className="pt-1">
                           {lesson.completed ? (
                             <CheckCircle2 className="h-5 w-5 fill-[#4E845F] text-white" />
@@ -165,7 +222,7 @@ export function ClassroomCourseLayoutShell({
                             {lesson.subtitle}
                           </p>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}

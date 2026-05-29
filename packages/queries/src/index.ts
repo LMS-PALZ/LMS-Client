@@ -12,4 +12,6 @@ export * from "./use-notifications";
 export * from "./use-sessions";
 export * from "./use-admin";
 export * from "./use-set-password-mutation";
+export * from "./use-payment-mutation";
+export * from "./use-verifypayment-mutation";
 export * from "./use-programs";

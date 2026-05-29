@@ -5,7 +5,8 @@ import { Mail, Phone, User, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getProgramOptionByName } from "@/lib/program-options";
 import { useSignupStore } from "@ssu/store";
-import { useState } from "react";
+import { AlertBanner } from "@ssu/ui";
+import { useInitializePaymentMutation } from "@ssu/queries";
 
 const DEFAULT_PROGRAM_DETAILS = {
   duration: "6 months",
@@ -30,16 +31,20 @@ function formatCurrentDate() {
 
 export default function Page() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleContinue = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      router.push("/welcome");
-    }, 3000);
-  };
-
+  const payment = useInitializePaymentMutation();
   const user = useSignupStore((state) => state.user);
+
+  const handlePayment = async () => {
+    const res = await payment.mutateAsync({
+      email: user?.email ?? "",
+      program: user?.program ?? "",
+    });
+
+    localStorage.setItem("payment_reference", res.reference);
+
+    window.location.href = res.checkout_url;
+  };
 
   const selectedProgram = getProgramOptionByName(user?.program || "");
 
@@ -72,6 +77,10 @@ export default function Page() {
             after payment.
           </p>
         </div>
+
+        {payment.isError && (
+          <AlertBanner variant="error">{payment.error?.message}</AlertBanner>
+        )}
 
         <div className="max-w-100 rounded-[34px] bg-[#F9FBFD] text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:w-[600px]">
           <div className="grid gap-8 px-8 py-10 sm:px-10 lg:grid-cols-[1fr_0.95fr] lg:gap-0 lg:px-0 lg:py-0">
@@ -109,7 +118,7 @@ export default function Page() {
                   </h2>
 
                   <p className="text-sm text-[#6B7280] sm:text-[16px]">
-                    {user?.program || "Selected program will appear here"}
+                    {user?.program_title || "Selected program will appear here"}
                   </p>
                 </div>
 
@@ -152,16 +161,16 @@ export default function Page() {
 
         <Button
           type="button"
+          onClick={handlePayment}
+          disabled={payment.isPending}
           variant="primary"
-          size="lg"
-          className="mt-10 min-w-[280px] rounded-full px-10 text-lg text-[var(--color-surface)]"
-          onClick={handleContinue}
-          disabled={isLoading}
+          // size="lg"
+          className="w-[200px] rounded-[30px] text-[var(--color-surface)]"
         >
-          {isLoading ? (
+          {payment.isPending ? (
             <Spinner className="h-5 w-5 animate-spin" />
           ) : (
-            "Continue to payment"
+            "Proceed to Payment"
           )}
         </Button>
       </div>

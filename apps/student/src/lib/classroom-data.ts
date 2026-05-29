@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type ClassroomLessonType = "live" | "recording" | "reading";
 
 export interface ClassroomLesson {
@@ -6,6 +8,8 @@ export interface ClassroomLesson {
   type: ClassroomLessonType;
   subtitle: string;
   completed?: boolean;
+  description?: string;
+  content?: ReactNode;
 }
 
 export interface ClassroomWeek {

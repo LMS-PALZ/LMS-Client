@@ -17,11 +17,13 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { writeStudentSignupDetails } from "@/lib/signup-details";
+import { useSignupStore } from "@ssu/store";
 
 type FormValues = z.infer<typeof signUpSchema>;
 
 export function SignupPage() {
   const router = useRouter();
+  const setUser = useSignupStore((state) => state.setUser);
 
   const {
     data: programs,
@@ -73,12 +75,26 @@ export function SignupPage() {
       return;
     }
 
+    const programTitle =
+      programs?.find((p) => p.slug === values.program)?.title ?? "";
+
     setBanner({
       variant: "success",
       message: res.message,
     });
 
     writeStudentSignupDetails(values);
+
+    setUser({
+      id: res.data?.id ?? "",
+      email: values.email,
+      role: "student",
+      first_name: values.first_name,
+      last_name: values.last_name,
+      phone_number: values.phone_number,
+      program: values.program,
+      program_title: programTitle,
+    });
 
     setTimeout(() => {
       router.replace("/confirmcode");
