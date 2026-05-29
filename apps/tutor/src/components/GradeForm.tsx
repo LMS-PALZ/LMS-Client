@@ -55,7 +55,7 @@ export function GradeForm() {
         <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
           <FormField
             id="score"
-            label="Score (0–100)"
+            label="Score (0-100)"
             error={errors.score?.message}
           >
             <Input id="score" type="number" {...register("score")} />

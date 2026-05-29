@@ -1,4 +1,3 @@
-/** Brand palette: single source for non-Tailwind usage */
 export const brandColors = {
   green: "#0C693A",
   greenLight: "#39B44B",

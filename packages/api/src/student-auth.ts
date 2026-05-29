@@ -1,12 +1,10 @@
 import type { SignUpFormValues } from "@ssu/schema";
 
-/** Matches `RegisterStudentRequest` on the LMS API ([Swagger](https://base-api.skillscaleup.org/api-docs/#/Student/post_api_v1_students_auth_signup)). */
 export interface RegisterStudentRequest {
   first_name: string;
   last_name: string;
   email: string;
   phone_number: string;
-  /** Program id, cohort code, or slug from `GET /api/v1/programs/available`. */
   program: string;
 }
 
@@ -53,9 +51,7 @@ function parseSignupError(data: unknown): string {
   return "Signup failed. Please try again.";
 }
 
-export async function signupStudent(
-  input: SignUpFormValues,
-): Promise<
+export async function signupStudent(input: SignUpFormValues): Promise<
   | { ok: true; message: string }
   | {
       ok: false;

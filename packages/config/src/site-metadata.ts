@@ -32,7 +32,6 @@ function resolveMetadataBase(): URL | undefined {
   }
 }
 
-/** Shared favicon, Open Graph, and Twitter metadata for each Next.js app. */
 export function createSiteMetadata(portal: AppPortal): Metadata {
   const title = PORTAL_TITLE[portal];
   const description = PORTAL_DESCRIPTION[portal];

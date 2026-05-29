@@ -4,7 +4,6 @@ import { readSession, writeSession } from "@ssu/api";
 import { useSyncExternalStore } from "react";
 import { sessionKey } from "./keys";
 
-/** True only after client hydration so server HTML matches the first client paint (localStorage is unreadable on the server). */
 function useIsClient() {
   return useSyncExternalStore(
     () => () => {},
@@ -25,7 +24,6 @@ export function useSession() {
 
   return {
     ...query,
-    /** True until the browser has hydrated and the session query has finished its initial fetch. */
     isLoading: !isClient || query.isLoading,
   };
 }

@@ -35,7 +35,6 @@ function extractProgramRows(payload: unknown): unknown[] {
   return [];
 }
 
-/** Normalize LMS `GET /api/v1/programs/available` payloads. */
 export function normalizeAvailablePrograms(
   payload: unknown,
 ): AvailableProgram[] {
@@ -77,7 +76,6 @@ export function normalizeAvailablePrograms(
   return programs;
 }
 
-/** Map UI value (name, id, slug, or cohort code) to an API `program` identifier. */
 export function resolveProgramIdentifier(
   programValue: string,
   programs: AvailableProgram[],

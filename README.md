@@ -1,4 +1,4 @@
-# Skill Scale Up — LMS Client
+# Skill Scale Up LMS Client
 
 Monorepo for the **Skill Scale Up** learning management system front end. Three **Next.js 16** apps (student, tutor, admin) share internal packages for UI, API mocks, types, validation, and TanStack Query hooks. Each app uses the **App Router** (`src/app`); screen modules live under **`src/views`** to avoid colliding with the legacy Pages Router.
 
@@ -29,7 +29,7 @@ Signup uses [POST `/api/v1/students/auth/signup`](https://base-api.skillscaleup.
 
 - Programs load from `GET /api/v1/programs/available` (dropdown shows API titles and fees).
 - The `program` field must be a **program id** from that list (not a display label).
-- Phone numbers must be Nigerian format like `08012345678` (`+234…` is normalized on the server).
+- Phone numbers must be Nigerian format like `08012345678` (`+234` is normalized on the server).
 
 Set `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org` in `apps/student/.env.local`.
 
@@ -80,11 +80,11 @@ There is also `pending@skillscaleup.dev` (tutor, pending approval) for testing t
 
 ## Repository layout
 
-- **`apps/student`**, **`apps/tutor`**, **`apps/admin`** — role-specific Next.js apps (App Router, shared layout + `RequireAuth`, Jest tests).
-- **`packages/ui`** — shared design system and layouts.
-- **`packages/api`** — client-side mock API and demo auth (`localStorage` session).
-- **`packages/queries`** — React Query hooks over the API layer.
-- **`packages/schema`**, **`packages/types`**, **`packages/utils`**, **`packages/config`** — Zod schemas, shared types, helpers, Tailwind/TS config.
+- **`apps/student`**, **`apps/tutor`**, **`apps/admin`**: role-specific Next.js apps (App Router, shared layout + `RequireAuth`, Jest tests).
+- **`packages/ui`**: shared design system and layouts.
+- **`packages/api`**: client-side mock API and demo auth (`localStorage` session).
+- **`packages/queries`**: React Query hooks over the API layer.
+- **`packages/schema`**, **`packages/types`**, **`packages/utils`**, **`packages/config`**: Zod schemas, shared types, helpers, Tailwind/TS config.
 
 For full product and UX requirements, see **`instruction.md`** in this repository.
 

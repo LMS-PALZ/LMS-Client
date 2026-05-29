@@ -54,7 +54,6 @@ export default function Page() {
 
   return (
     <div className="w-full min-h-screen bg-white relative">
-      {/* <div className=""> */}
       <button
         onClick={() => router.back()}
         className="absolute sm:top-20 sm:left-16 top-12 left-6 flex items-center gap-2 text-[#2F6F45] hover:opacity-80 transition"
@@ -62,7 +61,6 @@ export default function Page() {
         <ChevronLeft className="h-5 w-5" />
         <span className="text-sm font-medium">Back</span>
       </button>
-      {/* </div> */}
       <div className="flex flex-col items-center justify-center bg-[#FFFFFF] px-4 py-10 text-center sm:py-14">
         <div className="mb-8 w-[120px] sm:mb-12">
           <img

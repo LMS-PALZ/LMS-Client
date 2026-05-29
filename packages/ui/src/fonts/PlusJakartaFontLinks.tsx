@@ -1,4 +1,3 @@
-/** Loads Plus Jakarta Sans at runtime (avoids next/font/google build-time fetch). */
 export function PlusJakartaFontLinks() {
   return (
     <>

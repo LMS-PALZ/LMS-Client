@@ -97,6 +97,5 @@ export const signUpSchema = z.object({
       },
       { message: "Use a valid Nigerian number (e.g. 08012345678)" },
     ),
-  /** Program id from `GET /api/v1/programs/available` (resolved on the server if needed). */
   program: z.string().min(1, "Please select a program"),
 });

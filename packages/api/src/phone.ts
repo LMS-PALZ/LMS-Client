@@ -1,4 +1,3 @@
-/** LMS API expects Nigerian numbers like `08012345678`, not `+234…`. */
 export function normalizePhoneNumberForApi(phone: string): string {
   const trimmed = phone.trim().replace(/\s+/g, "");
   const digits = trimmed.replace(/\D/g, "");

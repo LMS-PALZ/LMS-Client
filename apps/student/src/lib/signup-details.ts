@@ -4,7 +4,6 @@ export const STUDENT_SIGNUP_DETAILS_STORAGE_KEY = "ssu_student_signup_details";
 
 export type StudentSignupDetails = SignUpFormValues & {
   applicationFee?: number;
-  /** Display label for the selected program (form `program` holds the API id). */
   programName?: string;
 };
 
