@@ -17,7 +17,7 @@ import { Spinner } from "../atoms/Spinner";
 import type { UserRole } from "@ssu/types";
 
 interface SetPasswordFormProps {
-  role: UserRole;
+  role?: UserRole;
   onSuccessRedirect?: string;
   requireSessionCheck?: boolean;
   logoSrc?: string;
@@ -30,7 +30,6 @@ interface SetPasswordFormProps {
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
 export function SetPasswordForm({
-  // role,
   onSuccessRedirect = "/login",
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
