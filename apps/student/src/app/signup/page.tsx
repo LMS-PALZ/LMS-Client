@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { SignupPage } from "@/views/SignupPage";
 
 export default function Page() {
-  redirect("/");
+  return <SignupPage />;
 }

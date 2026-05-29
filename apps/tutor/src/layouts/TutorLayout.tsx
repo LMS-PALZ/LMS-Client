@@ -1,5 +1,6 @@
 "use client";
 
+import { tutorPath } from "@ssu/config/portal-paths";
 import {
   DashboardLayout,
   NavigationSidebar,
@@ -19,11 +20,15 @@ import type { ReactNode } from "react";
 import { HeaderBar } from "../components/HeaderBar";
 
 const items: NavigationSidebarItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/sessions", label: "Sessions", icon: Video },
-  { href: "/assignments", label: "Assignments", icon: ClipboardList },
-  { href: "/profile", label: "Profile", icon: UserCircle },
+  { href: tutorPath(), label: "Dashboard", icon: LayoutDashboard },
+  { href: tutorPath("/courses"), label: "Courses", icon: BookOpen },
+  { href: tutorPath("/sessions"), label: "Sessions", icon: Video },
+  {
+    href: tutorPath("/assignments"),
+    label: "Assignments",
+    icon: ClipboardList,
+  },
+  { href: tutorPath("/profile"), label: "Profile", icon: UserCircle },
 ];
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
