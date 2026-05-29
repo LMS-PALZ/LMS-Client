@@ -1,5 +1,6 @@
 [build]
   base = "apps/web"
+  publish = ".next"
   command = "cd ../.. && npm install && node scripts/generate-web-routes.mjs && npm run build -w @ssu/web"
 
 [build.environment]
