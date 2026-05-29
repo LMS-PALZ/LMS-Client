@@ -2,15 +2,16 @@
 
 import {
   DashboardLayout,
-  NavigationSidebar,
-  type NavigationSidebarItem,
+  StudentSidebar,
+  useSidebarCollapsed,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
 import {
   CalendarDays,
   ClipboardList,
   GraduationCap,
-  House,
+  HelpCircle,
+  Home,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,22 +19,21 @@ import type { ReactNode } from "react";
 import { HeaderBar } from "../components/HeaderBar";
 import { AccountSetupModal } from "../views/ProfileSetting/AccountSetupModal";
 
-const items: NavigationSidebarItem[] = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/schedule", label: "Calendar", icon: CalendarDays },
-  {
-    href: "/courses",
-    label: "My Classroom",
-    icon: GraduationCap,
-    section: "Learning",
-  },
-  {
-    href: "/assignments",
-    label: "Assessments",
-    icon: ClipboardList,
-    section: "Learning",
-  },
+const mainItems = [
+  { href: "/home", label: "Home", icon: Home },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ];
+
+const learningItems = [
+  { href: "/classroom", label: "My Classroom", icon: GraduationCap },
+  { href: "/assessments", label: "Assessments", icon: ClipboardList },
+];
+
+const supportItem = {
+  href: "/support",
+  label: "Support",
+  icon: HelpCircle,
+};
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   return (
@@ -43,18 +43,33 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   );
 }
 
+function StudentSidebarWrapper() {
+  const pathname = usePathname();
+  const { toggle } = useSidebarCollapsed();
+
+  return (
+    <StudentSidebar
+      pathname={pathname}
+      mainItems={mainItems}
+      learningItems={learningItems}
+      supportItem={supportItem}
+      logoSrc="/firstlogo.png"
+      LinkComponent={RouterLink}
+      onToggleCollapse={toggle}
+    />
+  );
+}
+
 export function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
   const profileCompleted = false;
+
   return (
     <DashboardLayout
-      sidebar={
-        <NavigationSidebar
-          pathname={pathname}
-          items={items}
-          LinkComponent={RouterLink}
-        />
-      }
+      variant="student"
+      fullWidthMain={isSessionPage}
+      sidebar={<StudentSidebarWrapper />}
       header={<HeaderBar />}
       overlay={!profileCompleted ? <AccountSetupModal /> : null}
     >

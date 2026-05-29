@@ -1,85 +1,168 @@
 "use client";
 
-import WelcomeCard from "@/views/Overall";
-import { LiveSessions } from "@/views/LiveSessions";
-import { Assignments } from "@/views/AssignmentsPage";
+import {
+  useStudentAssignments,
+  useConnectGoogle,
+  useGoogleConnectionStatus,
+  useSession,
+  useStudentProgress,
+  useUpcomingSessions,
+} from "@ssu/queries";
+import {
+  AlertBanner,
+  AssignmentSummaryCard,
+  ConnectGoogleBanner,
+  DashboardEmptyState,
+  GreetingTitle,
+  SectionHeader,
+  SessionCard,
+  Skeleton,
+  WelcomeCard,
+} from "@ssu/ui";
+import { formatDate } from "@ssu/utils";
+import { GraduationCap, Notebook } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 
-export default function HomePage() {
-  const sessions = [
-    {
-      id: 1,
-      title: "Social Media Strategy: Viral Campaigns",
-      time: "10:00am",
-      date: "10/12",
-      status: "live" as const,
-      joinable: true,
-    },
-    {
-      id: 2,
-      title: "Social Media Strategy: Viral Campaigns",
-      time: "10:00am",
-      date: "10/12",
-      status: "upcoming" as const,
-      joinable: false,
-    },
-    {
-      id: 3,
-      title: "Social Media Strategy: Viral Campaigns",
-      time: "10:00am",
-      date: "10/12",
-      status: "upcoming" as const,
-      joinable: false,
-    },
-  ];
+function greeting(first: string) {
+  const h = new Date().getHours();
+  if (h < 12) return `Good morning, ${first}`;
+  if (h < 18) return `Good afternoon, ${first}`;
+  return `Good evening, ${first}`;
+}
 
-  const assignments = [
-    {
-      id: 1,
-      title: "Social Media Strategy: Viral Campaigns",
-      topic: "Understanding The Market",
-      score: 70,
-      date: "10/12",
-      due: true,
-    },
-    {
-      id: 2,
-      title: "Social Media Strategy: Viral Campaigns",
-      topic: "Understanding The Market",
-      score: 70,
-      date: "10/12",
-      due: true,
-    },
-    {
-      id: 3,
-      title: "Social Media Strategy: Viral Campaigns",
-      topic: "Understanding The Market",
-      score: 70,
-      date: "10/12",
-    },
-    {
-      id: 4,
-      title: "Social Media Strategy: Viral Campaigns",
-      topic: "Understanding The Market",
-      score: 70,
-      date: "10/12",
-    },
-  ];
+function formatSessionTime(iso: string) {
+  return new Date(iso).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+export function HomePage() {
+  const router = useRouter();
+  const { data: user } = useSession();
+  const progress = useStudentProgress();
+  const sessions = useUpcomingSessions();
+  const assignments = useStudentAssignments();
+  const googleStatus = useGoogleConnectionStatus();
+  const connectGoogle = useConnectGoogle();
+
+  const first = user?.firstName ?? "there";
+  const sessionList = sessions.data ?? [];
+  const assignmentList = (assignments.data ?? []).slice(0, 4);
+
+  const showGoogleBanner =
+    googleStatus.data?.connected === false && !googleStatus.isLoading;
+
+  const overallPercent = useMemo(() => {
+    if (progress.data) return progress.data.overallScorePercent;
+    const courses = assignments.data;
+    if (!courses?.length) return 0;
+    return 0;
+  }, [progress.data, assignments.data]);
 
   return (
-    <div className="min-h-screen">
-      <main className=" flex-1 bg-[#FAFAFA]">
-        <div className="text-center">
-          <h1 className="text-[15px] font-bold text-[#1D1D1D] md:text-[25px]">
-            Good evening, Chiroma!
-          </h1>
-        </div>
+    <div className="space-y-8">
+      <GreetingTitle>{`${greeting(first)}!`}</GreetingTitle>
 
-        <section className="mt-10 grid gap-10 xl:grid-cols-[1fr_1.4fr] bg-[#F8F9FA] pt-3 pb-3">
-          <WelcomeCard progress={50} />
-          <LiveSessions sessions={sessions} />
+      {showGoogleBanner && (
+        <ConnectGoogleBanner onConnect={() => connectGoogle.mutate()} />
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {progress.isLoading ? (
+          <Skeleton className="h-56 rounded-2xl" />
+        ) : (
+          <WelcomeCard
+            programTitle={progress.data?.enrolledProgramTitle ?? "your program"}
+            progressPercent={overallPercent}
+          />
+        )}
+
+        <section className="rounded-2xl border bg-white p-5 shadow-card">
+          <h2 className="text-h3 font-bold text-neutral-900 mb-4">
+            Live Sessions
+          </h2>
+          {sessions.isLoading ? (
+            <Skeleton className="h-40 rounded-xl" />
+          ) : sessionList.length === 0 ? (
+            <DashboardEmptyState
+              icon={GraduationCap}
+              title="You don't have any live session yet"
+              description="When you do, they'll show up here"
+            />
+          ) : (
+            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+              {sessionList.map((s, i) => (
+                <SessionCard
+                  key={s.id}
+                  title={s.title}
+                  time={formatSessionTime(s.startsAt)}
+                  date={formatDate(s.startsAt)}
+                  status={s.isLive ? "live" : "upcoming"}
+                  highlighted={i === 0 && s.isLive}
+                  action={
+                    <Link
+                      href={`/classroom/${s.id}`}
+                      className="text-small font-semibold text-brand-green hover:underline"
+                    >
+                      {s.isLive ? "Join now >" : "Add to reminder >"}
+                    </Link>
+                  }
+                />
+              ))}
+            </div>
+          )}
         </section>
-        <Assignments assignments={assignments} />
-      </main>
+      </div>
+
+      <section className="rounded-2xl border bg-white p-5 shadow-card">
+        <SectionHeader
+          title="Assignments"
+          action={
+            <Link
+              href="/assessments"
+              className="text-small font-semibold text-brand-green hover:underline"
+            >
+              View more
+            </Link>
+          }
+          className="mb-4"
+        />
+        {assignments.isError && (
+          <AlertBanner variant="error" title="Could not load assignments">
+            Please try again later.
+          </AlertBanner>
+        )}
+        {assignments.isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-36 rounded-2xl" />
+            ))}
+          </div>
+        ) : assignmentList.length === 0 ? (
+          <DashboardEmptyState
+            icon={Notebook}
+            title="You don't have any assignment yet"
+            description="When you do, they'll show up here"
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {assignmentList.map((a) => (
+              <AssignmentSummaryCard
+                key={a.id}
+                title={a.title}
+                moduleLabel="Understanding The Market"
+                score={70}
+                dueDate={formatDate(a.dueAt)}
+                showDueBadge={a.status === "overdue"}
+                onClick={() => router.push(`/assessments/${a.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

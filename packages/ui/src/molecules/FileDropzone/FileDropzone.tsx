@@ -64,7 +64,7 @@ export function FileDropzone({
       </div>
       {fileRejections.length > 0 && (
         <p className="text-small text-red-600" role="alert">
-          File rejected — check size and type.
+          File rejected. Check size and type.
         </p>
       )}
     </div>

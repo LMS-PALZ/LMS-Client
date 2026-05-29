@@ -2,7 +2,10 @@ import type { SignUpFormValues } from "@ssu/schema";
 
 export const STUDENT_SIGNUP_DETAILS_STORAGE_KEY = "ssu_student_signup_details";
 
-export type StudentSignupDetails = SignUpFormValues;
+export type StudentSignupDetails = SignUpFormValues & {
+  applicationFee?: number;
+  programName?: string;
+};
 
 export function readStudentSignupDetails(): StudentSignupDetails | null {
   if (typeof window === "undefined") {
@@ -31,4 +34,3 @@ export function writeStudentSignupDetails(details: StudentSignupDetails): void {
     JSON.stringify(details),
   );
 }
-

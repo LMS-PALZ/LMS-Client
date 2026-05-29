@@ -1,23 +1,24 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSignupMutation, usePrograms } from "@ssu/queries";
+import { usePrograms, useSignupMutation } from "@ssu/queries";
 import { signUpSchema } from "@ssu/schema";
+import { useSignupStore } from "@ssu/store";
 import {
   AlertBanner,
-  Button,
   AuthLayout,
+  Button,
   FormField,
   Input,
   Spinner,
 } from "@ssu/ui";
 import { Check, ChevronDown } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { writeStudentSignupDetails } from "@/lib/signup-details";
-import { useSignupStore } from "@ssu/store";
 
 type FormValues = z.infer<typeof signUpSchema>;
 
@@ -39,7 +40,6 @@ export function SignupPage() {
   } | null>(null);
 
   const [isProgramOpen, setIsProgramOpen] = useState(false);
-
   const programMenuRef = useRef<HTMLDivElement | null>(null);
 
   const {
@@ -71,19 +71,21 @@ export function SignupPage() {
         variant: "error",
         message: res.message,
       });
-
       return;
     }
 
-    const programTitle =
-      programs?.find((p) => p.slug === values.program)?.title ?? "";
+    const matchedProgram = programs?.find((p) => p.slug === values.program);
 
     setBanner({
       variant: "success",
       message: res.message,
     });
 
-    writeStudentSignupDetails(values);
+    writeStudentSignupDetails({
+      ...values,
+      programName: matchedProgram?.title,
+      applicationFee: matchedProgram?.priceAmount,
+    });
 
     setUser({
       id: res.data?.id ?? "",
@@ -93,12 +95,12 @@ export function SignupPage() {
       last_name: values.last_name,
       phone_number: values.phone_number,
       program: values.program,
-      program_title: programTitle,
+      program_title: matchedProgram?.title ?? "",
     });
 
     setTimeout(() => {
       router.replace("/confirmcode");
-    }, 2000);
+    }, 1500);
   });
 
   useEffect(() => {
@@ -109,10 +111,7 @@ export function SignupPage() {
     };
 
     document.addEventListener("mousedown", handlePointerDown);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-    };
+    return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
   return (
@@ -127,7 +126,7 @@ export function SignupPage() {
         </div>
 
         <h1 className="mb-3 text-[25px] font-bold text-[#1F2937] sm:text-[23px]">
-          Let's begin your journey
+          Let&apos;s begin your journey
         </h1>
 
         <p className="mb-6 text-center text-sm text-neutral-900">
@@ -135,7 +134,7 @@ export function SignupPage() {
         </p>
 
         {banner && (
-          <div className="mb-5 w-full">
+          <div className="mb-5 w-full max-w-sm">
             <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
           </div>
         )}
@@ -274,22 +273,19 @@ export function SignupPage() {
                               shouldTouch: true,
                               shouldValidate: true,
                             });
-
                             setIsProgramOpen(false);
                           }}
                         >
                           <span className="flex items-center gap-3 text-[17px] text-[#1F2937]">
-                            <span className="w-4 flex items-center justify-center">
+                            <span className="flex w-4 items-center justify-center">
                               <Check
                                 className={`h-4 w-4 text-[#0D6939] ${
                                   isSelected ? "opacity-100" : "opacity-0"
                                 }`}
                               />
                             </span>
-
                             <span className="text-sm">{program.title}</span>
                           </span>
-
                           <span className="text-sm font-medium text-[#0D6939]">
                             ₦{program.priceAmount.toLocaleString()}
                           </span>
@@ -321,15 +317,15 @@ export function SignupPage() {
           </Button>
         </form>
 
-        <div className="pt-4 text-center text-sm">
-          Already have an account?{" "}
-          <strong
-            className="cursor-pointer text-[#094D2B]"
-            onClick={() => router.push("/login")}
+        <p className="pt-4 pb-8 text-center text-sm text-neutral-700">
+          Already registered for a program?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-[#094D2B] hover:underline"
           >
-            Login here
-          </strong>
-        </div>
+            Login to your dashboard
+          </Link>
+        </p>
       </div>
     </AuthLayout>
   );

@@ -19,7 +19,7 @@ import { Input } from "../atoms/Input";
 import { Spinner } from "../atoms/Spinner";
 
 interface LoginFormProps {
-  role: "student" | "admin" | "tutor" | "trainer";
+  role?: "student" | "admin" | "tutor" | "trainer";
   onSuccessRedirect?: string;
   requireSessionCheck?: boolean;
   logoSrc?: string;
@@ -34,7 +34,7 @@ interface LoginFormProps {
 type FormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm({
-  // role,
+  role = "student",
   onSuccessRedirect = "/",
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
@@ -47,7 +47,13 @@ export function LoginForm({
 }: LoginFormProps) {
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
-  const login = useLoginMutation();
+  const portal =
+    role === "admin"
+      ? "admin"
+      : role === "tutor" || role === "trainer"
+        ? "tutor"
+        : "student";
+  const login = useLoginMutation(portal);
   const [showPw, setShowPw] = useState(false);
   const [banner, setBanner] = useState<{
     variant: "error" | "warning";

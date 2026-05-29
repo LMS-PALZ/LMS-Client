@@ -1,13 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login, writeSession } from "@ssu/api";
+import { adminlogin, login, writeSession } from "@ssu/api";
 import { sessionKey } from "./keys";
 
-export function useLoginMutation() {
+export type LoginPortal = "student" | "admin" | "tutor";
+
+export function useLoginMutation(portal: LoginPortal = "student") {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { email: string; password: string }) => {
-      const res = await login(input.email, input.password);
-      return res;
+      if (portal === "admin" || portal === "tutor") {
+        return adminlogin(input.email, input.password);
+      }
+      return login(input.email, input.password);
     },
     onSuccess: (data) => {
       if (!data.ok) return;

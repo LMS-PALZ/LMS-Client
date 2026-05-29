@@ -1,0 +1,8 @@
+[build]
+  command = "cd ../.. && npm ci && npm run build -w @ssu/tutor"
+
+[build.environment]
+  NODE_VERSION = "24.14.0"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

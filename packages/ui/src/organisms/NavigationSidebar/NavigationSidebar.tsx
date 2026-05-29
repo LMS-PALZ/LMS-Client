@@ -8,7 +8,7 @@ import { LayoutPanelLeft, CircleHelp } from "lucide-react";
 
 import type { ComponentType, ReactNode } from "react";
 
-import { useSidebar } from "@ssu/ui";
+import { useSidebar } from "../SidebarContext";
 
 export interface NavigationSidebarItem {
   href: string;
@@ -42,6 +42,21 @@ function DefaultLink({
     <a href={href} className={className} onClick={onClick}>
       {children}
     </a>
+  );
+}
+
+export function NavigationSidebarSection({
+  label,
+  collapsed,
+}: {
+  label: string;
+  collapsed?: boolean;
+}) {
+  if (collapsed) return null;
+  return (
+    <p className="px-3 pt-4 pb-1 text-micro font-medium uppercase tracking-wide text-neutral-400">
+      {label}
+    </p>
   );
 }
 

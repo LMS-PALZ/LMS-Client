@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-/* =========================
-   LOGIN
-========================= */
 export const loginSchema = z.object({
   email: z
     .string()
@@ -19,9 +16,6 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
-/* =========================
-   BASE USER FIELDS
-========================= */
 const baseUserFields = z.object({
   firstName: z.string().min(1, "First name is required"),
 
@@ -37,9 +31,6 @@ const baseUserFields = z.object({
   confirmPassword: z.string().min(1, "Confirm your password"),
 });
 
-/* =========================
-   STUDENT REGISTER
-========================= */
 export const registerStudentSchema = baseUserFields.refine(
   (data) => data.password === data.confirmPassword,
   {
@@ -50,9 +41,6 @@ export const registerStudentSchema = baseUserFields.refine(
 
 export type RegisterStudentFormValues = z.infer<typeof registerStudentSchema>;
 
-/* =========================
-   TRAINER REGISTER
-========================= */
 export const registerTrainerSchema = baseUserFields
   .extend({
     skills: z.string().min(1, "List your skills"),
@@ -64,9 +52,6 @@ export const registerTrainerSchema = baseUserFields
 
 export type RegisterTrainerFormValues = z.infer<typeof registerTrainerSchema>;
 
-/* =========================
-   FORGOT PASSWORD
-========================= */
 export const forgotPasswordSchema = z.object({
   email: z
     .string()
@@ -76,9 +61,6 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
-/* =========================
-   RESET PASSWORD
-========================= */
 export const resetPasswordSchema = z
   .object({
     password: z.string().min(12, "Use at least 12 characters"),
@@ -92,9 +74,6 @@ export const resetPasswordSchema = z
 
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
-/* =========================
-   SUBMISSIONS
-========================= */
 export const submissionLinkSchema = z.object({
   url: z.string().url("Enter a valid URL"),
 });
@@ -103,9 +82,6 @@ export const submissionTextSchema = z.object({
   text: z.string().min(1, "Enter your response").max(10_000),
 });
 
-/* =========================
-   COURSE DETAILS
-========================= */
 export const courseDetailsStepSchema = z.object({
   title: z.string().min(1, "Title is required"),
 
@@ -116,9 +92,6 @@ export const courseDetailsStepSchema = z.object({
   durationHours: z.coerce.number().min(0).optional(),
 });
 
-/* =========================
-   GRADE SUBMISSION
-========================= */
 export const gradeSubmissionSchema = z.object({
   score: z.coerce.number().min(0).max(100),
 
@@ -127,9 +100,6 @@ export const gradeSubmissionSchema = z.object({
 
 export type GradeSubmissionFormValues = z.infer<typeof gradeSubmissionSchema>;
 
-/* =========================
-   SIGNUP (UPDATED FIXED VERSION)
-========================= */
 export const signUpSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
 
@@ -142,7 +112,7 @@ export const signUpSchema = z.object({
 
   phone_number: z
     .string()
-    .transform((val) => val.replace(/\s/g, "")) // remove spaces
+    .transform((val) => val.replace(/\s/g, ""))
     .refine((val) => /^\d+$/.test(val), {
       message: "Phone number must contain only numbers",
     })
@@ -155,18 +125,12 @@ export const signUpSchema = z.object({
 
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
 
-/* =========================
-   CONFIRM CODE
-========================= */
 export const confirmCodeSchema = z.object({
   code: z.string().min(1, "Confirmation code is required"),
 });
 
 export type ConfirmCodeFormValues = z.infer<typeof confirmCodeSchema>;
 
-/* =========================
-   RESEND CODE
-========================= */
 export const resendCodeSchema = z.object({
   email: z
     .string()

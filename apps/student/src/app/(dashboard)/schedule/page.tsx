@@ -1,5 +1,5 @@
-import { SchedulePage } from "@/views/SchedulePage";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <SchedulePage />;
+  redirect("/calendar");
 }

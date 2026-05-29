@@ -40,7 +40,6 @@ const data: Row[] = [
   {
     id: "1",
     student: "Sam Student",
-    // Fixed timestamp so SSR and client HTML match (avoid hydration mismatch).
     submittedAt: "2025-06-01T14:30:00.000Z",
     type: "file",
     status: "pending",

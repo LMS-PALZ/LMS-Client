@@ -1,5 +1,5 @@
-import { Assignments } from "@/views/AssignmentsPage";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <Assignments />;
+  redirect("/assessments");
 }

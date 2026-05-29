@@ -2,9 +2,10 @@ import type { AuthUser } from "@ssu/types";
 import axios from "axios";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://base-api.skillscaleup.org";
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://base-api.skillscaleup.org";
 
-///////// Login
 export type LoginErrorCode = "invalid" | "pending_approval" | "suspended";
 
 export async function login(
@@ -24,19 +25,22 @@ export async function login(
       data: res.data,
       message: "Login successfull",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: error.response?.data?.code || "invalid",
+      code: (err.response?.data?.code as LoginErrorCode) || "invalid",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Login failed. Please try again.",
     };
   }
 }
 
-//////Signup
 export type SignupErrorCode =
   | "email_exists"
   | "validation_error"
@@ -60,19 +64,22 @@ export async function signupStudent(input: {
     const res = await axios.post(url, input);
 
     return res.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
     return {
       status: false,
       code: "server_error",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Signup failed. Please try again.",
     };
   }
 }
 
-///////resetpassword
 export type ResetPasswordErrorCode = "invalid" | "server_error";
 
 export async function resetPassword(
@@ -91,19 +98,23 @@ export async function resetPassword(
       ok: true,
       message: "Password reset successful",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: error.response?.data?.code || "server_error",
+      code:
+        (err.response?.data?.code as ResetPasswordErrorCode) || "server_error",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Reset password failed. Please try again.",
     };
   }
 }
 
-//// forgetpassword
 export type ForgetPasswordErrorCode = "invalid" | "server_error";
 
 export async function forgetPassword(
@@ -121,19 +132,21 @@ export async function forgetPassword(
       ok: true,
       message: "Check your email to reset your password",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: error.response?.data?.code || "invalid",
+      code: (err.response?.data?.code as ForgetPasswordErrorCode) || "invalid",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Forget password failed. Please try again.",
     };
   }
 }
-
-///////verify studentemail
 
 export type VerifyEmailErrorCode = "invalid" | "server_error";
 
@@ -156,19 +169,22 @@ export async function verifyStudentEmail(
       ok: true,
       message: "Email verified successfully",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: error.response?.data?.code || "invalid",
+      code: (err.response?.data?.code as VerifyEmailErrorCode) || "invalid",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Email verification failed. Please try again.",
     };
   }
 }
 
-//// resend otp
 export type ResendOtpErrorCode = "invalid" | "server_error";
 
 export async function resendOtp(
@@ -186,19 +202,21 @@ export async function resendOtp(
       ok: true,
       message: "OTP resent successfully",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: error.response?.data?.code || "invalid",
+      code: (err.response?.data?.code as ResendOtpErrorCode) || "invalid",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Resend OTP failed. Please try again.",
     };
   }
 }
-
-//////setpassword
 
 export type SetPasswordErrorCode = "invalid" | "server_error";
 
@@ -218,19 +236,22 @@ export async function setPassword(
       ok: true,
       message: "Password set successfully",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: error.response?.data?.code || "invalid",
+      code: (err.response?.data?.code as SetPasswordErrorCode) || "invalid",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Set password failed. Please try again.",
     };
   }
 }
 
-////////programs list
 export async function programslist(): Promise<
   | {
       status: "success";
@@ -259,17 +280,14 @@ export async function programslist(): Promise<
       message: res.data.message,
       data: res.data.data,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string };
     return {
       status: "error",
-      message: error.message || "Failed to fetch programs. Please try again.",
+      message: err.message || "Failed to fetch programs. Please try again.",
     };
   }
 }
-
-/////admin
-
-/////admin/tutor login
 
 export async function adminlogin(
   email: string,
@@ -288,19 +306,21 @@ export async function adminlogin(
       data: res.data,
       message: "Login successful",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: error.response?.data?.code || "invalid",
+      code: (err.response?.data?.code as LoginErrorCode) || "invalid",
       message:
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.message ||
         "Login failed. Please try again.",
     };
   }
 }
-
-/////////initializePayment
 
 export async function initializePayment(email: string, program: string) {
   try {
@@ -314,16 +334,14 @@ export async function initializePayment(email: string, program: string) {
       data: res.data.data,
       message: res.data.message,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
     return {
       ok: false as const,
-      message:
-        error.response?.data?.message || "Payment initialization failed.",
+      message: err.response?.data?.message || "Payment initialization failed.",
     };
   }
 }
-
-//////////verifypayment
 
 export async function verifyPayment(reference: string) {
   try {
@@ -336,10 +354,11 @@ export async function verifyPayment(reference: string) {
       data: res.data.data,
       message: res.data.message,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
     return {
       ok: false as const,
-      message: error.response?.data?.message || "Payment verification failed.",
+      message: err.response?.data?.message || "Payment verification failed.",
     };
   }
 }

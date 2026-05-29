@@ -3,5 +3,5 @@
 import { ForgotPasswordForm } from "@ssu/ui";
 
 export function ForgetPasswordPage() {
-  return <ForgotPasswordForm role="admin" onSuccessRedirect="/resetpassword" />;
+  return <ForgotPasswordForm onSuccessRedirect="/resetpassword" />;
 }

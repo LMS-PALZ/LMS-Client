@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@ssu/queries";
+import { useLogout, useSession } from "@ssu/queries";
 import {
   Bell,
   Menu,
@@ -67,7 +67,8 @@ export function HeaderBar() {
       prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
 
-  const handleLogout = () => router.replace("/login");
+  const logout = useLogout();
+  const handleLogout = () => logout();
 
   return (
     <>
@@ -199,7 +200,7 @@ export function HeaderBar() {
                     <button
                       type="button"
                       onClick={() => {
-                        router.push("/account");
+                        router.push("/profile");
                         setUserOpen(false);
                       }}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
@@ -338,7 +339,7 @@ export function HeaderBar() {
             <button
               type="button"
               onClick={() => {
-                router.push("/account");
+                router.push("/profile");
                 setUserOpen(false);
               }}
               className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"

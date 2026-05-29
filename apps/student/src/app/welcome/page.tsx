@@ -8,7 +8,7 @@ const welcomeHighlights = [
   {
     title: "Employable Skills",
     description:
-      "You’ll gain market-relevant skills aligned with today’s digital and vocational opportunities.",
+      "You'll gain market-relevant skills aligned with today's digital and vocational opportunities.",
     icon: Briefcase,
   },
   {
@@ -40,7 +40,7 @@ export default function Page() {
         </div>
 
         <h1 className="mb-2 text-[20px] font-bold  text-[#1F2937] sm:text-[25px]">
-          You’re in.
+          You&apos;re in.
         </h1>
         <p className="mx-auto mb-8 max-w-[500px] font-semibold sm:text-[17px] text-sm  text-[#495057]">
           Welcome to the Skill Scale-up Program. Few things to know about your

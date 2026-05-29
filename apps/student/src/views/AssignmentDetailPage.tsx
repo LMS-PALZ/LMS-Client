@@ -24,12 +24,12 @@ export function AssignmentDetailPage() {
       <PageHeader
         title={a.title}
         breadcrumbs={[
-          { label: "Assignments", href: "/assignments" },
+          { label: "Assessments", href: "/assessments" },
           { label: a.title },
         ]}
         action={
           <Link
-            href="/assignments"
+            href="/assessments"
             className="text-small text-brand-green hover:underline"
           >
             Back

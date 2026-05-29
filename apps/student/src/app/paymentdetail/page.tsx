@@ -1,12 +1,10 @@
 "use client";
 
-import { Button, Spinner } from "@ssu/ui";
-import { Mail, Phone, User, ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { getProgramOptionByName } from "@/lib/program-options";
+import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
-import { AlertBanner } from "@ssu/ui";
-import { useInitializePaymentMutation } from "@ssu/queries";
+import { AlertBanner, Button, Spinner } from "@ssu/ui";
+import { ChevronLeft, Mail, Phone, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const DEFAULT_PROGRAM_DETAILS = {
   duration: "6 months",
@@ -31,22 +29,23 @@ function formatCurrentDate() {
 
 export default function Page() {
   const router = useRouter();
-
   const payment = useInitializePaymentMutation();
   const user = useSignupStore((state) => state.user);
+  const { data: programs } = usePrograms();
+
+  const matchedProgram = programs?.find((p) => p.slug === user?.program);
+  const applicationFee =
+    matchedProgram?.priceAmount ?? DEFAULT_PROGRAM_DETAILS.applicationFee;
 
   const handlePayment = async () => {
-    const res = await payment.mutateAsync({
+    const data = await payment.mutateAsync({
       email: user?.email ?? "",
       program: user?.program ?? "",
     });
 
-    localStorage.setItem("payment_reference", res.reference);
-
-    window.location.href = res.checkout_url;
+    localStorage.setItem("payment_reference", data.reference);
+    window.location.href = data.checkout_url;
   };
-
-  const selectedProgram = getProgramOptionByName(user?.program || "");
 
   return (
     <div className="relative min-h-screen w-full bg-white">
@@ -73,7 +72,7 @@ export default function Page() {
           </h1>
 
           <p className="mx-auto mb-8 max-w-[560px] text-sm text-[#6B7280]">
-            Pay the application fee to continue. You’ll set up your account
+            Pay the application fee to continue. You&apos;ll set up your account
             after payment.
           </p>
         </div>
@@ -87,7 +86,6 @@ export default function Page() {
             <div className="space-y-7 lg:px-8 lg:py-10">
               <div className="flex items-center gap-4 text-[#374151]">
                 <User className="h-5 w-5 text-[#64748B]" />
-
                 <p className="font-medium sm:text-[15px]">
                   {user ? `${user.first_name} ${user.last_name}` : "Your Name"}
                 </p>
@@ -95,7 +93,6 @@ export default function Page() {
 
               <div className="flex items-center gap-4 text-[#374151]">
                 <Mail className="h-5 w-5 text-[#64748B]" />
-
                 <p className="font-medium leading-8 sm:text-[15px]">
                   {user?.email || "your@email.com"}
                 </p>
@@ -103,7 +100,6 @@ export default function Page() {
 
               <div className="flex items-center gap-4 text-[#374151]">
                 <Phone className="h-5 w-5 text-[#64748B]" />
-
                 <p className="font-medium leading-8 sm:text-[15px]">
                   {user?.phone_number || "0700 000 0000"}
                 </p>
@@ -116,7 +112,6 @@ export default function Page() {
                   <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
                     Selected Program
                   </h2>
-
                   <p className="text-sm text-[#6B7280] sm:text-[16px]">
                     {user?.program_title || "Selected program will appear here"}
                   </p>
@@ -126,7 +121,6 @@ export default function Page() {
                   <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
                     Duration
                   </h2>
-
                   <p className="text-[#6B7280] sm:text-[16px]">
                     {DEFAULT_PROGRAM_DETAILS.duration}
                   </p>
@@ -136,7 +130,6 @@ export default function Page() {
                   <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
                     Start Date
                   </h2>
-
                   <p className="text-[#6B7280] sm:text-[16px]">
                     {formatCurrentDate()}
                   </p>
@@ -146,12 +139,8 @@ export default function Page() {
                   <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
                     Application fee
                   </h2>
-
                   <p className="font-semibold leading-8 text-[#2F6F45] sm:text-[16px]">
-                    {formatCurrency(
-                      selectedProgram?.fee ??
-                        DEFAULT_PROGRAM_DETAILS.applicationFee,
-                    )}
+                    {formatCurrency(applicationFee)}
                   </p>
                 </div>
               </div>
@@ -164,8 +153,7 @@ export default function Page() {
           onClick={handlePayment}
           disabled={payment.isPending}
           variant="primary"
-          // size="lg"
-          className="w-[200px] rounded-[30px] text-[var(--color-surface)]"
+          className="mt-8 w-[200px] rounded-[30px] text-[var(--color-surface)]"
         >
           {payment.isPending ? (
             <Spinner className="h-5 w-5 animate-spin" />

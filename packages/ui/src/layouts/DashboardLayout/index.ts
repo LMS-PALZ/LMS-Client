@@ -1,1 +1,7 @@
-export { DashboardLayout, type DashboardLayoutProps } from "./DashboardLayout";
+export {
+  DashboardLayout,
+  SidebarCollapseContext,
+  useSidebarCollapsed,
+  type DashboardLayoutProps,
+  type DashboardLayoutVariant,
+} from "./DashboardLayout";
