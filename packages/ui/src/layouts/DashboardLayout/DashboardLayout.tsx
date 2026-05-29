@@ -1,8 +1,9 @@
 "use client";
 
 import { cn } from "@ssu/utils";
-import { Menu } from "lucide-react";
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { SidebarProvider } from "../../organisms/SidebarContext";
+import { MobileSidebar } from "../../organisms/NavigationSidebar/MobileSidebar";
 
 export type DashboardLayoutVariant = "default" | "student";
 
@@ -12,6 +13,7 @@ export interface DashboardLayoutProps {
   children: ReactNode;
   variant?: DashboardLayoutVariant;
   fullWidthMain?: boolean;
+  overlay?: ReactNode;
 }
 
 export const SidebarCollapseContext = createContext({
@@ -27,11 +29,10 @@ export function DashboardLayout({
   sidebar,
   header,
   children,
-  variant = "default",
   fullWidthMain = false,
+  overlay,
 }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const isStudent = variant === "student";
 
   return (
     <SidebarCollapseContext.Provider
@@ -42,49 +43,32 @@ export function DashboardLayout({
         },
       }}
     >
-      <div className="flex h-screen overflow-hidden bg-neutral-50">
-        <aside
-          className={cn(
-            "flex-shrink-0 h-full flex flex-col transition-all duration-300 border-r",
-            isStudent
-              ? "bg-white border-neutral-200"
-              : "bg-brand-green border-transparent",
-            collapsed
-              ? "w-[var(--sidebar-width-collapsed)]"
-              : "w-[var(--sidebar-width)]",
-          )}
-        >
-          {sidebar}
-        </aside>
+      <SidebarProvider>
+        <div className="flex h-screen overflow-hidden bg-[#F0F5F1] lg:gap-2">
+          <aside className="hidden lg:block">{sidebar}</aside>
 
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          <header className="h-[var(--header-height)] bg-white border-b border-neutral-200 flex-shrink-0 flex items-center px-6 gap-4">
-            {!isStudent && (
-              <button
-                type="button"
-                onClick={() => setCollapsed((c) => !c)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-neutral-100 transition-colors"
-                aria-label="Toggle sidebar"
+          <MobileSidebar>{sidebar}</MobileSidebar>
+
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-none bg-[#FAFAFA] lg:rounded-[16px]">
+            <header className="flex h-[var(--header-height)] flex-shrink-0 items-center px-4 md:px-6">
+              {header}
+            </header>
+
+            <main className="flex-1 overflow-y-auto">
+              <div
+                className={cn(
+                  "mx-auto p-4 md:p-6",
+                  fullWidthMain ? "max-w-none" : "max-w-[1280px]",
+                )}
               >
-                <span className="sr-only">Toggle sidebar</span>
-                <Menu className="h-5 w-5 text-neutral-700" aria-hidden />
-              </button>
-            )}
-            {header}
-          </header>
+                {children}
+              </div>
+            </main>
+          </div>
 
-          <main className="flex-1 overflow-y-auto bg-white">
-            <div
-              className={cn(
-                "mx-auto p-6",
-                fullWidthMain ? "max-w-none" : "max-w-[1280px]",
-              )}
-            >
-              {children}
-            </div>
-          </main>
+          {overlay}
         </div>
-      </div>
+      </SidebarProvider>
     </SidebarCollapseContext.Provider>
   );
 }

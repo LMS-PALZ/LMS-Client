@@ -34,8 +34,8 @@ export function SchedulePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Schedule"
-        breadcrumbs={[{ label: "Student" }, { label: "Schedule" }]}
+        title="Calendar"
+        breadcrumbs={[{ label: "Student" }, { label: "Calendar" }]}
       />
       <ScheduleCalendar />
     </div>

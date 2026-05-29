@@ -3,5 +3,11 @@
 import { ForgotPasswordForm } from "@ssu/ui";
 
 export function ForgetPasswordPage() {
-  return <ForgotPasswordForm showLoginLink={true} />;
+  return (
+    <ForgotPasswordForm
+      role="trainer"
+      onSuccessRedirect="/resetpassword"
+      showLoginLink={true}
+    />
+  );
 }

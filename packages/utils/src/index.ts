@@ -24,10 +24,11 @@ export function truncate(str: string, maxLength: number): string {
   return `${str.slice(0, Math.max(0, maxLength - 1))}…`;
 }
 
-export function getInitials(firstName: string, lastName: string): string {
-  const a = firstName.trim().charAt(0);
-  const b = lastName.trim().charAt(0);
-  return `${a}${b}`.toUpperCase() || "?";
+export function getInitials(firstName?: string, lastName?: string): string {
+  const a = firstName?.trim()?.charAt(0) ?? "";
+  const b = lastName?.trim()?.charAt(0) ?? "";
+
+  return (a + b).toUpperCase() || "?";
 }
 
 const units = ["B", "KB", "MB", "GB"] as const;

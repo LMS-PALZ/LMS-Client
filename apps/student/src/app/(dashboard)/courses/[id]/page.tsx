@@ -1,5 +1,24 @@
-import { CourseDetailPage } from "@/views/CourseDetailPage";
+import { getClassroomCourseById } from "@/lib/classroom-data";
+import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
+import { EmptyState } from "@ssu/ui";
+import { Megaphone } from "lucide-react";
 
-export default function Page() {
-  return <CourseDetailPage />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const course = getClassroomCourseById(id);
+
+  if (!course) {
+    return (
+      <EmptyState
+        icon={Megaphone}
+        title="You don't have any on going live sessions yet"
+        description="When you do, they'll show up here"
+      />
+    );
+  }
+  return <ClassroomOverviewPage course={course} />;
 }

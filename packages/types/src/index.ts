@@ -1,4 +1,4 @@
-export type UserRole = "student" | "trainer" | "admin";
+export type UserRole = "students" | "trainer" | "admin";
 
 export type UserStatus = "active" | "pending" | "suspended";
 
@@ -93,6 +93,22 @@ export interface AssignmentListItem {
 export type { AvailableProgram } from "./programs";
 
 export interface NotificationDto {
+  id: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface CustomSelectProps {
+  placeholder: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  showErrorMessage?: boolean;
+}
+
+export interface NotificationItem {
   id: string;
   message: string;
   createdAt: string;

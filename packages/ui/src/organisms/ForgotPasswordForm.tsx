@@ -53,15 +53,26 @@ export function ForgotPasswordForm({
 
   const onSubmit = handleSubmit(async (values) => {
     setBanner(null);
-    const res = await forgotPassword.mutateAsync(values);
-    if (res.ok) {
-      setBanner({ variant: "success", message: res.message });
-      setTimeout(() => {
-        router.replace(onSuccessRedirect);
-      }, 2000);
-      return;
+    try {
+      const res = await forgotPassword.mutateAsync(values);
+      if (res.ok) {
+        setBanner({
+          variant: "success",
+          message: res.message || "Check your email to reset your password",
+        });
+        setTimeout(() => {
+          router.replace(onSuccessRedirect);
+        }, 2000);
+        return;
+      }
+      setBanner({ variant: "error", message: res.message });
+    } catch (error: any) {
+      setBanner({
+        variant: "error",
+        message:
+          error?.message || "Failed to send reset email. Please try again.",
+      });
     }
-    setBanner({ variant: "error", message: res.message });
   });
 
   if (sessionLoading) {

@@ -23,6 +23,7 @@
     "@ssu/config": "file:../../packages/config",
     "@ssu/queries": "file:../../packages/queries",
     "@ssu/schema": "file:../../packages/schema",
+    "@ssu/store": "file:../../packages/store",
     "@ssu/types": "file:../../packages/types",
     "@ssu/ui": "file:../../packages/ui",
     "@ssu/utils": "file:../../packages/utils",

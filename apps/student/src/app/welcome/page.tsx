@@ -8,13 +8,13 @@ const welcomeHighlights = [
   {
     title: "Employable Skills",
     description:
-      "You’ll gain market-relevant skills aligned with today’s digital and vocational opportunities.",
+      "You'll gain market-relevant skills aligned with today's digital and vocational opportunities.",
     icon: Briefcase,
   },
   {
     title: "Life Skills",
     description:
-      "Build discipline, leadership, and edival intelligence to support personal and professional growth.",
+      "Build discipline, leadership, and emotional intelligence to support personal and professional growth.",
     icon: Heart,
   },
   {
@@ -40,7 +40,7 @@ export default function Page() {
         </div>
 
         <h1 className="mb-2 text-[20px] font-bold  text-[#1F2937] sm:text-[25px]">
-          You’re in.
+          You&apos;re in.
         </h1>
         <p className="mx-auto mb-8 max-w-[500px] font-semibold sm:text-[17px] text-sm  text-[#495057]">
           Welcome to the Skill Scale-up Program. Few things to know about your
@@ -72,7 +72,7 @@ export default function Page() {
           variant="primary"
           size="lg"
           className="mt-10 h-[60px] rounded-full px-10 text-[15px] text-[var(--color-surface)] sm:min-w-[210px]"
-          onClick={() => router.push("/home")}
+          onClick={() => router.push("/setpassword")}
         >
           Let&apos;s get started
         </Button>
