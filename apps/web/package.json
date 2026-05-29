@@ -8,6 +8,7 @@
   "scripts": {
     "prebuild": "node ../../scripts/generate-web-routes.mjs",
     "predev": "node ../../scripts/generate-web-routes.mjs",
+    "netlify:build": "node ../../scripts/generate-web-routes.mjs && next build",
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",

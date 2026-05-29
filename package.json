@@ -25,6 +25,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.9.0",
     "@types/node": "^25.7.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
