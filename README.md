@@ -88,6 +88,27 @@ There is also `pending@skillscaleup.dev` (tutor, pending approval) for testing t
 
 For full product and UX requirements, see **`instruction.md`** in this repository.
 
+## Netlify (unified site: student + admin + tutor)
+
+Production URL example: `https://testcnflms.netlify.app` should deploy **`apps/web`** (not `apps/admin` alone).
+
+| Setting               | Value                                                                  |
+| --------------------- | ---------------------------------------------------------------------- |
+| **Base directory**    | `apps/web` (or leave empty if `netlify.toml` sets `base = "apps/web"`) |
+| **Package directory** | `apps/web` or repo root                                                |
+| **Build command**     | empty (uses `netlify.toml`)                                            |
+| **Publish directory** | **empty** (do not set `apps/admin/.next`)                              |
+
+The build runs `npm run build -w @ssu/web` and generates routes with `scripts/generate-web-routes.mjs`.
+
+| Path           | Portal         |
+| -------------- | -------------- |
+| `/signup`      | Student signup |
+| `/admin/login` | Admin          |
+| `/tutor/login` | Tutor          |
+
+Do not add `[plugins.inputs]` to `netlify.toml`; `@netlify/plugin-nextjs` v5 does not accept `packagePath`.
+
 ## Build troubleshooting
 
 ### `Another next build process is already running` (student app)
