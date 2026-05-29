@@ -1,10 +1,11 @@
 [build]
   base = "/"
-  command = "npm install && npm run build -w @ssu/web"
+  command = "npm install && node scripts/generate-web-routes.mjs && npm run build -w @ssu/web"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
   NEXT_PUBLIC_PORTAL_MODE = "unified"
+  NEXT_PUBLIC_SITE_URL = "https://testcnflms.netlify.app"
 
 [[redirects]]
   from = "/login"
@@ -23,3 +24,6 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+  [plugins.inputs]
+    packagePath = "apps/web"
