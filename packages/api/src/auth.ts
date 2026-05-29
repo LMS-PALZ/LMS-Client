@@ -254,7 +254,11 @@ export async function programslist(): Promise<
 
     const res = await axios.get(url);
 
-    return res.data;
+    return {
+      status: "success",
+      message: res.data.message,
+      data: res.data.data,
+    };
   } catch (error: any) {
     return {
       status: "error",
@@ -292,6 +296,50 @@ export async function adminlogin(
         error.response?.data?.message ||
         error.message ||
         "Login failed. Please try again.",
+    };
+  }
+}
+
+/////////initializePayment
+
+export async function initializePayment(email: string, program: string) {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/api/v1/payments/initialize`, {
+      email,
+      program,
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message:
+        error.response?.data?.message || "Payment initialization failed.",
+    };
+  }
+}
+
+//////////verifypayment
+
+export async function verifyPayment(reference: string) {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/api/v1/payments/verify`, {
+      params: { reference },
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Payment verification failed.",
     };
   }
 }

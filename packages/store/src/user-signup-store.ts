@@ -9,6 +9,7 @@ interface SignupUser {
   last_name?: string;
   phone_number?: string;
   program?: string;
+  program_title?: string;
 }
 
 interface SignupStore {
