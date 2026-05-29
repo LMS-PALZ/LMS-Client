@@ -5,7 +5,7 @@ Monorepo for the **Skill Scale Up** learning management system front end. Three 
 ## Requirements
 
 - **Node.js** >= 24.14.0 (see root `package.json` `engines`; use `.nvmrc` / `.node-version` for **24.14.0**)
-- **Package manager:** this repo is usually installed with **npm** (workspaces). The `packageManager` field pins **pnpm** for Corepack if you prefer pnpm.
+- **Package manager:** **npm** workspaces (`package-lock.json` at the repo root).
 
 ## Link previews & browser tab (favicon)
 

@@ -1,6 +1,6 @@
 [build]
   base = "/"
-  command = "npm ci && npm run build -w @ssu/tutor"
+  command = "npm install && npm run build -w @ssu/tutor"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
