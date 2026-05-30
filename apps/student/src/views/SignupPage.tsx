@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { studentPath } from "@/lib/studentRoutes";
 import { writeStudentSignupDetails } from "@/lib/signup-details";
 
 type FormValues = z.infer<typeof signUpSchema>;
@@ -100,7 +99,7 @@ export function SignupPage() {
     });
 
     setTimeout(() => {
-      router.replace(studentPath("/confirmcode"));
+      router.replace("/confirmcode");
     }, 1500);
   });
 
@@ -321,7 +320,7 @@ export function SignupPage() {
         <p className="pt-4 pb-8 text-center text-sm text-neutral-700">
           Already registered for a program?{" "}
           <Link
-            href={studentPath("/login")}
+            href="/login"
             className="font-semibold text-[#094D2B] hover:underline"
           >
             Login to your dashboard

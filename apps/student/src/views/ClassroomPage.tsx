@@ -4,7 +4,6 @@ import { useSessionDetail } from "@ssu/queries";
 import { Badge, Button, FullPageLayout } from "@ssu/ui";
 import { formatDate } from "@ssu/utils";
 import { ArrowLeft } from "lucide-react";
-import { studentPath } from "@/lib/studentRoutes";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -38,7 +37,7 @@ export function ClassroomPage() {
       header={
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild>
-            <Link href={studentPath("/home")} aria-label="Back">
+            <Link href="/home" aria-label="Back">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>

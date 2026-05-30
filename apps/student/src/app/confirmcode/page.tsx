@@ -3,7 +3,6 @@
 import { useConfirmCodeMutation, useResendCodeMutation } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { AlertBanner, AuthLayout, Button, Input, Spinner } from "@ssu/ui";
-import { studentPath } from "@/lib/studentRoutes";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -108,7 +107,7 @@ export default function Page() {
         });
 
         setTimeout(() => {
-          router.replace(studentPath("/paymentdetail"));
+          router.replace("/paymentdetail");
         }, 2000);
 
         return;

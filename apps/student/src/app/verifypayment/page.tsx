@@ -3,7 +3,6 @@
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useVerifyPayment } from "@ssu/queries";
-import { studentPath } from "@/lib/studentRoutes";
 import { Spinner } from "@ssu/ui";
 
 function PaymentVerifyContent() {
@@ -16,7 +15,7 @@ function PaymentVerifyContent() {
   useEffect(() => {
     if (data) {
       setTimeout(() => {
-        router.replace(studentPath("/welcome"));
+        router.replace("/welcome");
       }, 3000);
     }
   }, [data, router]);
@@ -56,7 +55,7 @@ function PaymentVerifyContent() {
           <p className="text-[14px] text-[#6B7280]">{error?.message}</p>
           <button
             type="button"
-            onClick={() => router.replace(studentPath("/paymentdetail"))}
+            onClick={() => router.replace("/paymentdetail")}
             className="mt-4 rounded-full bg-[#4E845F] px-6 py-2 text-[14px] text-white transition hover:opacity-80"
           >
             Try Again

@@ -1,7 +1,5 @@
 "use client";
 
-import { adminPath } from "@ssu/config/portal-paths";
-
 import { useAdminUsers, usePendingTrainers } from "@ssu/queries";
 import {
   AlertBanner,
@@ -70,7 +68,7 @@ export function HomePage() {
           <ul className="space-y-2 text-small">
             <li>
               <Link
-                href={adminPath("/users")}
+                href="/users"
                 className="font-medium text-brand-green hover:underline"
               >
                 Manage users ({userCount})
@@ -78,7 +76,7 @@ export function HomePage() {
             </li>
             <li>
               <Link
-                href={adminPath("/trainers/pending")}
+                href="/trainers/pending"
                 className="font-medium text-brand-green hover:underline"
               >
                 Review trainer applications ({pendingCount})
@@ -86,7 +84,7 @@ export function HomePage() {
             </li>
             <li>
               <Link
-                href={adminPath("/programs")}
+                href="/programs"
                 className="font-medium text-brand-green hover:underline"
               >
                 Programs
@@ -94,7 +92,7 @@ export function HomePage() {
             </li>
             <li>
               <Link
-                href={adminPath("/announcements")}
+                href="/announcements"
                 className="font-medium text-brand-green hover:underline"
               >
                 Announcements

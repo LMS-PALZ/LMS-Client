@@ -16,30 +16,21 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { studentPath } from "@/lib/studentRoutes";
 import { HeaderBar } from "../components/HeaderBar";
 import { AccountSetupModal } from "../views/ProfileSetting/AccountSetupModal";
 
 const mainItems = [
-  { href: studentPath("/home"), label: "Home", icon: Home },
-  { href: studentPath("/calendar"), label: "Calendar", icon: CalendarDays },
+  { href: "/home", label: "Home", icon: Home },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ];
 
 const learningItems = [
-  {
-    href: studentPath("/classroom"),
-    label: "My Classroom",
-    icon: GraduationCap,
-  },
-  {
-    href: studentPath("/assessments"),
-    label: "Assessments",
-    icon: ClipboardList,
-  },
+  { href: "/classroom", label: "My Classroom", icon: GraduationCap },
+  { href: "/assessments", label: "Assessments", icon: ClipboardList },
 ];
 
 const supportItem = {
-  href: studentPath("/support"),
+  href: "/support",
   label: "Support",
   icon: HelpCircle,
 };

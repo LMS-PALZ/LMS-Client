@@ -9,7 +9,6 @@ import {
   StatusBadge,
   VideoSessionFrame,
 } from "@ssu/ui";
-import { studentPath } from "@/lib/studentRoutes";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -62,7 +61,7 @@ export function ClassroomSessionPage() {
   return (
     <div className="space-y-6">
       <Link
-        href={studentPath("/classroom")}
+        href="/classroom"
         className="inline-flex items-center gap-1 text-small font-medium text-brand-green hover:underline"
       >
         <ChevronLeft className="h-4 w-4" />

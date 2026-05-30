@@ -12,7 +12,6 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { studentPath } from "@/lib/studentRoutes";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@ssu/ui";
 import { useSignupStore } from "@ssu/store";
@@ -201,7 +200,7 @@ export function HeaderBar() {
                     <button
                       type="button"
                       onClick={() => {
-                        router.push(studentPath("/profile"));
+                        router.push("/profile");
                         setUserOpen(false);
                       }}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
@@ -212,7 +211,7 @@ export function HeaderBar() {
                     <button
                       type="button"
                       onClick={() => {
-                        router.push(studentPath("/certificate"));
+                        router.push("/certificate");
                         setUserOpen(false);
                       }}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
@@ -223,7 +222,7 @@ export function HeaderBar() {
                     <button
                       type="button"
                       onClick={() => {
-                        router.push(studentPath("/support"));
+                        router.push("/support");
                         setUserOpen(false);
                       }}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
@@ -340,7 +339,7 @@ export function HeaderBar() {
             <button
               type="button"
               onClick={() => {
-                router.push(studentPath("/profile"));
+                router.push("/profile");
                 setUserOpen(false);
               }}
               className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
@@ -351,7 +350,7 @@ export function HeaderBar() {
             <button
               type="button"
               onClick={() => {
-                router.push(studentPath("/certificate"));
+                router.push("/certificate");
                 setUserOpen(false);
               }}
               className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
@@ -362,7 +361,7 @@ export function HeaderBar() {
             <button
               type="button"
               onClick={() => {
-                router.push(studentPath("/support"));
+                router.push("/support");
                 setUserOpen(false);
               }}
               className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"

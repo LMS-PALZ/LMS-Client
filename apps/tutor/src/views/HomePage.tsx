@@ -1,7 +1,5 @@
 "use client";
 
-import { tutorPath } from "@ssu/config/portal-paths";
-
 import { useEnrolledCourses } from "@ssu/queries";
 import { PageHeader, StatCard, Skeleton, AlertBanner } from "@ssu/ui";
 import { BookOpen, ClipboardList, Users, Video } from "lucide-react";
@@ -39,14 +37,14 @@ export function HomePage() {
         <h2 className="text-h3 text-neutral-900 mb-3">Quick links</h2>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={tutorPath("/courses/new")}
+            href="/courses/new"
             className="text-small font-medium text-brand-green hover:underline"
           >
             New course
           </Link>
           <span className="text-neutral-300">|</span>
           <Link
-            href={tutorPath("/assignments")}
+            href="/assignments"
             className="text-small font-medium text-brand-green hover:underline"
           >
             Submissions

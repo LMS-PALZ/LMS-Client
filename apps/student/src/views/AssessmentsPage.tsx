@@ -9,7 +9,6 @@ import {
   SectionHeader,
   Skeleton,
 } from "@ssu/ui";
-import { studentPath } from "@/lib/studentRoutes";
 import { formatDate } from "@ssu/utils";
 import { ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -71,7 +70,7 @@ export function AssessmentsPage() {
               score={a.status === "graded" ? 85 : undefined}
               dueDate={formatDate(a.dueAt)}
               showDueBadge={a.status === "overdue"}
-              onClick={() => router.push(studentPath(`/assessments/${a.id}`))}
+              onClick={() => router.push(`/assessments/${a.id}`)}
             />
           ))}
         </div>

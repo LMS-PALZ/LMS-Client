@@ -3,7 +3,6 @@
 import { useEnrolledCourses } from "@ssu/queries";
 import { AlertBanner, Button, EmptyState, PageHeader, Skeleton } from "@ssu/ui";
 import { BookOpen } from "lucide-react";
-import { tutorPath } from "@ssu/config/portal-paths";
 import Link from "next/link";
 
 export function CoursesPage() {
@@ -15,7 +14,7 @@ export function CoursesPage() {
         breadcrumbs={[{ label: "Tutor" }, { label: "Courses" }]}
         action={
           <Button asChild variant="primary" size="sm">
-            <Link href={tutorPath("/courses/new")}>New course</Link>
+            <Link href="/courses/new">New course</Link>
           </Button>
         }
       />
@@ -30,7 +29,7 @@ export function CoursesPage() {
           title="No courses yet"
           action={
             <Button asChild variant="primary">
-              <Link href={tutorPath("/courses/new")}>Create course</Link>
+              <Link href="/courses/new">Create course</Link>
             </Button>
           }
         />

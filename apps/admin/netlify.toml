@@ -1,37 +1,9 @@
 [build]
-  base = "apps/web"
-  publish = ".next"
-  command = "cd ../.. && npm install && node scripts/generate-web-routes.mjs && npm run build -w @ssu/web"
+  base = "/"
+  command = "npm install && npm run build -w @ssu/admin"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
-  NEXT_PUBLIC_PORTAL_MODE = "unified"
-  NEXT_PUBLIC_SITE_URL = "https://testcnflms.netlify.app"
-
-[[redirects]]
-  from = "/signup"
-  to = "/student/signup"
-  status = 302
-
-[[redirects]]
-  from = "/home"
-  to = "/student/home"
-  status = 302
-
-[[redirects]]
-  from = "/login"
-  to = "/admin/login"
-  status = 302
-
-[[redirects]]
-  from = "/admin"
-  to = "/admin/login"
-  status = 302
-
-[[redirects]]
-  from = "/tutor"
-  to = "/tutor/login"
-  status = 302
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

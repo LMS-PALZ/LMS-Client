@@ -3,7 +3,6 @@
 import { useAssignment } from "@ssu/queries";
 import { AlertBanner, Badge, PageHeader, Skeleton } from "@ssu/ui";
 import { formatDate } from "@ssu/utils";
-import { studentPath } from "@/lib/studentRoutes";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { SubmissionForm } from "../components/SubmissionForm";
@@ -25,12 +24,12 @@ export function AssignmentDetailPage() {
       <PageHeader
         title={a.title}
         breadcrumbs={[
-          { label: "Assessments", href: studentPath("/assessments") },
+          { label: "Assessments", href: "/assessments" },
           { label: a.title },
         ]}
         action={
           <Link
-            href={studentPath("/assessments")}
+            href="/assessments"
             className="text-small text-brand-green hover:underline"
           >
             Back

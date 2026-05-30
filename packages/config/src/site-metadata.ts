@@ -22,8 +22,10 @@ const PORTAL_DESCRIPTION: Record<AppPortal, string> = {
     "Publish courses, schedule live sessions, review and grade assignment submissions, and manage your tutor profile.",
 };
 
+import { getSiteUrl } from "./env";
+
 function resolveMetadataBase(): URL | undefined {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const raw = getSiteUrl();
   if (!raw) return undefined;
   try {
     return new URL(raw);
