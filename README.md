@@ -88,26 +88,45 @@ There is also `pending@skillscaleup.dev` (tutor, pending approval) for testing t
 
 For full product and UX requirements, see **`instruction.md`** in this repository.
 
-## Netlify (unified site: student + admin + tutor)
+## Config layout (monorepo)
 
-Production URL example: `https://testcnflms.netlify.app` should deploy **`apps/web`** (not `apps/admin` alone).
+| Location                 | What lives there                                                           |
+| ------------------------ | -------------------------------------------------------------------------- |
+| `packages/config`        | Shared Tailwind, `site-metadata`, `env.ts` (`getSiteUrl`), route constants |
+| `apps/student`           | `netlify.toml`, `.env.example`, `src/config/routes.ts`                     |
+| `apps/admin`             | `netlify.toml`, `.env.example`, `src/config/routes.ts`                     |
+| `apps/tutor`             | `netlify.toml`, `.env.example`, `src/config/routes.ts`                     |
+| Repo root `.env.example` | Pointer only — Next reads env from each app folder                         |
 
-| Setting               | Value                                                                          |
-| --------------------- | ------------------------------------------------------------------------------ |
-| **Base directory**    | `apps/web` (or leave empty if `netlify.toml` sets `base = "apps/web"`)         |
-| **Package directory** | `apps/web` or repo root                                                        |
-| **Build command**     | empty (uses `netlify.toml`)                                                    |
-| **Publish directory** | **empty** in the UI. `netlify.toml` sets `publish = ".next"` under `apps/web`. |
+Copy `apps/<portal>/.env.example` to `apps/<portal>/.env.local` for local dev.
 
-The build runs `npm run build -w @ssu/web` and generates routes with `scripts/generate-web-routes.mjs`.
+### Environment variables (per app)
 
-| Path           | Portal         |
-| -------------- | -------------- |
-| `/signup`      | Student signup |
-| `/admin/login` | Admin          |
-| `/tutor/login` | Tutor          |
+| Variable                     | Purpose                              |
+| ---------------------------- | ------------------------------------ |
+| `NEXT_PUBLIC_STAGING_URL`    | Staging host for that portal         |
+| `NEXT_PUBLIC_PRODUCTION_URL` | Production host on skillscaleup.org  |
+| `NEXT_PUBLIC_APP_ENV`        | `local` \| `staging` \| `production` |
+| `NEXT_PUBLIC_SITE_URL`       | Local dev override (port per app)    |
 
-Do not add `[plugins.inputs]` to `netlify.toml`; `@netlify/plugin-nextjs` v5 does not accept `packagePath`.
+Use `@/config/routes` inside an app, or `@ssu/config/routes` from packages. Next.js `src/app/**` remains the real router; route constants are for links and redirects only.
+
+## Netlify (staging: student on testcnflms)
+
+Point the **testcnflms** site at the **student** app only:
+
+| Setting               | Value                                    |
+| --------------------- | ---------------------------------------- |
+| **Package directory** | `apps/student`                           |
+| **Publish directory** | **empty** in the UI                      |
+| **Build command**     | empty (uses `apps/student/netlify.toml`) |
+
+Set in Netlify (or use values from `apps/student/netlify.toml`):
+
+- `NEXT_PUBLIC_APP_ENV=staging`
+- `NEXT_PUBLIC_STAGING_URL=https://testcnflms.netlify.app`
+
+Student routes on that host: `/` (signup), `/login`, `/home`, etc. Admin and tutor get their own Netlify sites or production subdomains later.
 
 ## Build troubleshooting
 

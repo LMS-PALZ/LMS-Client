@@ -9,7 +9,11 @@
     "./tailwind": "./tailwind/tailwind.config.ts",
     "./tsconfig/base.json": "./tsconfig/base.json",
     "./site-metadata": "./src/site-metadata.ts",
-    "./portal-paths": "./src/portal-paths.ts"
+    "./env": "./src/env.ts",
+    "./routes": "./src/routes/index.ts",
+    "./routes/student": "./src/routes/student.ts",
+    "./routes/admin": "./src/routes/admin.ts",
+    "./routes/tutor": "./src/routes/tutor.ts"
   },
   "peerDependencies": {
     "next": ">=14.0.0"
