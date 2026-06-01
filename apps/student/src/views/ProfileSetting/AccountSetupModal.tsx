@@ -176,14 +176,6 @@ export function AccountSetupModal() {
     }
   };
 
-  // const handleFinish = () => {
-  //   if (!validateStepThree()) {
-  //     return;
-  //   }
-
-  //   setIsVisible(false);
-  // };
-
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center overflow-y-auto bg-black/35 px-4 py-6">
       <motion.div
