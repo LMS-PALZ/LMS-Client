@@ -1,10 +1,27 @@
 import type { ClassroomCourseDetail } from "@/lib/classroom-data";
+import { isRecordingAvailable } from "@/lib/classroom-data";
+import { DashboardEmptyState } from "@ssu/ui";
+import { Video } from "lucide-react";
 
 export function ClassroomRecordingPage({
   course,
 }: {
   course: ClassroomCourseDetail;
 }) {
+  if (!isRecordingAvailable(course.sessionPhase)) {
+    return (
+      <DashboardEmptyState
+        icon={Video}
+        title="Recording not available"
+        description={
+          course.sessionPhase === "live"
+            ? "This class is in session. Join the live class or check back after it ends."
+            : "This class has not started yet. Recordings appear here after the session ends."
+        }
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="rounded-[15px] bg-[#F4F7FA] p-5">

@@ -115,9 +115,9 @@ export function SignupPage() {
   }, []);
 
   return (
-    <AuthLayout>
-      <div className="flex flex-col items-center">
-        <div className="w-[120px] py-7">
+    <AuthLayout contentAlign="top">
+      <div className="flex w-full flex-col items-center">
+        <div className="w-[120px] py-5">
           <img
             src="/firstlogo.png"
             alt="Chiggy Nsofor Foundation"
@@ -125,21 +125,21 @@ export function SignupPage() {
           />
         </div>
 
-        <h1 className="mb-3 text-[25px] font-bold text-[#1F2937] sm:text-[23px]">
+        <h1 className="mb-2 text-[25px] font-bold text-[#1F2937] sm:text-[23px]">
           Let&apos;s begin your journey
         </h1>
 
-        <p className="mb-6 text-center text-sm text-neutral-900">
+        <p className="mb-5 text-center text-sm text-neutral-900">
           It only takes a moment to begin.
         </p>
 
         {banner && (
-          <div className="mb-5 w-full max-w-sm">
+          <div className="mb-4 w-full max-w-sm">
             <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
           </div>
         )}
 
-        <form onSubmit={onSubmit} className="w-full max-w-sm space-y-6">
+        <form onSubmit={onSubmit} className="w-full max-w-sm space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               id="last_name"
@@ -315,17 +315,19 @@ export function SignupPage() {
               "Signup"
             )}
           </Button>
-        </form>
 
-        <p className="pt-4 pb-8 text-center text-sm text-neutral-700">
-          Already registered for a program?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-[#094D2B] hover:underline"
-          >
-            Login to your dashboard
-          </Link>
-        </p>
+          <p className="pt-2 text-center text-sm text-neutral-700">
+            <span className="inline whitespace-nowrap">
+              Already registered for a program?{" "}
+              <Link
+                href="/login"
+                className="font-semibold text-[#094D2B] hover:underline"
+              >
+                Login to your dashboard
+              </Link>
+            </span>
+          </p>
+        </form>
       </div>
     </AuthLayout>
   );

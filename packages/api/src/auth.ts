@@ -414,6 +414,8 @@ export async function createStudentProfile(data: {
 
 export const SESSION_STORAGE_KEY = "ssu_session";
 
+const AUTH_TOKEN_STORAGE_KEY = "token";
+
 export function readSession(): AuthUser | null {
   if (typeof window === "undefined") return null;
   try {
@@ -423,6 +425,21 @@ export function readSession(): AuthUser | null {
   } catch {
     return null;
   }
+}
+
+/** True only after a successful login (not mid-signup). */
+export function isStudentAuthenticated(): boolean {
+  if (typeof window === "undefined") return false;
+  const session = readSession();
+  const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+  return Boolean(session?.email && token);
+}
+
+export function clearStudentAuth(): void {
+  writeSession(null);
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  localStorage.removeItem("reset-email");
 }
 
 export function writeSession(user: AuthUser | null): void {

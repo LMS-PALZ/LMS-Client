@@ -27,7 +27,7 @@ export const mockSessions: LiveSessionItem[] = [
     courseName: "Social Media Strategy: Viral Campaigns",
     startsAt: new Date(Date.now() + 3600000).toISOString(),
     isLive: true,
-    meetingUrl: "https://zoom.us/j/000000000",
+    meetingUrl: "https://meet.google.com/nfk-vzbi-yhm",
     description:
       "Students are introduced to the basics of UI and UX, the difference between them, and why product design is important. They will also learn about the 5 stages of design thinking (Empathize, Define, Ideate, Prototype, Test).",
   },

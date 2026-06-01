@@ -8,8 +8,6 @@ export * from "./uploads";
 export * from "./admin";
 export * from "./auth";
 export * from "./student-auth";
-export * from "./google-classroom";
-export * from "./google-classroom/mappers";
 export * from "./student-progress";
 export * from "./curriculum";
 export * from "./programs";

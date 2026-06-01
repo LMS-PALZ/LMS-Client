@@ -2,8 +2,6 @@
 
 import {
   useStudentAssignments,
-  useConnectGoogle,
-  useGoogleConnectionStatus,
   useSession,
   useStudentProgress,
   useUpcomingSessions,
@@ -11,7 +9,6 @@ import {
 import {
   AlertBanner,
   AssignmentSummaryCard,
-  ConnectGoogleBanner,
   DashboardEmptyState,
   GreetingTitle,
   SectionHeader,
@@ -24,7 +21,6 @@ import { GraduationCap, Notebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
-
 function greeting(first: string) {
   const h = new Date().getHours();
   if (h < 12) return `Good morning, ${first}`;
@@ -45,37 +41,28 @@ export function HomePage() {
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
   const assignments = useStudentAssignments();
-  const googleStatus = useGoogleConnectionStatus();
-  const connectGoogle = useConnectGoogle();
 
   const first = user?.firstName ?? "there";
   const sessionList = sessions.data ?? [];
   const assignmentList = (assignments.data ?? []).slice(0, 4);
 
-  const showGoogleBanner =
-    googleStatus.data?.connected === false && !googleStatus.isLoading;
-
   const overallPercent = useMemo(() => {
     if (progress.data) return progress.data.overallScorePercent;
-    const courses = assignments.data;
-    if (!courses?.length) return 0;
     return 0;
-  }, [progress.data, assignments.data]);
+  }, [progress.data]);
 
   return (
     <div className="space-y-8">
       <GreetingTitle>{`${greeting(first)}!`}</GreetingTitle>
-
-      {showGoogleBanner && (
-        <ConnectGoogleBanner onConnect={() => connectGoogle.mutate()} />
-      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {progress.isLoading ? (
           <Skeleton className="h-56 rounded-2xl" />
         ) : (
           <WelcomeCard
-            programTitle={progress.data?.enrolledProgramTitle ?? "your program"}
+            programTitle={
+              progress.data?.enrolledProgramTitle ?? "web development"
+            }
             progressPercent={overallPercent}
           />
         )}
@@ -103,12 +90,18 @@ export function HomePage() {
                   status={s.isLive ? "live" : "upcoming"}
                   highlighted={i === 0 && s.isLive}
                   action={
-                    <Link
-                      href={`/classroom/${s.id}`}
-                      className="text-small font-semibold text-brand-green hover:underline"
-                    >
-                      {s.isLive ? "Join now >" : "Add to reminder >"}
-                    </Link>
+                    s.isLive ? (
+                      <Link
+                        href={`/classroom/${s.id}`}
+                        className="text-small font-semibold text-brand-green hover:underline"
+                      >
+                        Join session &gt;
+                      </Link>
+                    ) : (
+                      <span className="text-small font-semibold text-neutral-400">
+                        Join session &gt;
+                      </span>
+                    )
                   }
                 />
               ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { isStudentAuthenticated } from "@ssu/api";
 import { useLoginMutation, useSession } from "@ssu/queries";
 import { loginSchema } from "@ssu/schema";
 import { useRouter } from "next/navigation";
@@ -54,6 +55,8 @@ export function LoginForm({
         ? "tutor"
         : "student";
   const login = useLoginMutation(portal);
+  const isAuthenticated =
+    portal === "student" ? isStudentAuthenticated() : Boolean(session);
   const [showPw, setShowPw] = useState(false);
   const [banner, setBanner] = useState<{
     variant: "error" | "warning";
@@ -70,10 +73,11 @@ export function LoginForm({
   });
 
   useEffect(() => {
-    if (session) {
+    if (!requireSessionCheck) return;
+    if (isAuthenticated) {
       router.replace(onSuccessRedirect);
     }
-  }, [session, router, onSuccessRedirect]);
+  }, [isAuthenticated, requireSessionCheck, router, onSuccessRedirect]);
 
   const onSubmit = async (values: FormValues) => {
     setBanner(null);
@@ -101,7 +105,7 @@ export function LoginForm({
   if (sessionLoading) {
     return null;
   }
-  if (requireSessionCheck && session) {
+  if (requireSessionCheck && isAuthenticated) {
     return null;
   }
 

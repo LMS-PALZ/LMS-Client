@@ -165,7 +165,7 @@ export function AccountSetupModal() {
 
       setTimeout(() => {
         setIsVisible(false);
-        router.replace("/dashboard");
+        router.replace("/home");
       }, 2000);
     } catch (error: any) {
       setBanner({

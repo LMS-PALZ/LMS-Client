@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
 
+/** Temporary meet link until backend provides session URLs per class. */
+export const DEFAULT_MEET_LINK = "https://meet.google.com/nfk-vzbi-yhm";
+
+export type SessionPhase = "live" | "upcoming" | "ended";
+
 export type ClassroomLessonType = "live" | "recording" | "reading";
 
 export interface ClassroomLesson {
@@ -35,6 +40,8 @@ export interface ClassroomCourseDetail {
   imageUrl: string;
   overview: string;
   recordingSummary: string;
+  sessionPhase: SessionPhase;
+  meetUrl: string;
   resources: Array<{
     id: string;
     title: string;
@@ -51,10 +58,12 @@ export interface ClassroomProgram {
   startDate: string;
   endDate: string;
   liveSession: {
+    sessionId: string;
     courseId: string;
     title: string;
     time: string;
     date: string;
+    phase: SessionPhase;
   };
   courseItems: ClassroomCourseItem[];
 }
@@ -69,10 +78,12 @@ export const classroomProgram: ClassroomProgram = {
   startDate: "10th May, 2026",
   endDate: "10th Oct, 2026",
   liveSession: {
+    sessionId: "s1",
     courseId: "viral-campaigns",
     title: "Social Media Strategy: Viral Campaigns",
     time: "10:00am",
     date: "10/12",
+    phase: "live",
   },
   courseItems: [
     {
@@ -176,34 +187,26 @@ export const classroomCourseDetails: ClassroomCourseDetail[] = [
       "Explanation: Students are introduced to the basics of UI and UX, the difference between them, and why product design is important. They will also learn about the 5 stages of design thinking (Empathize, Define, Ideate, Prototype, Test).",
     recordingSummary:
       "Recording: Rewatch the full class session to revisit the instructor's walkthrough, examples, and discussion points at your own pace.",
+    sessionPhase: "live",
+    meetUrl: DEFAULT_MEET_LINK,
     resources: [
-      {
-        id: "r1",
-        title: "Week 1 Slide Deck",
-        meta: "PDF • 4.2 MB",
-      },
-      {
-        id: "r2",
-        title: "Class Recording Notes",
-        meta: "DOC • 280 KB",
-      },
-      {
-        id: "r3",
-        title: "Recommended Reading Links",
-        meta: "Link Collection",
-      },
+      { id: "r1", title: "Week 1 Slide Deck", meta: "PDF • 4.2 MB" },
+      { id: "r2", title: "Class Recording Notes", meta: "DOC • 280 KB" },
+      { id: "r3", title: "Recommended Reading Links", meta: "Link Collection" },
     ],
   },
   {
     id: "client-essentials",
     title: "Social Media Strategy: Viral Campaigns",
-    sessionLabel: "LIVE SESSION",
-    sessionDuration: "1:20:10",
+    sessionLabel: "SESSION",
+    sessionDuration: "Completed",
     imageUrl: "/logo.png",
     overview:
       "Explanation: This class explores the foundations of client communication, expectation management, and professional collaboration.",
     recordingSummary:
       "Recording: Replay the lesson to review client case studies, workflows, and communication templates.",
+    sessionPhase: "ended",
+    meetUrl: DEFAULT_MEET_LINK,
     resources: [
       {
         id: "r1",
@@ -215,41 +218,49 @@ export const classroomCourseDetails: ClassroomCourseDetail[] = [
   {
     id: "community-growth",
     title: "Social Media Strategy: Viral Campaigns",
-    sessionLabel: "LIVE SESSION",
-    sessionDuration: "1:20:10",
+    sessionLabel: "UPCOMING",
+    sessionDuration: "—",
     imageUrl: "/logo.png",
     overview:
       "Explanation: Students learn the principles of building engaged online communities and measuring healthy growth.",
     recordingSummary:
       "Recording: Watch the tutor's practical examples on audience nurturing and retention.",
+    sessionPhase: "upcoming",
+    meetUrl: DEFAULT_MEET_LINK,
     resources: [
-      {
-        id: "r1",
-        title: "Community Audit Template",
-        meta: "XLSX • 420 KB",
-      },
+      { id: "r1", title: "Community Audit Template", meta: "XLSX • 420 KB" },
     ],
   },
   {
     id: "campaign-analytics",
     title: "Social Media Strategy: Viral Campaigns",
-    sessionLabel: "LIVE SESSION",
-    sessionDuration: "1:20:10",
+    sessionLabel: "UPCOMING",
+    sessionDuration: "—",
     imageUrl: "/logo.png",
     overview:
       "Explanation: Students are introduced to campaign metrics, reporting practices, and how to interpret performance dashboards.",
     recordingSummary:
       "Recording: Review the analytics setup demo and reporting examples from the session.",
+    sessionPhase: "upcoming",
+    meetUrl: DEFAULT_MEET_LINK,
     resources: [
-      {
-        id: "r1",
-        title: "Analytics Dashboard Guide",
-        meta: "PDF • 2.1 MB",
-      },
+      { id: "r1", title: "Analytics Dashboard Guide", meta: "PDF • 2.1 MB" },
     ],
   },
 ];
 
 export function getClassroomCourseById(id: string) {
   return classroomCourseDetails.find((course) => course.id === id) ?? null;
+}
+
+export function getClassroomSessionCourseId(sessionId: string): string | null {
+  if (sessionId === classroomProgram.liveSession.sessionId) {
+    return classroomProgram.liveSession.courseId;
+  }
+  const course = classroomCourseDetails.find((c) => c.id === sessionId);
+  return course?.id ?? null;
+}
+
+export function isRecordingAvailable(phase: SessionPhase): boolean {
+  return phase === "ended";
 }

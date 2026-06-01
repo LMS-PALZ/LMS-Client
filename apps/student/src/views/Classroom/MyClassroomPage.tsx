@@ -1,11 +1,15 @@
 "use client";
 
+import { classroomProgram } from "@/lib/classroom-data";
 import { BookCopy, CalendarDays, ChevronRight, Clock3 } from "lucide-react";
 import Link from "next/link";
 import { ClassroomCourseCard } from "./ClassroomCourseCard";
-import { classroomProgram } from "@/lib/classroom-data";
 
 export function MyClassroomPage() {
+  const { liveSession } = classroomProgram;
+  const isLive = liveSession.phase === "live";
+  const sessionHref = `/classroom/${liveSession.sessionId}`;
+
   return (
     <div className="space-y-5">
       <section className="grid gap-4 xl:grid-cols-[1.8fr_0.95fr]">
@@ -66,39 +70,52 @@ export function MyClassroomPage() {
         </div>
 
         <div className="rounded-[18px] border border-[#EEF2F6] bg-white p-5 md:p-4">
-          <div className="inline-flex items-center rounded-full bg-[#FCE3DE] px-3 py-1 text-[13px] font-medium text-[#D14B3D]">
-            <span className="mr-2 h-2 w-2 rounded-full bg-[#D14B3D]" />
-            Live
+          <div
+            className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium ${
+              isLive
+                ? "bg-[#FCE3DE] text-[#D14B3D]"
+                : "bg-[#E8F4FC] text-[#2B6CB0]"
+            }`}
+          >
+            <span
+              className={`mr-2 h-2 w-2 rounded-full ${
+                isLive ? "bg-[#D14B3D]" : "bg-[#2B6CB0]"
+              }`}
+            />
+            {isLive ? "Live" : "Upcoming"}
           </div>
 
-          <h2 className="mt-5 text-[16px] font-medium  leading-9 text-[#1D1D1D]">
-            {classroomProgram.liveSession.title}
+          <h2 className="mt-5 text-[16px] font-medium leading-9 text-[#1D1D1D]">
+            {liveSession.title}
           </h2>
 
           <div className="mt-3 flex items-center gap-5 text-[16px] text-[#6B7280]">
             <div className="flex items-center gap-2">
               <Clock3 size={12} />
-              <span className="text-[12px]">
-                {classroomProgram.liveSession.time}
-              </span>
+              <span className="text-[12px]">{liveSession.time}</span>
             </div>
 
             <div className="flex items-center gap-2">
               <CalendarDays size={12} />
-              <span className="text-[12px]">
-                {classroomProgram.liveSession.date}
-              </span>
+              <span className="text-[12px]">{liveSession.date}</span>
             </div>
           </div>
 
           <div className="mt-10 flex justify-end">
-            <Link
-              href={`/courses/${classroomProgram.liveSession.courseId}`}
-              className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
-            >
-              Join Session
-              <ChevronRight size={16} />
-            </Link>
+            {isLive ? (
+              <Link
+                href={sessionHref}
+                className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
+              >
+                Join Session
+                <ChevronRight size={16} />
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
+                Join Session
+                <ChevronRight size={16} />
+              </span>
+            )}
           </div>
         </div>
       </section>

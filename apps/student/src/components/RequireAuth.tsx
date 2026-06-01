@@ -1,28 +1,31 @@
 "use client";
 
+import { isStudentAuthenticated } from "@ssu/api";
 import { useSession } from "@ssu/queries";
 import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { data: user, isLoading } = useSession();
+  const { isLoading } = useSession();
   const router = useRouter();
+  const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace("/");
+    if (isLoading) return;
+    if (!isStudentAuthenticated()) {
+      router.replace("/login");
+      return;
     }
-  }, [isLoading, user, router]);
+    setAuthed(true);
+  }, [isLoading, router]);
 
-  if (isLoading) {
+  if (isLoading || !authed) {
     return (
       <div className="flex min-h-screen items-center justify-center text-body text-neutral-500">
         Loading…
       </div>
     );
   }
-  if (!user) {
-    return null;
-  }
+
   return <>{children}</>;
 }

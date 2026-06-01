@@ -1,7 +1,8 @@
-import { getClassroomCourseById } from "@/lib/classroom-data";
+import { classroomProgram, getClassroomCourseById } from "@/lib/classroom-data";
 import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
 import { EmptyState } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export default async function Page({
   params,
@@ -15,10 +16,18 @@ export default async function Page({
     return (
       <EmptyState
         icon={Megaphone}
-        title="You don't have any on going live sessions yet"
-        description="When you do, they'll show up here"
+        title="Course not found"
+        description="This course is not available in your classroom."
       />
     );
   }
+
+  if (
+    course.sessionPhase === "live" &&
+    id === classroomProgram.liveSession.courseId
+  ) {
+    redirect(`/classroom/${classroomProgram.liveSession.sessionId}`);
+  }
+
   return <ClassroomOverviewPage course={course} />;
 }

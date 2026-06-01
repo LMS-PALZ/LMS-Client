@@ -1,10 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSetPasswordMutation, useSession } from "@ssu/queries";
+import { clearStudentAuth } from "@ssu/api";
+import { sessionKey, useSetPasswordMutation } from "@ssu/queries";
+import { useQueryClient } from "@tanstack/react-query";
 import { resetPasswordSchema } from "@ssu/schema";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeClosed } from "lucide-react";
 import type { z } from "zod";
@@ -15,19 +17,18 @@ import { Button } from "@ssu/ui";
 import { FormField } from "@ssu/ui";
 import { Input } from "@ssu/ui";
 import { Spinner } from "@ssu/ui";
-import { useSignupStore } from "@ssu/store";
-
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
 export default function SetPasswordPage() {
   const router = useRouter();
-
-  const user = useSignupStore((state) => state.user);
-  console.log("Using email for set password:", user?.email);
-
-  const { data: session, isLoading: sessionLoading } = useSession();
+  const queryClient = useQueryClient();
 
   const setPassword = useSetPasswordMutation();
+
+  useEffect(() => {
+    clearStudentAuth();
+    void queryClient.setQueryData(sessionKey, null);
+  }, [queryClient]);
 
   const [banner, setBanner] = useState<{
     variant: "error" | "warning" | "success";
@@ -82,14 +83,6 @@ export default function SetPasswordPage() {
       });
     }
   });
-
-  if (sessionLoading) {
-    return null;
-  }
-
-  if (session) {
-    return null;
-  }
 
   return (
     <AuthLayout>

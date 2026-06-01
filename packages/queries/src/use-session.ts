@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AuthUser } from "@ssu/types";
-import { readSession, writeSession } from "@ssu/api";
+import { clearStudentAuth, readSession, writeSession } from "@ssu/api";
 import { useSyncExternalStore } from "react";
 import { sessionKey } from "./keys";
 
@@ -31,7 +31,7 @@ export function useSession() {
 export function useLogout() {
   const qc = useQueryClient();
   return () => {
-    writeSession(null);
+    clearStudentAuth();
     void qc.invalidateQueries({ queryKey: sessionKey });
     void qc.setQueryData(sessionKey, null);
   };
