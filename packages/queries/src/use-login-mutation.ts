@@ -16,6 +16,7 @@ export function useLoginMutation(portal: LoginPortal = "student") {
     onSuccess: (data) => {
       if (!data.ok) return;
       writeSession(data.data);
+      localStorage.setItem("token", JSON.stringify(data.data));
       void qc.setQueryData(sessionKey, data.data);
     },
   });

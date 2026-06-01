@@ -19,3 +19,4 @@ export * from "./use-google-classroom";
 export * from "./use-student-progress";
 export * from "./use-curriculum";
 export * from "./use-available-programs";
+export * from "./use-profile-mutation";

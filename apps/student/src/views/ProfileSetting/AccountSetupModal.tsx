@@ -9,7 +9,10 @@ import {
   type AccountSetupStepTwoValues,
 } from "@ssu/schema";
 import { motion } from "framer-motion";
+import { useCreateProfileMutation } from "@ssu/queries";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AlertBanner, Spinner } from "@ssu/ui";
 
 import { AccountSetupProgress } from "@/views/ProfileSetting/AccountSetupProgress";
 import { AccountSetupStepOne } from "@/views/ProfileSetting/AccountSetupStepOne";
@@ -35,6 +38,7 @@ function mapFieldErrors<T extends string>(
 export function AccountSetupModal() {
   const [step, setStep] = useState(1);
   const [isVisible, setIsVisible] = useState(true);
+  const router = useRouter();
 
   const [gender, setGender] = useState("");
 
@@ -65,6 +69,12 @@ export function AccountSetupModal() {
   if (!isVisible) {
     return null;
   }
+
+  const createProfile = useCreateProfileMutation();
+  const [banner, setBanner] = useState<{
+    variant: "error" | "success";
+    message: string;
+  } | null>(null);
 
   const validateStepOne = () => {
     const result = accountSetupStepOneSchema.safeParse({
@@ -128,13 +138,51 @@ export function AccountSetupModal() {
     setStep((prev) => (prev > 1 ? prev - 1 : prev));
   };
 
-  const handleFinish = () => {
-    if (!validateStepThree()) {
-      return;
-    }
+  const handleFinish = async () => {
+    if (!validateStepThree()) return;
 
-    setIsVisible(false);
+    if (!profilePhoto) return;
+
+    setBanner(null);
+
+    try {
+      await createProfile.mutateAsync({
+        day,
+        month,
+        year: Number(year),
+        gender,
+        employment_status: employmentStatus,
+        address,
+        state: stateOfResidence,
+        city,
+        photo: profilePhoto,
+      });
+
+      setBanner({
+        variant: "success",
+        message: "Profile created successfully!",
+      });
+
+      setTimeout(() => {
+        setIsVisible(false);
+        router.replace("/dashboard");
+      }, 2000);
+    } catch (error: any) {
+      setBanner({
+        variant: "error",
+        message:
+          error?.message || "Failed to create profile. Please try again.",
+      });
+    }
   };
+
+  // const handleFinish = () => {
+  //   if (!validateStepThree()) {
+  //     return;
+  //   }
+
+  //   setIsVisible(false);
+  // };
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center overflow-y-auto bg-black/35 px-4 py-6">
@@ -164,6 +212,12 @@ export function AccountSetupModal() {
             Let’s Complete Your Profile
           </p>
         </div>
+
+        {banner && (
+          <div className="mt-4">
+            <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
+          </div>
+        )}
 
         {/* STEP */}
         {step === 1 && (
@@ -280,14 +334,18 @@ export function AccountSetupModal() {
               <button
                 type="button"
                 onClick={handleFinish}
-                disabled={!profilePhoto}
+                disabled={!profilePhoto || createProfile.isPending}
                 className={`flex h-[42px] items-center justify-center rounded-full px-7 text-[15px] font-medium text-white transition ${
-                  profilePhoto
+                  profilePhoto && !createProfile.isPending
                     ? "bg-[#4E845F] hover:bg-[#3D6E4D]"
                     : "cursor-not-allowed bg-[#D8DEE8] text-[#9AA5B1]"
                 }`}
               >
-                Finish
+                {createProfile.isPending ? (
+                  <Spinner className="h-5 w-5 animate-spin" />
+                ) : (
+                  "Finish"
+                )}
               </button>
             )}
           </div>

@@ -363,6 +363,55 @@ export async function verifyPayment(reference: string) {
   }
 }
 
+export async function createStudentProfile(data: {
+  day: string;
+  month: string;
+  year: number;
+  gender: string;
+  employment_status: string;
+  address: string;
+  state: string;
+  city: string;
+  photo: File;
+}) {
+  try {
+    const token = localStorage.getItem("token");
+
+    const formData = new FormData();
+    formData.append("day", data.day);
+    formData.append("month", data.month);
+    formData.append("year", String(data.year));
+    formData.append("gender", data.gender);
+    formData.append("employment_status", data.employment_status);
+    formData.append("address", data.address);
+    formData.append("state", data.state);
+    formData.append("city", data.city);
+    formData.append("photo", data.photo);
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/profiles/uploads`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to create profile.",
+    };
+  }
+}
+
 export const SESSION_STORAGE_KEY = "ssu_session";
 
 export function readSession(): AuthUser | null {
