@@ -5,8 +5,8 @@ import { useAdminUsers, usePendingTrainers } from "@ssu/queries";
 import {
   AlertBanner,
   PageHeader,
-  Skeleton,
   StatCard,
+  StatCardSkeleton,
   StatusBadge,
 } from "@ssu/ui";
 import { BookOpen, Megaphone, UserCheck, Users } from "lucide-react";
@@ -43,12 +43,12 @@ export function HomePage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {usersQ.isLoading ? (
-          <Skeleton className="h-28 rounded-xl" />
+          <StatCardSkeleton />
         ) : (
           <StatCard label="Registered users" value={userCount} icon={Users} />
         )}
         {pendingQ.isLoading ? (
-          <Skeleton className="h-28 rounded-xl" />
+          <StatCardSkeleton />
         ) : (
           <StatCard
             label="Pending trainers"

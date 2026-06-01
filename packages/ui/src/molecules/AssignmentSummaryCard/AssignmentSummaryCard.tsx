@@ -1,60 +1,95 @@
+import { TagHorizontalIcon } from "../../icons";
 import { cn } from "@ssu/utils";
-import { Calendar, ClipboardList, FileText } from "lucide-react";
-import { StatusBadge } from "../StatusBadge";
+import type { StatusBadgeProps } from "../StatusBadge";
 
 export interface AssignmentSummaryCardProps {
   title: string;
   moduleLabel: string;
-  score?: number | string;
   dueDate: string;
-  showDueBadge?: boolean;
+  weightPercent?: number;
+  scoreDisplay?: string;
+  statusLabel?: string;
+  statusVariant?: NonNullable<StatusBadgeProps["variant"]>;
   className?: string;
   onClick?: () => void;
+}
+
+export const ASSIGNMENT_SUMMARY_CARD_BG = "#F1F6FA";
+
+function AssignmentStatusPill({
+  label,
+  variant,
+}: {
+  label: string;
+  variant: NonNullable<StatusBadgeProps["variant"]>;
+}) {
+  const isNotSubmitted = variant === "notSubmitted";
+  return (
+    <span
+      className={cn(
+        "inline-flex rounded-full px-3 py-1 text-[11px] font-semibold leading-none",
+        isNotSubmitted
+          ? "bg-[#FEE8E8] text-[#DC2626]"
+          : "bg-[#E8ECF0] text-neutral-700",
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+function MetricColumn({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-[12px] font-semibold text-neutral-800">{label}</dt>
+      <dd className="mt-1 text-[12px] text-neutral-500">{value}</dd>
+    </div>
+  );
 }
 
 export function AssignmentSummaryCard({
   title,
   moduleLabel,
-  score,
   dueDate,
-  showDueBadge,
+  weightPercent = 0,
+  scoreDisplay = "N/A",
+  statusLabel = "To do",
+  statusVariant = "todo",
   className,
   onClick,
 }: AssignmentSummaryCardProps) {
   const Wrapper = onClick ? "button" : "article";
+  const weightValue = `${weightPercent}%`;
 
   return (
     <Wrapper
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        "rounded-2xl border bg-white p-4 shadow-card text-left w-full",
-        onClick && "hover:shadow-card-hover transition-shadow cursor-pointer",
+        "relative flex min-h-[188px] flex-col rounded-2xl p-4 text-left sm:min-h-[196px]",
+        onClick && "cursor-pointer transition-opacity hover:opacity-95",
         className,
       )}
+      style={{ backgroundColor: ASSIGNMENT_SUMMARY_CARD_BG }}
     >
-      <div className="flex items-start justify-between gap-2 mb-3">
-        <h3 className="text-h4 font-semibold text-neutral-900 line-clamp-2">
-          {title}
-        </h3>
-        {showDueBadge && <StatusBadge variant="due">Due</StatusBadge>}
+      <h3 className="mb-2.5 line-clamp-2 text-[14px] font-bold leading-snug text-neutral-900 sm:text-[15px]">
+        {title}
+      </h3>
+
+      <div className="mb-4 flex items-center gap-2 text-[12px] text-neutral-500">
+        <TagHorizontalIcon size={14} aria-hidden />
+        <span className="line-clamp-1">{moduleLabel}</span>
       </div>
-      <ul className="space-y-2 text-small text-neutral-600">
-        <li className="flex items-center gap-2">
-          <FileText className="h-4 w-4 shrink-0 text-neutral-400" />
-          {moduleLabel}
-        </li>
-        {score !== undefined && (
-          <li className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 shrink-0 text-neutral-400" />
-            {score}
-          </li>
-        )}
-        <li className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 shrink-0 text-neutral-400" />
-          {dueDate}
-        </li>
-      </ul>
+
+      <dl className="mb-4 grid grid-cols-3 gap-2">
+        <MetricColumn label="Due date" value={dueDate} />
+        <MetricColumn label="Weight" value={weightValue} />
+        <MetricColumn label="Score" value={scoreDisplay} />
+      </dl>
+
+      <div className="mt-auto flex justify-end">
+        <AssignmentStatusPill label={statusLabel} variant={statusVariant} />
+      </div>
     </Wrapper>
   );
 }

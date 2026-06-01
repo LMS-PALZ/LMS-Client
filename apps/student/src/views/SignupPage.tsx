@@ -1,16 +1,18 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePrograms, useSignupMutation } from "@ssu/queries";
+import { clearStudentAuth, isStudentAuthenticated } from "@ssu/api";
+import { sessionKey, usePrograms, useSignupMutation } from "@ssu/queries";
+import { useQueryClient } from "@tanstack/react-query";
 import { signUpSchema } from "@ssu/schema";
 import { useSignupStore } from "@ssu/store";
 import {
-  AlertBanner,
   AuthLayout,
   Button,
   FormField,
   Input,
-  Spinner,
+  SelectMenuSkeleton,
+  Skeleton,
 } from "@ssu/ui";
 import { Check, ChevronDown } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +26,14 @@ type FormValues = z.infer<typeof signUpSchema>;
 
 export function SignupPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const setUser = useSignupStore((state) => state.setUser);
+
+  useEffect(() => {
+    if (isStudentAuthenticated()) return;
+    clearStudentAuth();
+    void queryClient.setQueryData(sessionKey, null);
+  }, [queryClient]);
 
   const {
     data: programs,
@@ -33,11 +42,6 @@ export function SignupPage() {
   } = usePrograms();
 
   const signup = useSignupMutation();
-
-  const [banner, setBanner] = useState<{
-    variant: "error" | "warning" | "success";
-    message: string;
-  } | null>(null);
 
   const [isProgramOpen, setIsProgramOpen] = useState(false);
   const programMenuRef = useRef<HTMLDivElement | null>(null);
@@ -62,24 +66,13 @@ export function SignupPage() {
   const selectedProgram = watch("program");
 
   const onSubmit = handleSubmit(async (values) => {
-    setBanner(null);
-
     const res = await signup.mutateAsync(values);
 
     if (!res.status) {
-      setBanner({
-        variant: "error",
-        message: res.message,
-      });
       return;
     }
 
     const matchedProgram = programs?.find((p) => p.slug === values.program);
-
-    setBanner({
-      variant: "success",
-      message: res.message,
-    });
 
     writeStudentSignupDetails({
       ...values,
@@ -132,12 +125,6 @@ export function SignupPage() {
         <p className="mb-5 text-center text-sm text-neutral-900">
           It only takes a moment to begin.
         </p>
-
-        {banner && (
-          <div className="mb-4 w-full max-w-sm">
-            <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
-          </div>
-        )}
 
         <form onSubmit={onSubmit} className="w-full max-w-sm space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -238,7 +225,7 @@ export function SignupPage() {
                 </span>
 
                 {programsLoading ? (
-                  <Spinner className="h-5 w-5 animate-spin" />
+                  <Skeleton className="h-5 w-5 rounded-md" aria-hidden />
                 ) : (
                   <ChevronDown
                     className={`h-5 w-5 text-[#1F2937] transition-transform ${
@@ -251,9 +238,7 @@ export function SignupPage() {
               {isProgramOpen && (
                 <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[250px] overflow-y-auto rounded-[18px] border border-[#EEF2F7] bg-white py-2 shadow-[0_20px_40px_rgba(15,23,42,0.10)]">
                   {programsLoading ? (
-                    <div className="flex items-center justify-center py-6">
-                      <Spinner className="h-5 w-5 animate-spin" />
-                    </div>
+                    <SelectMenuSkeleton rows={4} />
                   ) : programsError ? (
                     <div className="px-4 py-3 text-sm text-red-500">
                       Failed to load programs
@@ -307,20 +292,17 @@ export function SignupPage() {
             variant="primary"
             size="lg"
             className="w-full rounded-[30px] text-[var(--color-surface)]"
+            loading={isSubmitting || signup.isPending}
             disabled={isSubmitting || signup.isPending}
           >
-            {isSubmitting || signup.isPending ? (
-              <Spinner className="h-5 w-5 animate-spin" />
-            ) : (
-              "Signup"
-            )}
+            Signup
           </Button>
 
           <p className="pt-2 text-center text-sm text-neutral-700">
             <span className="inline whitespace-nowrap">
               Already registered for a program?{" "}
               <Link
-                href="/login"
+                href="/login?fresh=1"
                 className="font-semibold text-[#094D2B] hover:underline"
               >
                 Login to your dashboard

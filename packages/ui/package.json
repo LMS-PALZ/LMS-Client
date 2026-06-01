@@ -34,7 +34,8 @@
     "@tanstack/react-table": "^8.20.6",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.469.0",
-    "react-dropzone": "^14.3.5"
+    "react-dropzone": "^14.3.5",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@ssu/config": "file:../config",

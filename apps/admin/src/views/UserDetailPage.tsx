@@ -2,7 +2,13 @@
 
 import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminUser } from "@ssu/queries";
-import { AlertBanner, Badge, Button, PageHeader, Skeleton } from "@ssu/ui";
+import {
+  AlertBanner,
+  Badge,
+  Button,
+  DetailPageSkeleton,
+  PageHeader,
+} from "@ssu/ui";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -10,7 +16,7 @@ export function UserDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : "";
   const q = useAdminUser(id);
-  if (q.isLoading) return <Skeleton className="h-40 w-full rounded-xl" />;
+  if (q.isLoading) return <DetailPageSkeleton />;
   if (q.isError || !q.data)
     return <AlertBanner variant="error">User not found.</AlertBanner>;
   const u = q.data;

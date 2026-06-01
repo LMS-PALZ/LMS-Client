@@ -4,15 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForgotPasswordMutation, useSession } from "@ssu/queries";
 import { forgotPasswordSchema } from "@ssu/schema";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { AlertBanner } from "../molecules/AlertBanner";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { Button } from "../atoms/Button";
 import { FormField } from "../molecules/FormField";
 import { Input } from "../atoms/Input";
-import { Spinner } from "../atoms/Spinner";
+import { AuthFormSkeleton } from "../skeletons/AuthFormSkeleton";
 
 type FormValues = z.infer<typeof forgotPasswordSchema>;
 
@@ -37,10 +35,6 @@ export function ForgotPasswordForm({
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
   const forgotPassword = useForgotPasswordMutation();
-  const [banner, setBanner] = useState<{
-    variant: "error" | "warning" | "success";
-    message: string;
-  } | null>(null);
 
   const {
     register,
@@ -52,31 +46,22 @@ export function ForgotPasswordForm({
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    setBanner(null);
     try {
       const res = await forgotPassword.mutateAsync(values);
       if (res.ok) {
-        setBanner({
-          variant: "success",
-          message: res.message || "Check your email to reset your password",
-        });
-        setTimeout(() => {
-          router.replace(onSuccessRedirect);
-        }, 2000);
-        return;
+        setTimeout(() => router.replace(onSuccessRedirect), 1500);
       }
-      setBanner({ variant: "error", message: res.message });
-    } catch (error: any) {
-      setBanner({
-        variant: "error",
-        message:
-          error?.message || "Failed to send reset email. Please try again.",
-      });
+    } catch {
+      /* Toasts handled in useForgotPasswordMutation */
     }
   });
 
   if (sessionLoading) {
-    return null;
+    return (
+      <AuthLayout>
+        <AuthFormSkeleton fieldCount={1} showRememberRow={false} />
+      </AuthLayout>
+    );
   }
 
   if (requireSessionCheck && session) {
@@ -95,11 +80,6 @@ export function ForgotPasswordForm({
         <p className="text-sm text-neutral-900 mb-6 text-center">
           {description}
         </p>
-        {banner && (
-          <div className="mb-4 text-center">
-            <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
-          </div>
-        )}
         <form onSubmit={onSubmit} className="space-y-6 w-full max-w-sm">
           <FormField id="email" label="Email" error={errors.email?.message}>
             <Input
@@ -117,13 +97,10 @@ export function ForgotPasswordForm({
             variant="primary"
             size="lg"
             className="w-full rounded-[30px] text-[var(--color-surface)]"
+            loading={isSubmitting || forgotPassword.isPending}
             disabled={isSubmitting || forgotPassword.isPending}
           >
-            {isSubmitting || forgotPassword.isPending ? (
-              <Spinner className="h-5 w-5 animate-spin" />
-            ) : (
-              "Continue"
-            )}
+            Continue
           </Button>
           <div className="text-center pt-3">
             Remember your password?{" "}

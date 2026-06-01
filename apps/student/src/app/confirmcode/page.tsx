@@ -2,7 +2,7 @@
 
 import { useConfirmCodeMutation, useResendCodeMutation } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
-import { AlertBanner, AuthLayout, Button, Input, Spinner } from "@ssu/ui";
+import { AuthLayout, Button, Input } from "@ssu/ui";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -26,11 +26,6 @@ export default function Page() {
   const [code, setCode] = useState<string[]>(() => Array(CODE_LENGTH).fill(""));
 
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
-
-  const [banner, setBanner] = useState<{
-    variant: "error" | "success";
-    message: string;
-  } | null>(null);
 
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -91,70 +86,32 @@ export default function Page() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setBanner(null);
 
     try {
       const confirmationCode = code.join("");
-
-      const res = await confirmCode.mutateAsync({
-        code: confirmationCode,
-      });
+      const res = await confirmCode.mutateAsync({ code: confirmationCode });
 
       if (res.ok) {
-        setBanner({
-          variant: "success",
-          message: "Email verified successfully!",
-        });
-
-        setTimeout(() => {
-          router.replace("/paymentdetail");
-        }, 2000);
-
-        return;
+        setTimeout(() => router.replace("/paymentdetail"), 1200);
       }
-
-      setBanner({
-        variant: "error",
-        message: res.message,
-      });
-    } catch (err: any) {
-      setBanner({
-        variant: "error",
-        message: err?.message || "Verification failed",
-      });
+    } catch {
+      /* Toasts handled in useConfirmCodeMutation */
     }
   };
 
   const handleResend = async () => {
     if (secondsLeft > 0) return;
 
-    setBanner(null);
-
     try {
       const res = await resendCode.mutateAsync();
 
       if (res.ok) {
-        setBanner({
-          variant: "success",
-          message: res.message,
-        });
-
         setCode(Array(CODE_LENGTH).fill(""));
         setSecondsLeft(RESEND_SECONDS);
-
         inputRefs.current[0]?.focus();
-        return;
       }
-
-      setBanner({
-        variant: "error",
-        message: res.message,
-      });
-    } catch (err: any) {
-      setBanner({
-        variant: "error",
-        message: err?.message || "Resend failed",
-      });
+    } catch {
+      /* Toasts handled in useResendCodeMutation */
     }
   };
 
@@ -173,14 +130,6 @@ export default function Page() {
           <p className="mb-8 text-sm text-[#6B7280]">
             We sent a code to {userEmail || "your email"}
           </p>
-
-          {banner && (
-            <div className="mb-6">
-              <AlertBanner variant={banner.variant}>
-                {banner.message}
-              </AlertBanner>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit}>
             <div className="mb-10 flex justify-center gap-4 sm:gap-5">
@@ -205,16 +154,13 @@ export default function Page() {
 
             <Button
               type="submit"
+              loading={confirmCode.isPending}
               disabled={!isComplete || confirmCode.isPending}
               variant="primary"
               size="lg"
               className="min-w-full rounded-full py-6 text-lg text-[var(--color-surface)]"
             >
-              {confirmCode.isPending ? (
-                <Spinner className="h-5 w-5 animate-spin" />
-              ) : (
-                "Continue"
-              )}
+              Continue
             </Button>
           </form>
           <p className="mt-10 mb-10 text-[#4B5563] text-sm ">

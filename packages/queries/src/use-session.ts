@@ -1,8 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AuthUser } from "@ssu/types";
 import { clearStudentAuth, readSession, writeSession } from "@ssu/api";
+import { useSignupStore } from "@ssu/store";
 import { useSyncExternalStore } from "react";
-import { sessionKey } from "./keys";
+import { sessionKey, studentProfileKey } from "./keys";
+import { mutationToast } from "./notify";
 
 function useIsClient() {
   return useSyncExternalStore(
@@ -32,8 +34,11 @@ export function useLogout() {
   const qc = useQueryClient();
   return () => {
     clearStudentAuth();
+    useSignupStore.getState().clearUser();
     void qc.invalidateQueries({ queryKey: sessionKey });
+    void qc.invalidateQueries({ queryKey: studentProfileKey });
     void qc.setQueryData(sessionKey, null);
+    mutationToast.info("You have been logged out");
   };
 }
 

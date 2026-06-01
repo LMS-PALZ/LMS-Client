@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "@ssu/api";
+import { getErrorMessage, mutationToast } from "./notify";
 
 export function useResetPasswordMutation() {
   return useMutation({
@@ -21,9 +22,14 @@ export function useResetPasswordMutation() {
 
       return res;
     },
-
-    onSuccess: () => {
+    onSuccess: (data) => {
       localStorage.removeItem("reset-email");
+      mutationToast.success(data.message || "Password reset successfully");
+    },
+    onError: (error) => {
+      mutationToast.error(
+        getErrorMessage(error, "Failed to reset password. Please try again."),
+      );
     },
   });
 }

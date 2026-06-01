@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { initializePayment } from "@ssu/api";
+import { getErrorMessage, mutationToast } from "./notify";
 
 export function useInitializePaymentMutation() {
   return useMutation({
@@ -17,6 +18,14 @@ export function useInitializePaymentMutation() {
       }
 
       return res.data;
+    },
+    onError: (error) => {
+      mutationToast.error(
+        getErrorMessage(
+          error,
+          "Payment could not be started. Please try again.",
+        ),
+      );
     },
   });
 }

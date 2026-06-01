@@ -6,7 +6,7 @@ import {
   Button,
   PageHeader,
   ProgressBar,
-  Skeleton,
+  DetailPageSkeleton,
 } from "@ssu/ui";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -15,7 +15,7 @@ export function CourseDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : "";
   const q = useCourse(id);
-  if (q.isLoading) return <Skeleton className="h-40 w-full rounded-xl" />;
+  if (q.isLoading) return <DetailPageSkeleton />;
   if (q.isError || !q.data)
     return <AlertBanner variant="error">Course not found.</AlertBanner>;
   const c = q.data;

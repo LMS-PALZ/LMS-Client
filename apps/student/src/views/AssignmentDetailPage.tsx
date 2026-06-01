@@ -1,7 +1,7 @@
 "use client";
 
 import { useAssignment } from "@ssu/queries";
-import { AlertBanner, Badge, PageHeader, Skeleton } from "@ssu/ui";
+import { AlertBanner, Badge, DetailPageSkeleton, PageHeader } from "@ssu/ui";
 import { formatDate } from "@ssu/utils";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -12,7 +12,7 @@ export function AssignmentDetailPage() {
   const id = typeof params.id === "string" ? params.id : "";
   const q = useAssignment(id);
 
-  if (q.isLoading) return <Skeleton className="h-40 w-full rounded-xl" />;
+  if (q.isLoading) return <DetailPageSkeleton sections={1} />;
   if (q.isError || !q.data)
     return <AlertBanner variant="error">Assignment not found.</AlertBanner>;
 

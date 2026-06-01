@@ -18,7 +18,6 @@ interface ClassroomCourseLayoutShellProps {
   weeks: ClassroomWeek[];
   children: ReactNode;
   backHref?: string;
-  /** Live class view at /classroom/:sessionId — no course tabs */
   showLiveSession?: boolean;
   meetUrl?: string;
   isLive?: boolean;

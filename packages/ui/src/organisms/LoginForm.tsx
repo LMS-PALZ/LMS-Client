@@ -11,13 +11,12 @@ import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
 import type { z } from "zod";
 // import type { UserRole } from "@ssu/types";
-import { AlertBanner } from "../molecules/AlertBanner";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { Button } from "../atoms/Button";
 import { Checkbox } from "../atoms/Checkbox";
 import { FormField } from "../molecules/FormField";
 import { Input } from "../atoms/Input";
-import { Spinner } from "../atoms/Spinner";
+import { AuthFormSkeleton } from "../skeletons/AuthFormSkeleton";
 
 interface LoginFormProps {
   role?: "student" | "admin" | "tutor" | "trainer";
@@ -54,14 +53,10 @@ export function LoginForm({
       : role === "tutor" || role === "trainer"
         ? "tutor"
         : "student";
-  const login = useLoginMutation(portal);
+  const loginMutation = useLoginMutation(portal);
   const isAuthenticated =
     portal === "student" ? isStudentAuthenticated() : Boolean(session);
   const [showPw, setShowPw] = useState(false);
-  const [banner, setBanner] = useState<{
-    variant: "error" | "warning";
-    message: string;
-  } | null>(null);
 
   const {
     register,
@@ -80,30 +75,24 @@ export function LoginForm({
   }, [isAuthenticated, requireSessionCheck, router, onSuccessRedirect]);
 
   const onSubmit = async (values: FormValues) => {
-    setBanner(null);
     try {
-      const res = await login.mutateAsync(values);
+      const res = await loginMutation.mutateAsync(values);
       if (res.ok) {
         router.replace(onSuccessRedirect);
-        return;
+        router.refresh();
       }
-      if (res.code === "pending_approval") {
-        setBanner({ variant: "warning", message: res.message });
-        return;
-      }
-      setBanner({ variant: "error", message: res.message });
-    } catch (error: any) {
-      setBanner({
-        variant: "error",
-        message: error?.message || "Login failed. Please try again.",
-      });
+    } catch {
+      /* Errors are surfaced via toast in useLoginMutation */
     }
   };
 
   const handleFormSubmit = handleSubmit(onSubmit);
 
   if (sessionLoading) {
-    return null;
+    const skeleton = (
+      <AuthFormSkeleton fieldCount={2} showFooterLink={showSignupLink} />
+    );
+    return useAuthLayout ? <AuthLayout>{skeleton}</AuthLayout> : skeleton;
   }
   if (requireSessionCheck && isAuthenticated) {
     return null;
@@ -118,11 +107,6 @@ export function LoginForm({
         {title}
       </h1>
       <p className="text-sm text-neutral-900 mb-6">{description}</p>
-      {banner && (
-        <div className="mb-4">
-          <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
-        </div>
-      )}
       <form onSubmit={handleFormSubmit} className="space-y-6 w-full max-w-sm">
         <FormField
           id="email"
@@ -192,13 +176,10 @@ export function LoginForm({
           variant="primary"
           size="lg"
           className="w-full rounded-[30px] text-[var(--color-surface)]"
-          disabled={isSubmitting || login.isPending}
+          loading={isSubmitting || loginMutation.isPending}
+          disabled={isSubmitting || loginMutation.isPending}
         >
-          {isSubmitting || login.isPending ? (
-            <Spinner className="h-5 w-5 animate-spin" />
-          ) : (
-            "Login"
-          )}
+          Login
         </Button>
       </form>
       {showSignupLink && (

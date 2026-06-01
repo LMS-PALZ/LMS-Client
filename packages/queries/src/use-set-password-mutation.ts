@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { setPassword } from "@ssu/api";
 import { useSignupStore } from "@ssu/store";
+import { getErrorMessage, mutationToast } from "./notify";
 
 export function useSetPasswordMutation() {
   const user = useSignupStore((state) => state.user);
-  console.log("Using email for set password:", user?.email);
 
   return useMutation({
     mutationFn: async (input: { password: string }) => {
@@ -21,6 +21,14 @@ export function useSetPasswordMutation() {
       }
 
       return res;
+    },
+    onSuccess: (data) => {
+      mutationToast.success(data.message || "Password set successfully");
+    },
+    onError: (error) => {
+      mutationToast.error(
+        getErrorMessage(error, "Failed to set password. Please try again."),
+      );
     },
   });
 }

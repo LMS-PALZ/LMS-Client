@@ -16,8 +16,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { ProfileSetupProvider } from "@/contexts/ProfileSetupContext";
 import { HeaderBar } from "../components/HeaderBar";
-import { AccountSetupModal } from "../views/ProfileSetting/AccountSetupModal";
 
 const mainItems = [
   { href: "/home", label: "Home", icon: Home },
@@ -63,17 +63,17 @@ function StudentSidebarWrapper() {
 export function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
-  const profileCompleted = false;
 
   return (
-    <DashboardLayout
-      variant="student"
-      fullWidthMain={isSessionPage}
-      sidebar={<StudentSidebarWrapper />}
-      header={<HeaderBar />}
-      overlay={!profileCompleted ? <AccountSetupModal /> : null}
-    >
-      {children}
-    </DashboardLayout>
+    <ProfileSetupProvider>
+      <DashboardLayout
+        variant="student"
+        fullWidthMain={isSessionPage}
+        sidebar={<StudentSidebarWrapper />}
+        header={<HeaderBar />}
+      >
+        {children}
+      </DashboardLayout>
+    </ProfileSetupProvider>
   );
 }

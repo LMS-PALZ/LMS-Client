@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminlogin, login, writeSession } from "@ssu/api";
-import { sessionKey } from "./keys";
+import { sessionKey, studentProfileKey } from "./keys";
+import { getErrorMessage, mutationToast } from "./notify";
 
 export type LoginPortal = "student" | "admin" | "tutor";
 
@@ -14,10 +15,34 @@ export function useLoginMutation(portal: LoginPortal = "student") {
       return login(input.email, input.password);
     },
     onSuccess: (data) => {
-      if (!data.ok) return;
+      if (!data.ok) {
+        if (data.code === "pending_approval") {
+          mutationToast.warning(data.message);
+        } else {
+          mutationToast.error(data.message);
+        }
+        return;
+      }
+
       writeSession(data.data);
-      localStorage.setItem("token", JSON.stringify(data.data));
+      const token =
+        "accessToken" in data && typeof data.accessToken === "string"
+          ? data.accessToken
+          : null;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
       void qc.setQueryData(sessionKey, data.data);
+      void qc.invalidateQueries({ queryKey: sessionKey });
+      if (portal === "student") {
+        void qc.invalidateQueries({ queryKey: studentProfileKey });
+      }
+      mutationToast.success(data.message || "Logged in successfully");
+    },
+    onError: (error) => {
+      mutationToast.error(
+        getErrorMessage(error, "Login failed. Please try again."),
+      );
     },
   });
 }

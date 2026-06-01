@@ -2,7 +2,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@ssu/utils";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "../Skeleton";
 
 const buttonVariants = cva(
   [
@@ -61,20 +61,47 @@ export function Button({
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
+  const skeletonBarClass =
+    variant === "primary" || variant === "amber" || variant === "danger"
+      ? "bg-white/40"
+      : "bg-neutral-300";
+  const skeletonWidth =
+    size === "lg" ? "w-24" : size === "sm" ? "w-14" : "w-20";
+
   return (
     <Comp
-      className={cn(buttonVariants({ variant, size }), className)}
+      className={cn(
+        buttonVariants({ variant, size }),
+        loading && "relative",
+        className,
+      )}
       disabled={asChild ? undefined : disabled || loading}
+      aria-busy={loading || undefined}
       {...(!asChild ? { type } : {})}
       {...props}
     >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-      ) : (
-        leftIcon
+      <span
+        className={cn(
+          "inline-flex items-center justify-center gap-2",
+          loading && "invisible",
+        )}
+      >
+        {leftIcon}
+        {children}
+        {rightIcon}
+      </span>
+      {loading && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <Skeleton
+            className={cn(
+              "h-3.5 rounded-full",
+              skeletonWidth,
+              skeletonBarClass,
+            )}
+            aria-hidden
+          />
+        </span>
       )}
-      {children}
-      {!loading && rightIcon}
     </Comp>
   );
 }

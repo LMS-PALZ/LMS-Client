@@ -6,25 +6,34 @@ export interface BrandLogoProps {
   logoSrc?: string;
 }
 
+const EXPANDED_LOGO_CLASS =
+  "h-11 w-auto max-w-[200px] object-contain object-left sm:h-[54px]";
+const COLLAPSED_LOGO_CLASS =
+  "h-9 w-auto max-w-[72px] object-contain object-left";
+
 export function BrandLogo({
   className,
   collapsed = false,
-  logoSrc = "/logo.png",
+  logoSrc = "/firstlogo.png",
 }: BrandLogoProps) {
   return (
-    <div className={cn("flex items-center gap-2 min-w-0", className)}>
+    <div
+      className={cn(
+        "flex min-w-0 items-center",
+        collapsed && "justify-center",
+        className,
+      )}
+    >
       <img
         src={logoSrc}
         alt="Skill Scale Up"
-        className="h-9 w-9 shrink-0 object-contain"
-        width={36}
-        height={36}
+        className={cn(
+          "shrink-0",
+          collapsed ? COLLAPSED_LOGO_CLASS : EXPANDED_LOGO_CLASS,
+        )}
+        width={collapsed ? 72 : 200}
+        height={collapsed ? 36 : 54}
       />
-      {!collapsed && (
-        <span className="text-small font-bold leading-tight text-brand-green truncate">
-          SKILL SCALE UP
-        </span>
-      )}
     </div>
   );
 }

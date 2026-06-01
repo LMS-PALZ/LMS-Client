@@ -9,7 +9,7 @@ import {
 import { ClassroomCourseLayoutShell } from "@/views/Classroom/ClassroomCourseLayoutShell";
 import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
 import { useSessionDetail } from "@ssu/queries";
-import { EmptyState, Skeleton } from "@ssu/ui";
+import { DetailPageSkeleton, EmptyState } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
 import { useParams } from "next/navigation";
 
@@ -45,7 +45,7 @@ export function ClassroomSessionPage() {
       isLive={!!isLive}
     >
       {sessionQuery.isLoading ? (
-        <Skeleton className="h-24 rounded-xl" />
+        <DetailPageSkeleton sections={1} className="space-y-4" />
       ) : (
         <ClassroomOverviewPage course={course} />
       )}

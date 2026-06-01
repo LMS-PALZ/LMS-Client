@@ -1,5 +1,7 @@
 export const sessionKey = ["session"] as const;
 
+export const studentProfileKey = ["student", "profile"] as const;
+
 export const courseKeys = {
   all: ["courses"] as const,
   enrolled: () => [...courseKeys.all, "enrolled"] as const,

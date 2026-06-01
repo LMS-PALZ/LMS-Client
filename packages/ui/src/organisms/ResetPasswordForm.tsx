@@ -8,12 +8,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeClosed } from "lucide-react";
 import type { z } from "zod";
-import { AlertBanner } from "../molecules/AlertBanner";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { Button } from "../atoms/Button";
 import { FormField } from "../molecules/FormField";
 import { Input } from "../atoms/Input";
-import { Spinner } from "../atoms/Spinner";
+import { AuthFormSkeleton } from "../skeletons/AuthFormSkeleton";
 
 interface ResetPasswordFormProps {
   onSuccessRedirect?: string;
@@ -35,10 +34,6 @@ export function ResetPasswordForm({
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
   const resetPassword = useResetPasswordMutation();
-  const [banner, setBanner] = useState<{
-    variant: "error" | "warning" | "success";
-    message: string;
-  } | null>(null);
   const [showPw, setShowPw] = useState(false);
 
   const {
@@ -51,36 +46,23 @@ export function ResetPasswordForm({
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    setBanner(null);
-
     try {
-      const res = await resetPassword.mutateAsync({
+      await resetPassword.mutateAsync({
         password: values.password,
         confirmPassword: values.confirmPassword,
       });
-
-      if (res.ok) {
-        setBanner({
-          variant: "success",
-          message: res.message || "Password reset successfully",
-        });
-        setTimeout(() => {
-          router.replace(onSuccessRedirect);
-        }, 2000);
-        return;
-      }
-      setBanner({ variant: "error", message: res.message });
-    } catch (error: any) {
-      setBanner({
-        variant: "error",
-        message:
-          error?.message || "Failed to reset password. Please try again.",
-      });
+      setTimeout(() => router.replace(onSuccessRedirect), 1500);
+    } catch {
+      /* Toasts handled in useResetPasswordMutation */
     }
   });
 
   if (sessionLoading) {
-    return null;
+    return (
+      <AuthLayout>
+        <AuthFormSkeleton fieldCount={2} showRememberRow={false} />
+      </AuthLayout>
+    );
   }
 
   if (requireSessionCheck && session) {
@@ -99,11 +81,6 @@ export function ResetPasswordForm({
         <p className="text-sm text-neutral-900 mb-6 text-center">
           {description}
         </p>
-        {banner && (
-          <div className="mb-4 text-center">
-            <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
-          </div>
-        )}
         <form onSubmit={onSubmit} className="space-y-6 w-full max-w-sm">
           <FormField
             id="password"
@@ -168,13 +145,10 @@ export function ResetPasswordForm({
             variant="primary"
             size="lg"
             className="w-full rounded-[30px] text-[var(--color-surface)]"
+            loading={isSubmitting || resetPassword.isPending}
             disabled={isSubmitting || resetPassword.isPending}
           >
-            {isSubmitting || resetPassword.isPending ? (
-              <Spinner className="h-5 w-5 animate-spin" />
-            ) : (
-              "Reset Password"
-            )}
+            Reset Password
           </Button>
         </form>
       </div>

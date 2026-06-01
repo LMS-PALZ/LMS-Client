@@ -1,7 +1,14 @@
 "use client";
 
 import { useEnrolledCourses } from "@ssu/queries";
-import { AlertBanner, Button, EmptyState, PageHeader, Skeleton } from "@ssu/ui";
+import {
+  AlertBanner,
+  Button,
+  CourseCardSkeleton,
+  EmptyState,
+  GridSkeleton,
+  PageHeader,
+} from "@ssu/ui";
 import { BookOpen } from "lucide-react";
 import { tutorPath } from "@ssu/config/portal-paths";
 import Link from "next/link";
@@ -23,7 +30,12 @@ export function CoursesPage() {
         <AlertBanner variant="error">Unable to load courses.</AlertBanner>
       )}
       {q.isLoading ? (
-        <Skeleton className="h-32 w-full rounded-xl" />
+        <GridSkeleton
+          count={6}
+          columnsClassName="sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <CourseCardSkeleton />
+        </GridSkeleton>
       ) : !q.data?.length ? (
         <EmptyState
           icon={BookOpen}

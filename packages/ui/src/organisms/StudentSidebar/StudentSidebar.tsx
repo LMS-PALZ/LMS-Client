@@ -75,7 +75,7 @@ export function StudentSidebar({
   mainItems,
   learningItems,
   supportItem,
-  logoSrc = "/logo.png",
+  logoSrc = "/firstlogo.png",
   LinkComponent = DefaultLink,
   onToggleCollapse,
 }: StudentSidebarProps) {
@@ -85,8 +85,12 @@ export function StudentSidebar({
   return (
     <div className="flex h-full flex-col text-neutral-700">
       <div className="flex h-16 shrink-0 items-center border-b border-neutral-200 px-3">
-        <div className="flex w-full items-center justify-between gap-2">
-          <BrandLogo collapsed={collapsed} logoSrc={logoSrc} />
+        <div className="flex w-full min-w-0 items-center justify-between gap-2">
+          <BrandLogo
+            collapsed={collapsed}
+            logoSrc={logoSrc}
+            className={cn(collapsed && "flex-1")}
+          />
           {onToggleCollapse && (
             <button
               type="button"

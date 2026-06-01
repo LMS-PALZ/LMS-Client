@@ -2,6 +2,7 @@
 
 import { isStudentAuthenticated } from "@ssu/api";
 import { useSession } from "@ssu/queries";
+import { DashboardShellSkeleton } from "@ssu/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -20,11 +21,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   }, [isLoading, router]);
 
   if (isLoading || !authed) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-body text-neutral-500">
-        Loading…
-      </div>
-    );
+    return <DashboardShellSkeleton />;
   }
 
   return <>{children}</>;

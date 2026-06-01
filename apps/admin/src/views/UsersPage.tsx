@@ -9,7 +9,8 @@ import {
   DataTable,
   EmptyState,
   PageHeader,
-  Skeleton,
+  DataTableSkeleton,
+  PageHeaderSkeleton,
 } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Users } from "lucide-react";
@@ -59,6 +60,16 @@ const columns: ColumnDef<AdminUserRow>[] = [
 
 export function UsersPage() {
   const q = useAdminUsers();
+
+  if (q.isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeaderSkeleton showBreadcrumbs />
+        <DataTableSkeleton rows={8} columns={5} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -68,9 +79,7 @@ export function UsersPage() {
       {q.isError && (
         <AlertBanner variant="error">Unable to load users.</AlertBanner>
       )}
-      {q.isLoading ? (
-        <Skeleton className="h-48 w-full rounded-xl" />
-      ) : !q.data?.length ? (
+      {!q.data?.length ? (
         <EmptyState
           icon={Users}
           title="No users"

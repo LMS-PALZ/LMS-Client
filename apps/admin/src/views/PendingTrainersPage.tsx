@@ -1,11 +1,32 @@
 "use client";
 
 import { usePendingTrainers } from "@ssu/queries";
-import { AlertBanner, Button, EmptyState, PageHeader, Skeleton } from "@ssu/ui";
+import {
+  AlertBanner,
+  Button,
+  CardSkeleton,
+  EmptyState,
+  PageHeader,
+  PageHeaderSkeleton,
+} from "@ssu/ui";
 import { UserCheck } from "lucide-react";
 
 export function PendingTrainersPage() {
   const q = usePendingTrainers();
+
+  if (q.isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeaderSkeleton showBreadcrumbs />
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <CardSkeleton key={index} lines={3} className="min-h-[88px]" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -15,9 +36,7 @@ export function PendingTrainersPage() {
       {q.isError && (
         <AlertBanner variant="error">Unable to load applications.</AlertBanner>
       )}
-      {q.isLoading ? (
-        <Skeleton className="h-40 w-full rounded-xl" />
-      ) : !q.data?.length ? (
+      {!q.data?.length ? (
         <EmptyState icon={UserCheck} title="No pending applications" />
       ) : (
         <ul className="space-y-3">

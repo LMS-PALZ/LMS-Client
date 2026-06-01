@@ -12,9 +12,10 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSidebar } from "@ssu/ui";
 import { useSignupStore } from "@ssu/store";
+import { getStudentPageTitle } from "@/lib/studentRoutes";
 import { mockNotifications } from "@ssu/api";
 import { NotificationItem } from "@ssu/types";
 
@@ -30,8 +31,18 @@ export function HeaderBar() {
   const { data: user } = useSession();
   const { toggleMobileSidebar } = useSidebar();
   const router = useRouter();
+  const pathname = usePathname();
 
-  const owner = useSignupStore((state) => state.user);
+  const signupUser = useSignupStore((state) => state.user);
+
+  const displayFirstName = user?.firstName ?? signupUser?.first_name ?? "";
+  const displayLastName = user?.lastName ?? signupUser?.last_name ?? "";
+  const displayEmail = user?.email ?? signupUser?.email ?? "";
+  const displayInitial =
+    displayFirstName.charAt(0).toUpperCase() ||
+    displayEmail.charAt(0).toUpperCase() ||
+    "U";
+  const pageTitle = getStudentPageTitle(pathname);
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -83,7 +94,7 @@ export function HeaderBar() {
           </button>
 
           <h1 className="hidden text-[12px] text-[#1D1D1D] lg:block">
-            Student Workspace
+            {pageTitle}
           </h1>
         </div>
 
@@ -180,7 +191,7 @@ export function HeaderBar() {
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-300 transition hover:opacity-80"
               >
                 <span className="text-[13px] font-semibold text-white">
-                  {owner?.first_name?.charAt(0)?.toUpperCase() ?? "U"}
+                  {displayInitial}
                 </span>
               </button>
 
@@ -189,10 +200,12 @@ export function HeaderBar() {
                 <div className="absolute right-0 top-[48px] z-50 hidden w-[210px] rounded-[18px] border border-[#EEF2F6] bg-white shadow-xl lg:block">
                   <div className="border-b border-[#F3F4F6] px-4 py-3">
                     <p className="text-[14px] font-semibold text-[#1D1D1D]">
-                      {owner?.first_name} {owner?.last_name}
+                      {[displayFirstName, displayLastName]
+                        .filter(Boolean)
+                        .join(" ") || "Student"}
                     </p>
                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                      {owner?.email}
+                      {displayEmail}
                     </p>
                   </div>
 
@@ -328,9 +341,10 @@ export function HeaderBar() {
 
           <div className="px-5 py-6">
             <p className="text-[18px] font-bold text-[#1D1D1D]">
-              {owner?.first_name} {owner?.last_name}
+              {[displayFirstName, displayLastName].filter(Boolean).join(" ") ||
+                "Student"}
             </p>
-            <p className="mt-1 text-[14px] text-[#6B7280]">{owner?.email}</p>
+            <p className="mt-1 text-[14px] text-[#6B7280]">{displayEmail}</p>
           </div>
 
           <div className="h-px bg-[#F3F4F6]" />

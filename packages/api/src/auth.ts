@@ -1,5 +1,17 @@
 import type { AuthUser } from "@ssu/types";
 import axios from "axios";
+import {
+  appendProfileFormData,
+  formatProfileDob,
+  formatProfileEmploymentStatus,
+  formatProfileGender,
+} from "./profile-payload";
+import { clearProfileSetupDismissed } from "./student-profile";
+import {
+  getStoredAuthToken,
+  parseStudentLoginResponse,
+  type StudentLoginResult,
+} from "./student-login";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -11,20 +23,37 @@ export type LoginErrorCode = "invalid" | "pending_approval" | "suspended";
 export async function login(
   email: string,
   password: string,
-): Promise<
-  | { ok: true; data: AuthUser; message: string }
-  | { ok: false; code: LoginErrorCode; message: string }
-> {
+): Promise<StudentLoginResult> {
   try {
     const url = `${API_BASE_URL}/api/v1/students/auth/login`;
 
     const res = await axios.post(url, { email, password });
-
-    return {
-      ok: true,
-      data: res.data,
-      message: "Login successfull",
+    const body = res.data as {
+      status?: boolean;
+      message?: string;
+      code?: string;
     };
+
+    if (body?.status === false) {
+      return {
+        ok: false,
+        code: (body.code as LoginErrorCode) || "invalid",
+        message: body.message ?? "Login failed. Please try again.",
+      };
+    }
+
+    const parsed = parseStudentLoginResponse(res.data);
+    if (!parsed) {
+      return {
+        ok: false,
+        code: "invalid",
+        message:
+          body?.message ??
+          "Login response was invalid. Please contact support.",
+      };
+    }
+
+    return parsed;
   } catch (error: unknown) {
     const err = error as {
       response?: { data?: { code?: string; message?: string } };
@@ -375,18 +404,18 @@ export async function createStudentProfile(data: {
   photo: File;
 }) {
   try {
-    const token = localStorage.getItem("token");
+    const token = getStoredAuthToken();
 
     const formData = new FormData();
-    formData.append("day", data.day);
-    formData.append("month", data.month);
-    formData.append("year", String(data.year));
-    formData.append("gender", data.gender);
-    formData.append("employment_status", data.employment_status);
-    formData.append("address", data.address);
-    formData.append("state", data.state);
-    formData.append("city", data.city);
-    formData.append("photo", data.photo);
+    appendProfileFormData(formData, {
+      dob: formatProfileDob(data.day, data.month, data.year),
+      gender: formatProfileGender(data.gender),
+      employment_status: formatProfileEmploymentStatus(data.employment_status),
+      address: data.address,
+      state: data.state,
+      city: data.city,
+      photo: data.photo,
+    });
 
     const res = await axios.post(
       `${API_BASE_URL}/api/v1/profiles/uploads`,
@@ -394,7 +423,7 @@ export async function createStudentProfile(data: {
       {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       },
     );
@@ -404,10 +433,29 @@ export async function createStudentProfile(data: {
       data: res.data.data,
       message: res.data.message,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as {
+      message?: string;
+      response?: {
+        data?: {
+          message?: string;
+          errors?: Array<{ message?: string; path?: string }>;
+        };
+      };
+    };
+
+    const validationMessages =
+      err.response?.data?.errors
+        ?.map((item) => item.message)
+        .filter((message): message is string => Boolean(message?.trim())) ?? [];
+
     return {
       ok: false as const,
-      message: error.response?.data?.message || "Failed to create profile.",
+      message:
+        validationMessages.join(". ") ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to create profile.",
     };
   }
 }
@@ -431,7 +479,7 @@ export function readSession(): AuthUser | null {
 export function isStudentAuthenticated(): boolean {
   if (typeof window === "undefined") return false;
   const session = readSession();
-  const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+  const token = getStoredAuthToken();
   return Boolean(session?.email && token);
 }
 
@@ -440,6 +488,7 @@ export function clearStudentAuth(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
   localStorage.removeItem("reset-email");
+  clearProfileSetupDismissed();
 }
 
 export function writeSession(user: AuthUser | null): void {

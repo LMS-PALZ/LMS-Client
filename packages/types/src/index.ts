@@ -88,6 +88,9 @@ export interface AssignmentListItem {
   courseName: string;
   dueAt: string;
   status: AssignmentStatus;
+  moduleLabel?: string;
+  weightPercent?: number;
+  scoreDisplay?: string;
 }
 
 export type { AvailableProgram } from "./programs";

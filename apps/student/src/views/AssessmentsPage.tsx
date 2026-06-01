@@ -7,9 +7,9 @@ import {
   Button,
   DashboardEmptyState,
   SectionHeader,
-  Skeleton,
+  AssignmentGridSkeleton,
 } from "@ssu/ui";
-import { formatDate } from "@ssu/utils";
+import { assignmentCardProps } from "@/lib/assignment-display";
 import { ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -49,11 +49,10 @@ export function AssessmentsPage() {
         ))}
       </div>
       {q.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 rounded-2xl" />
-          ))}
-        </div>
+        <AssignmentGridSkeleton
+          count={6}
+          columnsClassName="sm:grid-cols-2 lg:grid-cols-3"
+        />
       ) : filtered.length === 0 ? (
         <DashboardEmptyState
           icon={ClipboardList}
@@ -65,11 +64,7 @@ export function AssessmentsPage() {
           {filtered.map((a) => (
             <AssignmentSummaryCard
               key={a.id}
-              title={a.title}
-              moduleLabel={a.courseName}
-              score={a.status === "graded" ? 85 : undefined}
-              dueDate={formatDate(a.dueAt)}
-              showDueBadge={a.status === "overdue"}
+              {...assignmentCardProps(a)}
               onClick={() => router.push(`/assessments/${a.id}`)}
             />
           ))}

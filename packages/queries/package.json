@@ -21,7 +21,9 @@
   },
   "dependencies": {
     "@ssu/api": "file:../api",
-    "@ssu/types": "file:../types"
+    "@ssu/store": "file:../store",
+    "@ssu/types": "file:../types",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@tanstack/react-query": "^5.62.8",

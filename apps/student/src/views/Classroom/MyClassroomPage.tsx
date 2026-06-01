@@ -1,14 +1,22 @@
 "use client";
 
+import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import { classroomProgram } from "@/lib/classroom-data";
 import { BookCopy, CalendarDays, ChevronRight, Clock3 } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ClassroomCourseCard } from "./ClassroomCourseCard";
 
 export function MyClassroomPage() {
+  const router = useRouter();
+  const { ensureProfileForAction } = useProfileSetup();
   const { liveSession } = classroomProgram;
   const isLive = liveSession.phase === "live";
   const sessionHref = `/classroom/${liveSession.sessionId}`;
+
+  const handleJoinSession = () => {
+    if (!ensureProfileForAction()) return;
+    router.push(sessionHref);
+  };
 
   return (
     <div className="space-y-5">
@@ -103,13 +111,14 @@ export function MyClassroomPage() {
 
           <div className="mt-10 flex justify-end">
             {isLive ? (
-              <Link
-                href={sessionHref}
+              <button
+                type="button"
+                onClick={handleJoinSession}
                 className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
               >
                 Join Session
                 <ChevronRight size={16} />
-              </Link>
+              </button>
             ) : (
               <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
                 Join Session

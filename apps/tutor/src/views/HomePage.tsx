@@ -2,7 +2,7 @@
 
 import { tutorPath } from "@ssu/config/portal-paths";
 import { useEnrolledCourses } from "@ssu/queries";
-import { PageHeader, StatCard, Skeleton, AlertBanner } from "@ssu/ui";
+import { AlertBanner, CardSkeleton, PageHeader, StatCard } from "@ssu/ui";
 import { BookOpen, ClipboardList, Users, Video } from "lucide-react";
 import Link from "next/link";
 
@@ -52,7 +52,11 @@ export function HomePage() {
           </Link>
         </div>
         {q.isLoading ? (
-          <Skeleton className="h-24 w-full mt-4" />
+          <div className="mt-4 space-y-2">
+            <CardSkeleton lines={1} className="min-h-[48px]" />
+            <CardSkeleton lines={1} className="min-h-[48px]" />
+            <CardSkeleton lines={1} className="min-h-[48px]" />
+          </div>
         ) : (
           <ul className="mt-4 space-y-2">
             {(q.data ?? []).map((c) => (

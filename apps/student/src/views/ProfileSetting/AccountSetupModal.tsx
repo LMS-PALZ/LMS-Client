@@ -9,10 +9,11 @@ import {
   type AccountSetupStepTwoValues,
 } from "@ssu/schema";
 import { motion } from "framer-motion";
-import { useCreateProfileMutation } from "@ssu/queries";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { AlertBanner, Spinner } from "@ssu/ui";
+import { useCreateProfileMutation, useSession } from "@ssu/queries";
+import { useSignupStore } from "@ssu/store";
+import { Skeleton } from "@ssu/ui";
+import { X } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { AccountSetupProgress } from "@/views/ProfileSetting/AccountSetupProgress";
 import { AccountSetupStepOne } from "@/views/ProfileSetting/AccountSetupStepOne";
@@ -20,6 +21,11 @@ import { AccountSetupStepThree } from "@/views/ProfileSetting/AccountSetupStepTh
 import { AccountSetupStepTwo } from "@/views/ProfileSetting/AccountSetupStepTwo";
 
 type StepOneErrorKey = keyof AccountSetupStepOneValues | "dateOfBirth";
+
+export interface AccountSetupModalProps {
+  onClose: () => void;
+  onCompleted?: () => void;
+}
 
 function mapFieldErrors<T extends string>(
   fieldErrors: Partial<Record<T, string[] | undefined>>,
@@ -35,25 +41,31 @@ function mapFieldErrors<T extends string>(
   return nextErrors;
 }
 
-export function AccountSetupModal() {
+export function AccountSetupModal({
+  onClose,
+  onCompleted,
+}: AccountSetupModalProps) {
   const [step, setStep] = useState(1);
-  const [isVisible, setIsVisible] = useState(true);
-  const router = useRouter();
+  const { data: sessionUser } = useSession();
+  const signupUser = useSignupStore((state) => state.user);
+  const createProfile = useCreateProfileMutation();
+
+  const firstName = useMemo(() => {
+    const fromSession = sessionUser?.firstName?.trim();
+    if (fromSession) return fromSession;
+    const fromSignup = signupUser?.first_name?.trim();
+    if (fromSignup) return fromSignup;
+    return "there";
+  }, [sessionUser?.firstName, signupUser?.first_name]);
 
   const [gender, setGender] = useState("");
-
   const [employmentStatus, setEmploymentStatus] = useState("");
-
   const [day, setDay] = useState("");
-
   const [month, setMonth] = useState("");
-
   const [year, setYear] = useState("");
-
   const [address, setAddress] = useState("");
   const [stateOfResidence, setStateOfResidence] = useState("");
   const [city, setCity] = useState("");
-
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
 
   const [stepOneErrors, setStepOneErrors] = useState<
@@ -65,16 +77,6 @@ export function AccountSetupModal() {
   const [stepThreeErrors, setStepThreeErrors] = useState<
     Partial<Record<keyof AccountSetupStepThreeValues, string>>
   >({});
-
-  if (!isVisible) {
-    return null;
-  }
-
-  const createProfile = useCreateProfileMutation();
-  const [banner, setBanner] = useState<{
-    variant: "error" | "success";
-    message: string;
-  } | null>(null);
 
   const validateStepOne = () => {
     const result = accountSetupStepOneSchema.safeParse({
@@ -140,10 +142,7 @@ export function AccountSetupModal() {
 
   const handleFinish = async () => {
     if (!validateStepThree()) return;
-
     if (!profilePhoto) return;
-
-    setBanner(null);
 
     try {
       await createProfile.mutateAsync({
@@ -158,21 +157,10 @@ export function AccountSetupModal() {
         photo: profilePhoto,
       });
 
-      setBanner({
-        variant: "success",
-        message: "Profile created successfully!",
-      });
-
-      setTimeout(() => {
-        setIsVisible(false);
-        router.replace("/home");
-      }, 2000);
-    } catch (error: any) {
-      setBanner({
-        variant: "error",
-        message:
-          error?.message || "Failed to create profile. Please try again.",
-      });
+      onCompleted?.();
+      onClose();
+    } catch {
+      /* Toasts handled in useCreateProfileMutation */
     }
   };
 
@@ -192,26 +180,27 @@ export function AccountSetupModal() {
         transition={{
           duration: 0.3,
         }}
-        className="w-full max-w-[490px] transform-gpu rounded-[32px] bg-white px-6 py-8 md:px-8"
+        className="relative w-full max-w-[490px] transform-gpu rounded-[32px] bg-white px-6 py-8 md:px-8"
       >
-        {/* TITLE */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-[#F3F4F6] hover:text-[#1D1D1D]"
+          aria-label="Close profile setup"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
         <div className="mb-8 text-center">
           <h2 className="text-[20px] font-semibold leading-tight text-[#1D1D1D] md:text-[24px]">
-            Welcome, Chiroma!
+            Welcome, {firstName}!
           </h2>
 
           <p className="mt-1 text-[20px] font-semibold leading-tight text-[#1D1D1D] md:text-[24px]">
-            Let’s Complete Your Profile
+            Let&apos;s Complete Your Profile
           </p>
         </div>
 
-        {banner && (
-          <div className="mt-4">
-            <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
-          </div>
-        )}
-
-        {/* STEP */}
         {step === 1 && (
           <AccountSetupStepOne
             gender={gender}
@@ -299,7 +288,6 @@ export function AccountSetupModal() {
           />
         )}
 
-        {/* FOOTER */}
         <div className="mt-14 flex items-center justify-between">
           <AccountSetupProgress step={step} />
 
@@ -327,16 +315,20 @@ export function AccountSetupModal() {
                 type="button"
                 onClick={handleFinish}
                 disabled={!profilePhoto || createProfile.isPending}
-                className={`flex h-[42px] items-center justify-center rounded-full px-7 text-[15px] font-medium text-white transition ${
+                className={`relative flex h-[42px] items-center justify-center rounded-full px-7 text-[15px] font-medium text-white transition ${
                   profilePhoto && !createProfile.isPending
                     ? "bg-[#4E845F] hover:bg-[#3D6E4D]"
                     : "cursor-not-allowed bg-[#D8DEE8] text-[#9AA5B1]"
                 }`}
               >
-                {createProfile.isPending ? (
-                  <Spinner className="h-5 w-5 animate-spin" />
-                ) : (
-                  "Finish"
+                <span className={createProfile.isPending ? "invisible" : ""}>
+                  Finish
+                </span>
+                {createProfile.isPending && (
+                  <Skeleton
+                    className="absolute h-3.5 w-16 rounded-full bg-white/40"
+                    aria-hidden
+                  />
                 )}
               </button>
             )}

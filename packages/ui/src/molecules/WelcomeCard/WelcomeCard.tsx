@@ -1,5 +1,5 @@
 import { cn } from "@ssu/utils";
-import { SemiCircleGauge } from "../SemiCircleGauge";
+import { GAUGE_PROGRESS_COLOR, SemiCircleGauge } from "../SemiCircleGauge";
 
 export interface WelcomeCardProps {
   programTitle: string;
@@ -15,23 +15,31 @@ export function WelcomeCard({
   return (
     <article
       className={cn(
-        "rounded-2xl bg-brand-amber-50 p-6 flex flex-col md:flex-row gap-6 min-h-[220px]",
+        "flex min-h-[240px] flex-col rounded-2xl bg-[#FFE0C5] p-5 sm:min-h-[260px] sm:p-6",
         className,
       )}
     >
-      <div className="flex-1 space-y-2">
-        <h2 className="text-h2 font-bold text-neutral-900">Welcome to SSU</h2>
-        <p className="text-body text-neutral-700">
-          You&apos;re enrolled in {programTitle}. Let&apos;s learn great things
-          today!
-        </p>
-        <p className="flex items-center gap-2 text-small text-neutral-600 mt-auto pt-4">
-          <span className="h-2 w-2 rounded-full bg-brand-amber" aria-hidden />
-          This is your overall score.
+      <div className="space-y-1">
+        <h2 className="text-[20px] font-bold leading-tight text-neutral-900 sm:text-[22px]">
+          Welcome to SSU
+        </h2>
+        <p className="text-[14px] leading-[1.55] text-neutral-800 sm:text-[15px]">
+          You&apos;re enrolled in {programTitle}.
+          <br />
+          Let&apos;s learn great things today!
         </p>
       </div>
-      <div className="flex items-center justify-center md:min-w-[200px]">
+
+      <div className="mt-auto inline-flex items-end pt-6 sm:pt-8">
         <SemiCircleGauge value={progressPercent} />
+        <p className="-ml-3 mb-[11px] flex shrink-0 items-center gap-2 whitespace-nowrap text-[12px] text-neutral-700 sm:-ml-4 sm:mb-[12px] sm:text-[13px]">
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ backgroundColor: GAUGE_PROGRESS_COLOR }}
+            aria-hidden
+          />
+          <span>This is your overall score</span>
+        </p>
       </div>
     </article>
   );

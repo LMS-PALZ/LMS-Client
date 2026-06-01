@@ -2,7 +2,7 @@
 
 import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
-import { AlertBanner, Button, Spinner } from "@ssu/ui";
+import { Button } from "@ssu/ui";
 import { ChevronLeft, Mail, Phone, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -77,10 +77,6 @@ export default function Page() {
           </p>
         </div>
 
-        {payment.isError && (
-          <AlertBanner variant="error">{payment.error?.message}</AlertBanner>
-        )}
-
         <div className="max-w-100 rounded-[34px] bg-[#F9FBFD] text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:w-[600px]">
           <div className="grid gap-8 px-8 py-10 sm:px-10 lg:grid-cols-[1fr_0.95fr] lg:gap-0 lg:px-0 lg:py-0">
             <div className="space-y-7 lg:px-8 lg:py-10">
@@ -151,15 +147,12 @@ export default function Page() {
         <Button
           type="button"
           onClick={handlePayment}
+          loading={payment.isPending}
           disabled={payment.isPending}
           variant="primary"
           className="mt-8 w-[200px] rounded-[30px] text-[var(--color-surface)]"
         >
-          {payment.isPending ? (
-            <Spinner className="h-5 w-5 animate-spin" />
-          ) : (
-            "Proceed to Payment"
-          )}
+          Proceed to Payment
         </Button>
       </div>
     </div>

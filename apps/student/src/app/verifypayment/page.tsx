@@ -3,7 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useVerifyPayment } from "@ssu/queries";
-import { Spinner } from "@ssu/ui";
+import { PaymentStatusSkeleton } from "@ssu/ui";
 
 function PaymentVerifyContent() {
   const router = useRouter();
@@ -22,14 +22,7 @@ function PaymentVerifyContent() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
-      {isLoading && (
-        <>
-          <Spinner className="h-8 w-8 animate-spin text-[#4E845F]" />
-          <p className="text-[15px] text-[#6B7280]">
-            Verifying your payment...
-          </p>
-        </>
-      )}
+      {isLoading && <PaymentStatusSkeleton className="min-h-0 py-12" />}
 
       {data && (
         <>
@@ -67,12 +60,7 @@ function PaymentVerifyContent() {
 }
 
 function PaymentVerifyFallback() {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
-      <Spinner className="h-8 w-8 animate-spin text-[#4E845F]" />
-      <p className="text-[15px] text-[#6B7280]">Verifying your payment...</p>
-    </div>
-  );
+  return <PaymentStatusSkeleton />;
 }
 
 export default function PaymentVerifyPage() {

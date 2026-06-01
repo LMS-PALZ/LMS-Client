@@ -11,12 +11,10 @@ import { useForm } from "react-hook-form";
 import { Eye, EyeClosed } from "lucide-react";
 import type { z } from "zod";
 
-import { AlertBanner } from "@ssu/ui";
 import { AuthLayout } from "@ssu/ui";
 import { Button } from "@ssu/ui";
 import { FormField } from "@ssu/ui";
 import { Input } from "@ssu/ui";
-import { Spinner } from "@ssu/ui";
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
 export default function SetPasswordPage() {
@@ -29,11 +27,6 @@ export default function SetPasswordPage() {
     clearStudentAuth();
     void queryClient.setQueryData(sessionKey, null);
   }, [queryClient]);
-
-  const [banner, setBanner] = useState<{
-    variant: "error" | "warning" | "success";
-    message: string;
-  } | null>(null);
 
   const [showPw, setShowPw] = useState(false);
 
@@ -50,37 +43,12 @@ export default function SetPasswordPage() {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    setBanner(null);
-
     try {
-      const res = await setPassword.mutateAsync({
-        password: values.password,
-      });
-
-      if (res.ok) {
-        setBanner({
-          variant: "success",
-          message: res.message || "Password set successfully",
-        });
-
-        localStorage.removeItem("reset-email");
-
-        setTimeout(() => {
-          router.replace("/login");
-        }, 2000);
-
-        return;
-      }
-
-      setBanner({
-        variant: "error",
-        message: res.message,
-      });
-    } catch (error: any) {
-      setBanner({
-        variant: "error",
-        message: error?.message || "Failed to set password. Please try again.",
-      });
+      await setPassword.mutateAsync({ password: values.password });
+      localStorage.removeItem("reset-email");
+      setTimeout(() => router.replace("/login"), 1200);
+    } catch {
+      /* Toasts handled in useSetPasswordMutation */
     }
   });
 
@@ -99,12 +67,6 @@ export default function SetPasswordPage() {
           Create a password to secure your account and continue to your profile
           setup.
         </p>
-
-        {banner && (
-          <div className="mb-4 text-center">
-            <AlertBanner variant={banner.variant}>{banner.message}</AlertBanner>
-          </div>
-        )}
 
         <form onSubmit={onSubmit} className="w-full max-w-sm space-y-6">
           <FormField
@@ -174,13 +136,10 @@ export default function SetPasswordPage() {
             variant="primary"
             size="lg"
             className="w-full rounded-[30px] text-[var(--color-surface)]"
+            loading={isSubmitting || setPassword.isPending}
             disabled={isSubmitting || setPassword.isPending}
           >
-            {isSubmitting || setPassword.isPending ? (
-              <Spinner className="h-5 w-5 animate-spin" />
-            ) : (
-              "Continue"
-            )}
+            Continue
           </Button>
         </form>
       </div>

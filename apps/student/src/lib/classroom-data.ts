@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-/** Temporary meet link until backend provides session URLs per class. */
 export const DEFAULT_MEET_LINK = "https://meet.google.com/nfk-vzbi-yhm";
 
 export type SessionPhase = "live" | "upcoming" | "ended";
@@ -219,7 +218,7 @@ export const classroomCourseDetails: ClassroomCourseDetail[] = [
     id: "community-growth",
     title: "Social Media Strategy: Viral Campaigns",
     sessionLabel: "UPCOMING",
-    sessionDuration: "—",
+    sessionDuration: "-",
     imageUrl: "/logo.png",
     overview:
       "Explanation: Students learn the principles of building engaged online communities and measuring healthy growth.",
@@ -235,7 +234,7 @@ export const classroomCourseDetails: ClassroomCourseDetail[] = [
     id: "campaign-analytics",
     title: "Social Media Strategy: Viral Campaigns",
     sessionLabel: "UPCOMING",
-    sessionDuration: "—",
+    sessionDuration: "-",
     imageUrl: "/logo.png",
     overview:
       "Explanation: Students are introduced to campaign metrics, reporting practices, and how to interpret performance dashboards.",

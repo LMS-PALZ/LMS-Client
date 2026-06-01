@@ -9,6 +9,8 @@ const statusBadgeVariants = cva(
         live: "bg-red-50 text-red-600",
         upcoming: "bg-blue-50 text-blue-600",
         due: "bg-red-50 text-red-600",
+        todo: "bg-neutral-100 text-neutral-600",
+        notSubmitted: "bg-red-50 text-red-600",
         enrolled: "bg-brand-green-50 text-brand-green",
         ended: "bg-neutral-100 text-neutral-600",
       },
@@ -37,7 +39,13 @@ export function StatusBadge({
       {...props}
     >
       {showDot && (
-        <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
+        <span
+          className={cn(
+            "h-1.5 w-1.5 shrink-0 rounded-full",
+            variant === "live" ? "bg-brand-green" : "bg-current",
+          )}
+          aria-hidden
+        />
       )}
       {children}
     </span>
