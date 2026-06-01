@@ -12,7 +12,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "oxlint src --deny-warnings --react-plugin"
+    "lint": "oxlint src --deny-warnings --react-plugin",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.62.0",

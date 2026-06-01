@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start -p 5175",
     "lint": "oxlint src --deny-warnings --react-plugin --jest-plugin",
+    "typecheck": "tsc --noEmit",
     "test": "jest"
   },
   "dependencies": {

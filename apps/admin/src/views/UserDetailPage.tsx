@@ -1,5 +1,6 @@
 "use client";
 
+import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminUser } from "@ssu/queries";
 import { AlertBanner, Badge, Button, PageHeader, Skeleton } from "@ssu/ui";
 import Link from "next/link";
@@ -17,10 +18,13 @@ export function UserDetailPage() {
     <div className="space-y-6">
       <PageHeader
         title={`${u.firstName} ${u.lastName}`}
-        breadcrumbs={[{ label: "Users", href: "/users" }, { label: u.email }]}
+        breadcrumbs={[
+          { label: "Users", href: adminPath("/users") },
+          { label: u.email },
+        ]}
         action={
           <Button variant="secondary" size="sm" asChild>
-            <Link href="/users">Back</Link>
+            <Link href={adminPath("/users")}>Back</Link>
           </Button>
         }
       />

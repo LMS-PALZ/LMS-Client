@@ -67,16 +67,31 @@ The demo API in `@ssu/api` accepts **any non-empty password** for known emails. 
 
 There is also `pending@skillscaleup.dev` (tutor, pending approval) for testing the tutor pending flow in the **Tutor** app.
 
+## Turborepo
+
+This monorepo uses [Turborepo](https://turbo.build) to run **build**, **lint**, **typecheck**, and **test** across `apps/*` and `packages/*` in parallel with caching.
+
+| Script                  | What it does                                             |
+| ----------------------- | -------------------------------------------------------- |
+| `npm run build`         | `next build` for student, admin, and tutor (parallel)    |
+| `npm run build:student` | Build only `@ssu/student`                                |
+| `npm run build:admin`   | Build only `@ssu/admin`                                  |
+| `npm run build:tutor`   | Build only `@ssu/tutor`                                  |
+| `npm run build:qa`      | Admin + student (staging QA)                             |
+| `npm run lint`          | Per-package lint via Turbo + root oxlint                 |
+| `npm run typecheck`     | `tsc --noEmit` in all workspaces that define `typecheck` |
+| `npm run test`          | Tests in workspaces that define `test`                   |
+| `npm run verify`        | Lint + typecheck + test                                  |
+
+Config lives in `turbo.json`. Cache output is under `.turbo` (gitignored).
+
+Dev servers are still one app at a time: `npm run dev`, `npm run dev:admin`, etc. (Turbo `dev` is persistent and not used from the root script.)
+
 ## Other useful scripts (root)
 
-| Script              | Description                                                         |
-| ------------------- | ------------------------------------------------------------------- |
-| `npm run build`     | `next build` (or equivalent) for all workspaces that define `build` |
-| `npm run lint`      | Oxlint across the repo                                              |
-| `npm run typecheck` | `tsc --noEmit` for packages and apps (ordered)                      |
-| `npm run test`      | Jest in workspaces that define `test`                               |
-| `npm run verify`    | Lint + typecheck + tests                                            |
-| `npm run storybook` | Storybook for the shared `@ssu/ui` package                          |
+| Script              | Description                                |
+| ------------------- | ------------------------------------------ |
+| `npm run storybook` | Storybook for the shared `@ssu/ui` package |
 
 ## Repository layout
 
