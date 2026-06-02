@@ -36,9 +36,12 @@ export default function Page() {
     matchedProgram?.priceAmount ?? DEFAULT_PROGRAM_DETAILS.applicationFee;
 
   const handlePayment = async () => {
+    const callbackUrl = `${window.location.origin}/verifypayment`;
+
     const data = await payment.mutateAsync({
       email: user?.email ?? "",
       program: user?.program ?? "",
+      callbackUrl,
     });
 
     localStorage.setItem("payment_reference", data.reference);

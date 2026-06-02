@@ -7,11 +7,13 @@ export function useInitializePaymentMutation() {
     mutationFn: async ({
       email,
       program,
+      callbackUrl,
     }: {
       email: string;
       program: string;
+      callbackUrl?: string;
     }) => {
-      const res = await initializePayment(email, program);
+      const res = await initializePayment(email, program, { callbackUrl });
 
       if (!res.ok) {
         throw new Error(res.message);

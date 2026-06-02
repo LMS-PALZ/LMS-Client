@@ -351,12 +351,23 @@ export async function adminlogin(
   }
 }
 
-export async function initializePayment(email: string, program: string) {
+export async function initializePayment(
+  email: string,
+  program: string,
+  options?: { callbackUrl?: string },
+) {
   try {
-    const res = await axios.post(`${API_BASE_URL}/api/v1/payments/initialize`, {
-      email,
-      program,
-    });
+    const payload: Record<string, string> = { email, program };
+    if (options?.callbackUrl) {
+      payload.callback_url = options.callbackUrl;
+    }
+
+    const url =
+      typeof window !== "undefined"
+        ? "/api/payments/initialize"
+        : `${API_BASE_URL}/api/v1/payments/initialize`;
+
+    const res = await axios.post(url, payload);
 
     return {
       ok: true as const,

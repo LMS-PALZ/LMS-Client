@@ -10,6 +10,7 @@
     "./tsconfig/base.json": "./tsconfig/base.json",
     "./site-metadata": "./src/site-metadata.ts",
     "./env": "./src/env.ts",
+    "./payment-callback": "./src/payment-callback.ts",
     "./routes": "./src/routes/index.ts",
     "./routes/student": "./src/routes/student.ts",
     "./routes/admin": "./src/routes/admin.ts",
