@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-
 import { BookCopy, GraduationCap } from "lucide-react";
-
-import { type ClassroomCourseItem } from "@/lib/classroom-data";
+import type { ClassroomCourseItem } from "@/lib/classroom-data";
 
 export function ClassroomCourseCard({
   course,
@@ -13,7 +11,7 @@ export function ClassroomCourseCard({
 }) {
   return (
     <Link
-      href={`/courses/${course.id}`}
+      href={course.href}
       className="overflow-hidden rounded-[18px] border border-[#EEF2F6] bg-white transition hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(15,23,42,0.08)]"
     >
       <div className="flex h-[128px] items-center justify-center bg-[#E2E8F0]">
@@ -24,7 +22,7 @@ export function ClassroomCourseCard({
         />
       </div>
 
-      <div className="space-y-3 py-2 px-4">
+      <div className="space-y-3 px-4 py-2">
         <h3 className="text-[14px] font-medium leading-5 text-[#1D1D1D]">
           {course.title}
         </h3>

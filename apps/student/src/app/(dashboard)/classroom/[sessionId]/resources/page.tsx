@@ -2,10 +2,10 @@ import {
   getClassroomSessionCourseId,
   getClassroomCourseById,
 } from "@/lib/classroom-data";
-import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
+import { ClassroomResourcesPage } from "@/views/Classroom/ClassroomResourcesPage";
 import { redirect } from "next/navigation";
 
-export default async function ClassroomSessionOverviewPage({
+export default async function ClassroomSessionResourcesPage({
   params,
 }: {
   params: Promise<{ sessionId: string }>;
@@ -18,5 +18,5 @@ export default async function ClassroomSessionOverviewPage({
     redirect("/classroom");
   }
 
-  return <ClassroomOverviewPage course={course} />;
+  return <ClassroomResourcesPage course={course} />;
 }

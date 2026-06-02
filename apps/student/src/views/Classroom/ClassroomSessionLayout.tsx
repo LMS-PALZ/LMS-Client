@@ -1,25 +1,32 @@
 "use client";
 
 import {
-  classroomWeeks,
   DEFAULT_MEET_LINK,
   getClassroomCourseById,
   getClassroomSessionCourseId,
+  getClassroomWeeksForCourse,
 } from "@/lib/classroom-data";
 import { ClassroomCourseLayoutShell } from "@/views/Classroom/ClassroomCourseLayoutShell";
-import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
-import { useSessionDetail } from "@ssu/queries";
-import { DetailPageSkeleton, EmptyState } from "@ssu/ui";
+import { useSession, useSessionDetail } from "@ssu/queries";
+import { EmptyState } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
-import { useParams } from "next/navigation";
+import type { ReactNode } from "react";
 
-export function ClassroomSessionPage() {
-  const params = useParams();
-  const sessionId =
-    typeof params.sessionId === "string" ? params.sessionId : "";
+export function ClassroomSessionLayout({
+  sessionId,
+  children,
+}: {
+  sessionId: string;
+  children: ReactNode;
+}) {
   const courseId = getClassroomSessionCourseId(sessionId);
   const course = courseId ? getClassroomCourseById(courseId) : null;
+  const { data: user } = useSession();
   const sessionQuery = useSessionDetail(sessionId);
+  const weeks = courseId ? getClassroomWeeksForCourse(courseId) : [];
+  const displayName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() ||
+    "Student";
 
   if (!course) {
     return (
@@ -38,17 +45,13 @@ export function ClassroomSessionPage() {
   return (
     <ClassroomCourseLayoutShell
       course={course}
-      weeks={classroomWeeks}
+      weeks={weeks}
       backHref="/classroom"
-      showLiveSession
       meetUrl={meetUrl}
       isLive={!!isLive}
+      displayName={displayName}
     >
-      {sessionQuery.isLoading ? (
-        <DetailPageSkeleton sections={1} className="space-y-4" />
-      ) : (
-        <ClassroomOverviewPage course={course} />
-      )}
+      {children}
     </ClassroomCourseLayoutShell>
   );
 }

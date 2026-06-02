@@ -1,12 +1,19 @@
 "use client";
 
+import { ClassroomSessionMedia } from "@/components/classroom";
+import type { ClassroomMediaMode } from "@/components/classroom/ClassroomSessionMedia";
+import {
+  ClassroomPlaybackProvider,
+  useClassroomPlayback,
+} from "@/contexts/ClassroomPlaybackContext";
 import { cn } from "@ssu/utils";
 import { CheckCircle2, ChevronDown, ChevronLeft, Circle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
 import type {
   ClassroomCourseDetail,
   ClassroomWeek,
@@ -18,21 +25,22 @@ interface ClassroomCourseLayoutShellProps {
   weeks: ClassroomWeek[];
   children: ReactNode;
   backHref?: string;
-  showLiveSession?: boolean;
   meetUrl?: string;
   isLive?: boolean;
+  displayName?: string;
 }
 
-export function ClassroomCourseLayoutShell({
+function ClassroomCourseLayoutShellInner({
   course,
   weeks,
   children,
   backHref = "/classroom",
-  showLiveSession = false,
   meetUrl,
   isLive = false,
+  displayName,
 }: ClassroomCourseLayoutShellProps) {
   const pathname = usePathname();
+  const { recordingEmbedUrl, clearRecording } = useClassroomPlayback();
 
   const [openWeeks, setOpenWeeks] = useState(
     () => new Set(weeks.filter((week) => week.expanded).map((week) => week.id)),
@@ -42,25 +50,48 @@ export function ClassroomCourseLayoutShell({
     null,
   );
 
-  const tabs = useMemo(
+  const liveActive = isLive || course.sessionPhase === "live";
+
+  useEffect(() => {
+    clearRecording();
+  }, [course.id, clearRecording]);
+
+  useEffect(() => {
+    if (!pathname.endsWith("/recording")) {
+      clearRecording();
+    }
+  }, [pathname, clearRecording]);
+
+  const sessionBase =
+    course.sessionId && pathname.startsWith(`/classroom/${course.sessionId}`)
+      ? `/classroom/${course.sessionId}`
+      : null;
+
+  const navTabs = useMemo(
     () => [
       {
         label: "Overview",
-        href: `/courses/${course.id}`,
-        active: pathname === `/courses/${course.id}`,
+        href: sessionBase ?? `/courses/${course.id}`,
+        active: sessionBase
+          ? pathname === sessionBase
+          : pathname === `/courses/${course.id}`,
       },
       {
         label: "Recording",
-        href: `/courses/${course.id}/recording`,
-        active: pathname === `/courses/${course.id}/recording`,
+        href: sessionBase
+          ? `${sessionBase}/recording`
+          : `/courses/${course.id}/recording`,
+        active: pathname.endsWith("/recording"),
       },
       {
         label: "Resources",
-        href: `/courses/${course.id}/resources`,
-        active: pathname === `/courses/${course.id}/resources`,
+        href: sessionBase
+          ? `${sessionBase}/resources`
+          : `/courses/${course.id}/resources`,
+        active: pathname.endsWith("/resources"),
       },
     ],
-    [course.id, pathname],
+    [course.id, pathname, sessionBase],
   );
 
   const toggleWeek = (weekId: string) => {
@@ -75,7 +106,28 @@ export function ClassroomCourseLayoutShell({
     });
   };
 
-  const showTabs = !showLiveSession;
+  const liveVideo = resolveLiveVideoForCourse(course, meetUrl);
+
+  let mediaMode: ClassroomMediaMode = "upcoming-placeholder";
+  if (liveActive) {
+    mediaMode = "live-meet";
+  } else if (course.sessionPhase === "ended" && recordingEmbedUrl) {
+    mediaMode = "recording-embed";
+  } else if (course.sessionPhase === "ended") {
+    mediaMode = "ended-placeholder";
+  }
+
+  const statusLabel = recordingEmbedUrl
+    ? "RECORDING"
+    : liveActive
+      ? "LIVE SESSION"
+      : course.sessionLabel;
+
+  const statusDotClass = recordingEmbedUrl
+    ? "bg-[#436E53]"
+    : liveActive
+      ? "bg-[#D14B3D]"
+      : "bg-[#436E53]";
 
   return (
     <div className="grid gap-3 xl:grid-cols-[1.9fr_0.78fr]">
@@ -108,9 +160,6 @@ export function ClassroomCourseLayoutShell({
                   </p>
                 </div>
               )}
-              {selectedLesson.content && (
-                <div className="mt-4">{selectedLesson.content}</div>
-              )}
             </div>
           </>
         ) : (
@@ -125,68 +174,48 @@ export function ClassroomCourseLayoutShell({
 
             <div className="mt-8 inline-flex w-fit max-w-full items-center justify-center rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
               <span
-                className={cn(
-                  "mr-2 h-3 w-3 rounded-full",
-                  isLive ? "bg-[#D14B3D]" : "bg-[#436E53]",
-                )}
+                className={cn("mr-2 h-3 w-3 rounded-full", statusDotClass)}
               />
-              {isLive ? "LIVE SESSION" : course.sessionLabel}
+              {statusLabel}
               <span className="mx-2 text-[#D1D5DB]">|</span>
               {course.sessionDuration}
             </div>
 
-            <div className="relative mt-4 overflow-hidden rounded-[22px] bg-[#1a1a1a]">
-              <img
-                src={course.imageUrl}
-                alt={course.title}
-                className="h-auto min-h-[220px] w-full object-cover opacity-90"
+            <div className="mt-4">
+              <ClassroomSessionMedia
+                mode={mediaMode}
+                liveProvider={liveVideo.provider}
+                meetUrl={liveVideo.meetUrl}
+                jitsiRoomName={liveVideo.jitsiRoomName}
+                jitsiDomain={liveVideo.jitsiDomain}
+                displayName={displayName}
+                recordingEmbedUrl={recordingEmbedUrl}
               />
-              {showLiveSession && isLive && meetUrl && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/40 p-6">
-                  <a
-                    href={meetUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-6 py-3 text-[14px] font-semibold text-white shadow-lg transition hover:bg-[#3D6E4D]"
-                  >
-                    Join class on Google Meet
-                  </a>
-                  <p className="text-center text-[13px] text-white/90">
-                    Opens Google Meet in a new tab
-                  </p>
-                </div>
-              )}
             </div>
 
             <h1 className="mt-4 text-[22px] font-semibold text-[#1D1D1D] md:text-[24px]">
               {course.title}
             </h1>
 
-            {showTabs ? (
-              <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-3">
-                <div className="flex w-full max-w-[300px] flex-row items-center justify-between rounded-[12px] bg-[#ECF0F7] p-2">
-                  {tabs.map((tab) => (
-                    <Link
-                      key={tab.href}
-                      href={tab.href}
-                      className={cn(
-                        "rounded-[9px] px-3 py-1 text-[12px] font-medium transition",
-                        tab.active
-                          ? "border border-[#D4E2D8] bg-white text-[#4E845F]"
-                          : "text-[#2F3540] hover:bg-white",
-                      )}
-                    >
-                      {tab.label}
-                    </Link>
-                  ))}
-                </div>
-                <div className="mt-6">{children}</div>
+            <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-3">
+              <div className="flex w-full max-w-[300px] flex-row items-center justify-between rounded-[12px] bg-[#ECF0F7] p-2">
+                {navTabs.map((tab) => (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={cn(
+                      "rounded-[9px] px-3 py-1 text-[12px] font-medium transition",
+                      tab.active
+                        ? "border border-[#D4E2D8] bg-white text-[#4E845F]"
+                        : "text-[#2F3540] hover:bg-white",
+                    )}
+                  >
+                    {tab.label}
+                  </Link>
+                ))}
               </div>
-            ) : (
-              <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-5">
-                {children}
-              </div>
-            )}
+              <div className="mt-6">{children}</div>
+            </div>
           </>
         )}
       </div>
@@ -257,5 +286,15 @@ export function ClassroomCourseLayoutShell({
         </div>
       </aside>
     </div>
+  );
+}
+
+export function ClassroomCourseLayoutShell(
+  props: ClassroomCourseLayoutShellProps,
+) {
+  return (
+    <ClassroomPlaybackProvider>
+      <ClassroomCourseLayoutShellInner {...props} />
+    </ClassroomPlaybackProvider>
   );
 }

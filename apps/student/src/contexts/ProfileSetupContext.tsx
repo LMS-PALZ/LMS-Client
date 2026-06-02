@@ -14,6 +14,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { isProfileSetupBypassed } from "@/lib/profile-setup-bypass";
 import { AccountSetupModal } from "@/views/ProfileSetting/AccountSetupModal";
 
 type ProfileSetupContextValue = {
@@ -34,10 +35,13 @@ export function ProfileSetupProvider({ children }: { children: ReactNode }) {
   );
   const [forcedOpen, setForcedOpen] = useState(false);
 
-  const profileComplete = isStudentProfileComplete(profileQuery.data);
+  const bypassProfileSetup = isProfileSetupBypassed();
+  const profileComplete =
+    bypassProfileSetup || isStudentProfileComplete(profileQuery.data);
   const isProfileLoading = profileQuery.isLoading;
 
   const showAutoPrompt =
+    !bypassProfileSetup &&
     !isProfileLoading &&
     !profileQuery.isError &&
     !profileComplete &&
@@ -58,10 +62,10 @@ export function ProfileSetupProvider({ children }: { children: ReactNode }) {
   }, [profileComplete]);
 
   const ensureProfileForAction = useCallback(() => {
-    if (profileComplete || isProfileLoading) return true;
+    if (bypassProfileSetup || profileComplete || isProfileLoading) return true;
     openProfileSetup();
     return false;
-  }, [profileComplete, isProfileLoading, openProfileSetup]);
+  }, [bypassProfileSetup, profileComplete, isProfileLoading, openProfileSetup]);
 
   const value = useMemo(
     () => ({

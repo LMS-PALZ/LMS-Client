@@ -54,7 +54,7 @@ export function assignmentCardProps(assignment: AssignmentListItem) {
   const status = assignmentStatusDisplay(assignment.status);
   return {
     title: assignment.title,
-    moduleLabel: assignment.moduleLabel ?? "Understanding The Market",
+    moduleLabel: assignment.moduleLabel ?? "Web Development",
     dueDate: formatAssignmentDueDate(assignment.dueAt),
     weightPercent: assignment.weightPercent ?? 25,
     scoreDisplay:

@@ -15,23 +15,23 @@
     "sessions": [
       {
         "id": "s1",
-        "title": "Social Media Strategy: Viral Campaigns",
-        "courseName": "Social Media Strategy: Viral Campaigns",
+        "title": "Responsive Layouts with CSS Grid & Flexbox",
+        "courseName": "HTML & CSS Foundations",
         "startsAt": "2026-12-10T10:00:00.000Z",
         "isLive": true,
         "meetingUrl": "https://meet.google.com/nfk-vzbi-yhm"
       },
       {
         "id": "s2",
-        "title": "Social Media Strategy: Viral Campaigns",
-        "courseName": "Social Media Strategy: Viral Campaigns",
+        "title": "React Components & useState",
+        "courseName": "React & Component Design",
         "startsAt": "2026-12-11T14:00:00.000Z",
         "isLive": false
       },
       {
         "id": "s3",
-        "title": "Social Media Strategy: Viral Campaigns",
-        "courseName": "Social Media Strategy: Viral Campaigns",
+        "title": "REST APIs & Deployment Walkthrough",
+        "courseName": "APIs, Auth & Deployment",
         "startsAt": "2026-12-12T09:30:00.000Z",
         "isLive": false
       }
@@ -39,10 +39,10 @@
     "assignments": [
       {
         "id": "a1",
-        "title": "Social Media Strategy: Viral Campaigns",
+        "title": "Build a Responsive Landing Page",
         "courseId": "c1",
-        "courseName": "Web Foundations",
-        "moduleLabel": "Understanding The Market",
+        "courseName": "HTML & CSS Foundations",
+        "moduleLabel": "Layout & Responsive CSS",
         "dueAt": "2026-12-10T23:59:59.000Z",
         "status": "not-started",
         "weightPercent": 25,
@@ -50,10 +50,10 @@
       },
       {
         "id": "a2",
-        "title": "Social Media Strategy: Viral Campaigns",
+        "title": "Interactive Form with Validation",
         "courseId": "c1",
-        "courseName": "Web Foundations",
-        "moduleLabel": "Understanding The Market",
+        "courseName": "JavaScript & the DOM",
+        "moduleLabel": "DOM & Events",
         "dueAt": "2026-12-10T23:59:59.000Z",
         "status": "overdue",
         "weightPercent": 25,
@@ -61,10 +61,10 @@
       },
       {
         "id": "a3",
-        "title": "Social Media Strategy: Viral Campaigns",
+        "title": "Component Library Mini-Project",
         "courseId": "c1",
-        "courseName": "Web Foundations",
-        "moduleLabel": "Understanding The Market",
+        "courseName": "React & Component Design",
+        "moduleLabel": "React Fundamentals",
         "dueAt": "2026-12-10T23:59:59.000Z",
         "status": "not-started",
         "weightPercent": 0,
@@ -72,10 +72,10 @@
       },
       {
         "id": "a4",
-        "title": "Social Media Strategy: Viral Campaigns",
+        "title": "Deploy a Static Site with API Data",
         "courseId": "c1",
-        "courseName": "Web Foundations",
-        "moduleLabel": "Understanding The Market",
+        "courseName": "APIs, Auth & Deployment",
+        "moduleLabel": "Integration & Shipping",
         "dueAt": "2026-12-10T23:59:59.000Z",
         "status": "not-started",
         "weightPercent": 25,

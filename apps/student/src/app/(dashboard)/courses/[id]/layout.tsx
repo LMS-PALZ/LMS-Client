@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 
-import { classroomWeeks, getClassroomCourseById } from "@/lib/classroom-data";
+import {
+  getClassroomCourseById,
+  getClassroomWeeksForCourse,
+} from "@/lib/classroom-data";
 import { ClassroomCourseLayoutShell } from "@/views/Classroom/ClassroomCourseLayoutShell";
 import { EmptyState } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
@@ -25,7 +28,10 @@ export default async function CourseLayout({
     );
   }
   return (
-    <ClassroomCourseLayoutShell course={course} weeks={classroomWeeks}>
+    <ClassroomCourseLayoutShell
+      course={course}
+      weeks={getClassroomWeeksForCourse(course.id)}
+    >
       {children}
     </ClassroomCourseLayoutShell>
   );

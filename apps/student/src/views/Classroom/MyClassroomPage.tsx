@@ -1,7 +1,8 @@
 "use client";
 
 import { useProfileSetup } from "@/contexts/ProfileSetupContext";
-import { classroomProgram } from "@/lib/classroom-data";
+import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
+import { classroomProgram, getClassroomCourseById } from "@/lib/classroom-data";
 import { BookCopy, CalendarDays, ChevronRight, Clock3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ClassroomCourseCard } from "./ClassroomCourseCard";
@@ -15,6 +16,13 @@ export function MyClassroomPage() {
 
   const handleJoinSession = () => {
     if (!ensureProfileForAction()) return;
+    const course = getClassroomCourseById(liveSession.courseId);
+    if (course) {
+      const liveVideo = resolveLiveVideoForCourse(course, liveSession.meetUrl);
+      if (liveVideo.provider === "google-meet" && liveVideo.meetUrl) {
+        window.open(liveVideo.meetUrl, "_blank", "noopener,noreferrer");
+      }
+    }
     router.push(sessionHref);
   };
 

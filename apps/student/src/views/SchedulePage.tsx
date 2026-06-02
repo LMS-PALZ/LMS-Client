@@ -20,7 +20,7 @@ export function ScheduleCalendar() {
         height="auto"
         events={[
           {
-            title: "Social Media Strategy: Viral Campaigns",
+            title: "HTML & CSS Foundations: Live Lab",
             start: new Date(Date.now() + 86400000).toISOString(),
             end: new Date(Date.now() + 86400000 + 3600000).toISOString(),
           },
