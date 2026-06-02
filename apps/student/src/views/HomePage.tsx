@@ -143,7 +143,7 @@ export function HomePage() {
             {assignmentList.map((a) => (
               <AssignmentSummaryCard
                 key={a.id}
-                {...assignmentCardProps(a)}
+                {...assignmentCardProps(a).card}
                 onClick={() => router.push(`/assessments/${a.id}`)}
               />
             ))}

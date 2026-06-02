@@ -1,6 +1,10 @@
 import { TagHorizontalIcon } from "../../icons";
 import { cn } from "@ssu/utils";
-import type { StatusBadgeProps } from "../StatusBadge";
+export type AssignmentSummaryStatusVariant =
+  | "todo"
+  | "graded"
+  | "pendingReview"
+  | "notSubmitted";
 
 export interface AssignmentSummaryCardProps {
   title: string;
@@ -9,28 +13,32 @@ export interface AssignmentSummaryCardProps {
   weightPercent?: number;
   scoreDisplay?: string;
   statusLabel?: string;
-  statusVariant?: NonNullable<StatusBadgeProps["variant"]>;
+  statusVariant?: AssignmentSummaryStatusVariant;
   className?: string;
   onClick?: () => void;
 }
 
 export const ASSIGNMENT_SUMMARY_CARD_BG = "#F1F6FA";
 
+const statusPillStyles: Record<AssignmentSummaryStatusVariant, string> = {
+  todo: "bg-[#E8ECF0] text-neutral-700",
+  graded: "bg-[#D4EDDA] text-[#2D6A4F]",
+  pendingReview: "bg-[#E0F2FE] text-[#2563EB]",
+  notSubmitted: "bg-[#FEE8E8] text-[#DC2626]",
+};
+
 function AssignmentStatusPill({
   label,
   variant,
 }: {
   label: string;
-  variant: NonNullable<StatusBadgeProps["variant"]>;
+  variant: AssignmentSummaryStatusVariant;
 }) {
-  const isNotSubmitted = variant === "notSubmitted";
   return (
     <span
       className={cn(
         "inline-flex rounded-full px-3 py-1 text-[11px] font-semibold leading-none",
-        isNotSubmitted
-          ? "bg-[#FEE8E8] text-[#DC2626]"
-          : "bg-[#E8ECF0] text-neutral-700",
+        statusPillStyles[variant],
       )}
     >
       {label}

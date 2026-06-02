@@ -26,7 +26,7 @@ const mainItems = [
 
 const learningItems = [
   { href: "/classroom", label: "My Classroom", icon: GraduationCap },
-  { href: "/assessments", label: "Assessments", icon: ClipboardList },
+  { href: "/assessments", label: "Assessment", icon: ClipboardList },
 ];
 
 const supportItem = {

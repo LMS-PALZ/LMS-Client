@@ -1,0 +1,33 @@
+{
+  "defaultReferencePdf": "/pdf/sample.pdf",
+  "details": {
+    "a1": {
+      "instructionsIntro": "For this assignment, you will demonstrate your understanding of core SEO concepts and how they apply to a real website or brand of your choice.",
+      "tasks": [
+        "Define SEO in your own words and explain why it matters for businesses online.",
+        "Identify three on-page SEO factors and describe how each one affects search visibility.",
+        "Outline two ethical (white-hat) link-building strategies a small business could use.",
+        "Recommend one measurable KPI to track SEO success over the next 90 days."
+      ],
+      "submissionRequirements": [
+        "Submission format: PDF or Word document (.pdf, .doc, .docx)",
+        "Minimum length: 300–500 words"
+      ],
+      "referenceTitle": "Social Media Strategy: Viral Campaigns.pdf"
+    }
+  },
+  "sharedDetail": {
+    "instructionsIntro": "For this assignment, you will demonstrate your understanding of core SEO concepts and how they apply to a real website or brand of your choice.",
+    "tasks": [
+      "Define SEO in your own words and explain why it matters for businesses online.",
+      "Identify three on-page SEO factors and describe how each one affects search visibility.",
+      "Outline two ethical (white-hat) link-building strategies a small business could use.",
+      "Recommend one measurable KPI to track SEO success over the next 90 days."
+    ],
+    "submissionRequirements": [
+      "Submission format: PDF or Word document (.pdf, .doc, .docx)",
+      "Minimum length: 300–500 words"
+    ],
+    "referenceTitle": "Social Media Strategy: Viral Campaigns.pdf"
+  }
+}

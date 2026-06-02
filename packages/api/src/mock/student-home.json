@@ -9,7 +9,7 @@
   },
   "populated": {
     "progress": {
-      "overallScorePercent": 17,
+      "overallScorePercent": 10,
       "enrolledProgramTitle": "web development"
     },
     "sessions": [
@@ -39,45 +39,89 @@
     "assignments": [
       {
         "id": "a1",
-        "title": "Build a Responsive Landing Page",
+        "title": "Social Media Strategy: Viral Campaigns",
         "courseId": "c1",
-        "courseName": "HTML & CSS Foundations",
-        "moduleLabel": "Layout & Responsive CSS",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
+        "dueAt": "2026-10-10T23:59:59.000Z",
+        "status": "graded",
+        "weightPercent": 25,
+        "scoreDisplay": "24.5%"
+      },
+      {
+        "id": "a2",
+        "title": "Social Media Strategy: Viral Campaigns",
+        "courseId": "c1",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
         "dueAt": "2026-12-10T23:59:59.000Z",
         "status": "not-started",
         "weightPercent": 25,
         "scoreDisplay": "N/A"
       },
       {
-        "id": "a2",
-        "title": "Interactive Form with Validation",
+        "id": "a3",
+        "title": "Social Media Strategy: Viral Campaigns",
         "courseId": "c1",
-        "courseName": "JavaScript & the DOM",
-        "moduleLabel": "DOM & Events",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
+        "dueAt": "2026-12-10T23:59:59.000Z",
+        "status": "submitted",
+        "weightPercent": 25,
+        "scoreDisplay": "N/A"
+      },
+      {
+        "id": "a4",
+        "title": "Social Media Strategy: Viral Campaigns",
+        "courseId": "c1",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
         "dueAt": "2026-12-10T23:59:59.000Z",
         "status": "overdue",
         "weightPercent": 25,
         "scoreDisplay": "N/A"
       },
       {
-        "id": "a3",
-        "title": "Component Library Mini-Project",
+        "id": "a5",
+        "title": "Social Media Strategy: Viral Campaigns",
         "courseId": "c1",
-        "courseName": "React & Component Design",
-        "moduleLabel": "React Fundamentals",
-        "dueAt": "2026-12-10T23:59:59.000Z",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
+        "dueAt": "2026-12-11T23:59:59.000Z",
         "status": "not-started",
-        "weightPercent": 0,
-        "scoreDisplay": "0%"
+        "weightPercent": 25,
+        "scoreDisplay": "N/A"
       },
       {
-        "id": "a4",
-        "title": "Deploy a Static Site with API Data",
+        "id": "a6",
+        "title": "Social Media Strategy: Viral Campaigns",
         "courseId": "c1",
-        "courseName": "APIs, Auth & Deployment",
-        "moduleLabel": "Integration & Shipping",
-        "dueAt": "2026-12-10T23:59:59.000Z",
-        "status": "not-started",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
+        "dueAt": "2026-12-12T23:59:59.000Z",
+        "status": "graded",
+        "weightPercent": 25,
+        "scoreDisplay": "18%"
+      },
+      {
+        "id": "a7",
+        "title": "Social Media Strategy: Viral Campaigns",
+        "courseId": "c1",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
+        "dueAt": "2026-12-13T23:59:59.000Z",
+        "status": "submitted",
+        "weightPercent": 25,
+        "scoreDisplay": "N/A"
+      },
+      {
+        "id": "a8",
+        "title": "Social Media Strategy: Viral Campaigns",
+        "courseId": "c1",
+        "courseName": "Understanding The Market",
+        "moduleLabel": "Understanding The Market",
+        "dueAt": "2026-12-14T23:59:59.000Z",
+        "status": "overdue",
         "weightPercent": 25,
         "scoreDisplay": "N/A"
       }

@@ -1,54 +1,97 @@
 "use client";
 
-import { useAssignment } from "@ssu/queries";
 import {
-  AlertBanner,
-  Badge,
-  DetailPageSkeleton,
-  GoBack,
-  PageHeader,
-} from "@ssu/ui";
-import { formatDate } from "@ssu/utils";
+  AssessmentDetailHeader,
+  AssessmentInstructions,
+  AssessmentMyWork,
+  AssessmentReferenceMaterial,
+  AssessmentSuccessBanner,
+} from "@/components/assessments";
+import { getAssessmentDetailContent } from "@/lib/assessments";
+import {
+  formatAssignmentDueDateLong,
+  isAssignmentWorkLocked,
+  resolveAssignmentDetailStatus,
+} from "@/lib/assignment-display";
+import { useAssignment } from "@ssu/queries";
+import { useAssessmentSubmissionStore } from "@ssu/store";
+import { AlertBanner, DetailPageSkeleton, GoBack } from "@ssu/ui";
 import { useParams } from "next/navigation";
-import { SubmissionForm } from "../components/SubmissionForm";
+import { useEffect, useState } from "react";
 
 export function AssignmentDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : "";
   const q = useAssignment(id);
 
-  if (q.isLoading) return <DetailPageSkeleton sections={1} />;
-  if (q.isError || !q.data)
-    return <AlertBanner variant="error">Assignment not found.</AlertBanner>;
+  const isSubmitted = useAssessmentSubmissionStore(
+    (s) => s.byAssignment[id]?.isSubmitted ?? false,
+  );
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
 
-  const a = q.data;
-  const past = new Date(a.dueAt).getTime() < Date.now();
+  useEffect(() => {
+    if (isSubmitted) {
+      setShowSuccessBanner(true);
+    }
+  }, [isSubmitted]);
+
+  if (q.isLoading) {
+    return (
+      <div className="space-y-4">
+        <GoBack fallbackHref="/assessments" />
+        <DetailPageSkeleton sections={1} />
+      </div>
+    );
+  }
+
+  if (q.isError || !q.data) {
+    return (
+      <div className="space-y-4">
+        <GoBack fallbackHref="/assessments" />
+        <AlertBanner variant="error">Assignment not found.</AlertBanner>
+      </div>
+    );
+  }
+
+  const assignment = q.data;
+  const content = getAssessmentDetailContent(assignment.id);
+  const status = resolveAssignmentDetailStatus(assignment, isSubmitted);
+  const workLocked = isAssignmentWorkLocked(assignment, isSubmitted);
+  const showSubmitSuccess =
+    showSuccessBanner && isSubmitted && assignment.status !== "graded";
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={a.title}
-        breadcrumbs={[
-          { label: "Assessments", href: "/assessments" },
-          { label: a.title },
-        ]}
-        action={
-          <GoBack
-            fallbackHref="/assessments"
-            className="text-small font-semibold"
+      {showSubmitSuccess ? (
+        <AssessmentSuccessBanner
+          message="You have successfully submitted your assignment"
+          onDismiss={() => setShowSuccessBanner(false)}
+        />
+      ) : null}
+
+      <div className="rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06)] sm:p-8">
+        <AssessmentDetailHeader
+          title={assignment.title}
+          statusLabel={status.label}
+          statusVariant={status.variant}
+          dueDate={formatAssignmentDueDateLong(assignment.dueAt)}
+          weightPercent={assignment.weightPercent ?? 25}
+          scoreDisplay={assignment.scoreDisplay ?? "N/A"}
+        />
+
+        <div className="space-y-6">
+          <AssessmentInstructions content={content} />
+          <AssessmentReferenceMaterial
+            title={content.referenceTitle}
+            url={content.referenceUrl}
           />
-        }
-      />
-      <div className="rounded-xl border bg-white p-6 shadow-card space-y-3">
-        <p className="text-body text-neutral-700">{a.courseName}</p>
-        <p className="text-small text-neutral-500">Due {formatDate(a.dueAt)}</p>
-        <Badge variant={a.status === "not-started" ? "not-started" : a.status}>
-          {a.status}
-        </Badge>
+        </div>
       </div>
-      <SubmissionForm
-        assignmentId={a.id}
-        disabled={past && a.status !== "overdue"}
+
+      <AssessmentMyWork
+        assignmentId={assignment.id}
+        submissionRequirements={content.submissionRequirements}
+        readOnly={workLocked}
       />
     </div>
   );
