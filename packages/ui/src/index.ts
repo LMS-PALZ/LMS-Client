@@ -44,6 +44,7 @@ export * from "./molecules/RecordingListItem";
 export * from "./molecules/ConnectGoogleBanner";
 export * from "./molecules/GreetingTitle";
 export * from "./molecules/SectionHeader";
+export * from "./molecules/GoBack";
 
 export * from "./organisms/DataTable";
 export * from "./organisms/BrandLogo";

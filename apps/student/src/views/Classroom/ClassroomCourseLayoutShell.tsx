@@ -7,6 +7,7 @@ import {
   useClassroomPlayback,
 } from "@/contexts/ClassroomPlaybackContext";
 import { cn } from "@ssu/utils";
+import { GoBack } from "@ssu/ui";
 import { CheckCircle2, ChevronDown, ChevronLeft, Circle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,7 +25,7 @@ interface ClassroomCourseLayoutShellProps {
   course: ClassroomCourseDetail;
   weeks: ClassroomWeek[];
   children: ReactNode;
-  backHref?: string;
+  backFallbackHref?: string;
   meetUrl?: string;
   isLive?: boolean;
   displayName?: string;
@@ -34,7 +35,7 @@ function ClassroomCourseLayoutShellInner({
   course,
   weeks,
   children,
-  backHref = "/classroom",
+  backFallbackHref = "/classroom",
   meetUrl,
   isLive = false,
   displayName,
@@ -164,13 +165,7 @@ function ClassroomCourseLayoutShellInner({
           </>
         ) : (
           <>
-            <Link
-              href={backHref}
-              className="inline-flex items-center gap-2 text-[15px] font-bold text-[#4E845F] transition hover:opacity-80"
-            >
-              <ChevronLeft className="h-5 w-5" />
-              Back
-            </Link>
+            <GoBack fallbackHref={backFallbackHref} />
 
             <div className="mt-8 inline-flex w-fit max-w-full items-center justify-center rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
               <span

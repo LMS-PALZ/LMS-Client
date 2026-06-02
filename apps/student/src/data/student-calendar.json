@@ -1,0 +1,78 @@
+{
+  "events": [
+    {
+      "id": "cal-live-html",
+      "title": "Responsive Layouts with CSS Grid & Flexbox",
+      "courseId": "html-css-foundations",
+      "courseTitle": "HTML & CSS Foundations",
+      "sessionId": "s1",
+      "sessionPhase": "live",
+      "kind": "class-session",
+      "startOffsetDays": 0,
+      "startTime": "10:00",
+      "durationMinutes": 80
+    },
+    {
+      "id": "cal-ended-js",
+      "title": "JavaScript & the DOM",
+      "courseId": "javascript-essentials",
+      "courseTitle": "JavaScript & the DOM",
+      "sessionPhase": "ended",
+      "kind": "class-session",
+      "startOffsetDays": -4,
+      "startTime": "14:00",
+      "durationMinutes": 66
+    },
+    {
+      "id": "cal-upcoming-react",
+      "title": "React Components & useState",
+      "courseId": "react-ui-patterns",
+      "courseTitle": "React & Component Design",
+      "sessionPhase": "upcoming",
+      "kind": "class-session",
+      "startOffsetDays": 2,
+      "startTime": "14:00",
+      "durationMinutes": 90
+    },
+    {
+      "id": "cal-upcoming-apis",
+      "title": "REST APIs & Deployment Walkthrough",
+      "courseId": "apis-deployment",
+      "courseTitle": "APIs, Auth & Deployment",
+      "sessionPhase": "upcoming",
+      "kind": "class-session",
+      "startOffsetDays": 5,
+      "startTime": "09:30",
+      "durationMinutes": 90
+    }
+  ],
+  "assignments": [
+    {
+      "id": "cal-due-a1",
+      "assignmentId": "a1",
+      "title": "Build a Responsive Landing Page",
+      "courseId": "html-css-foundations",
+      "courseTitle": "HTML & CSS Foundations",
+      "dueOffsetDays": 1,
+      "dueTime": "23:59"
+    },
+    {
+      "id": "cal-due-a2",
+      "assignmentId": "a2",
+      "title": "Interactive Form with Validation",
+      "courseId": "javascript-essentials",
+      "courseTitle": "JavaScript & the DOM",
+      "dueOffsetDays": 3,
+      "dueTime": "23:59"
+    },
+    {
+      "id": "cal-due-a3",
+      "assignmentId": "a3",
+      "title": "Component Library Mini-Project",
+      "courseId": "react-ui-patterns",
+      "courseTitle": "React & Component Design",
+      "dueOffsetDays": 6,
+      "dueTime": "23:59"
+    }
+  ]
+}

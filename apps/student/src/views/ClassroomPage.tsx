@@ -1,10 +1,8 @@
 "use client";
 
 import { useSessionDetail } from "@ssu/queries";
-import { Badge, Button, FullPageLayout } from "@ssu/ui";
+import { Badge, FullPageLayout, GoBack } from "@ssu/ui";
 import { formatDate } from "@ssu/utils";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -36,11 +34,7 @@ export function ClassroomPage() {
     <FullPageLayout
       header={
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/home" aria-label="Back">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
+          <GoBack fallbackHref="/home" iconOnly />
           <div className="min-w-0">
             <p className="text-micro text-neutral-500 truncate">Classroom</p>
             <p className="text-h4 text-neutral-900 truncate">

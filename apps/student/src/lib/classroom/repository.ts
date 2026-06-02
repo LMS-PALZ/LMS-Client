@@ -11,13 +11,25 @@ import type {
 
 const data = classroomJson as ClassroomDataFile;
 
+export function getClassroomEventHref(
+  courseId: string,
+  sessionPhase: SessionPhase,
+  sessionId?: string,
+): string {
+  if (sessionPhase === "live" && sessionId) {
+    return `/classroom/${sessionId}`;
+  }
+  return `/courses/${courseId}`;
+}
+
 function courseHref(
   course: Pick<ClassroomCourseDetail, "id" | "sessionPhase" | "sessionId">,
 ): string {
-  if (course.sessionPhase === "live" && course.sessionId) {
-    return `/classroom/${course.sessionId}`;
-  }
-  return `/courses/${course.id}`;
+  return getClassroomEventHref(
+    course.id,
+    course.sessionPhase,
+    course.sessionId,
+  );
 }
 
 function withHref(

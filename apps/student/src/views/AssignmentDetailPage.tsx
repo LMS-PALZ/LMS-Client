@@ -1,9 +1,14 @@
 "use client";
 
 import { useAssignment } from "@ssu/queries";
-import { AlertBanner, Badge, DetailPageSkeleton, PageHeader } from "@ssu/ui";
+import {
+  AlertBanner,
+  Badge,
+  DetailPageSkeleton,
+  GoBack,
+  PageHeader,
+} from "@ssu/ui";
 import { formatDate } from "@ssu/utils";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { SubmissionForm } from "../components/SubmissionForm";
 
@@ -28,12 +33,10 @@ export function AssignmentDetailPage() {
           { label: a.title },
         ]}
         action={
-          <Link
-            href="/assessments"
-            className="text-small text-brand-green hover:underline"
-          >
-            Back
-          </Link>
+          <GoBack
+            fallbackHref="/assessments"
+            className="text-small font-semibold"
+          />
         }
       />
       <div className="rounded-xl border bg-white p-6 shadow-card space-y-3">

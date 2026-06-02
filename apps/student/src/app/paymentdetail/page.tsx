@@ -2,9 +2,8 @@
 
 import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
-import { Button } from "@ssu/ui";
-import { ChevronLeft, Mail, Phone, User } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Button, GoBack } from "@ssu/ui";
+import { Mail, Phone, User } from "lucide-react";
 
 const DEFAULT_PROGRAM_DETAILS = {
   duration: "6 months",
@@ -28,7 +27,6 @@ function formatCurrentDate() {
 }
 
 export default function Page() {
-  const router = useRouter();
   const payment = useInitializePaymentMutation();
   const user = useSignupStore((state) => state.user);
   const { data: programs } = usePrograms();
@@ -49,13 +47,10 @@ export default function Page() {
 
   return (
     <div className="relative min-h-screen w-full bg-white">
-      <button
-        onClick={() => router.back()}
-        className="absolute left-6 top-12 flex items-center gap-2 text-[#2F6F45] transition hover:opacity-80 sm:left-16 sm:top-20"
-      >
-        <ChevronLeft className="h-5 w-5" />
-        <span className="text-sm font-medium">Back</span>
-      </button>
+      <GoBack
+        fallbackHref="/signup"
+        className="absolute left-6 top-12 text-sm font-medium sm:left-16 sm:top-20"
+      />
 
       <div className="flex flex-col items-center justify-center bg-[#FFFFFF] px-4 py-10 text-center sm:py-14">
         <div className="mb-8 w-[120px] sm:mb-12">

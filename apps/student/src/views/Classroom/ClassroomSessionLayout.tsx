@@ -46,7 +46,7 @@ export function ClassroomSessionLayout({
     <ClassroomCourseLayoutShell
       course={course}
       weeks={weeks}
-      backHref="/classroom"
+      backFallbackHref="/classroom"
       meetUrl={meetUrl}
       isLive={!!isLive}
       displayName={displayName}
