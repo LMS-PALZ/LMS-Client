@@ -29,7 +29,8 @@ export function getSiteUrl(): string | undefined {
   const env = getAppEnvironment();
   if (env === "production") return getProductionUrl();
   if (env === "staging") return getStagingUrl();
-  return undefined;
+
+  return trimEnv(process.env.URL) ?? trimEnv(process.env.DEPLOY_PRIME_URL);
 }
 
 function trimEnv(value: string | undefined): string | undefined {
