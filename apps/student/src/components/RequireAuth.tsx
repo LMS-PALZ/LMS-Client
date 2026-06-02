@@ -4,24 +4,26 @@ import { isStudentAuthenticated } from "@ssu/api";
 import { useSession } from "@ssu/queries";
 import { DashboardShellSkeleton } from "@ssu/ui";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { isLoading } = useSession();
+  const { data: user, isLoading } = useSession();
   const router = useRouter();
-  const [authed, setAuthed] = useState(false);
+
+  const authenticated = Boolean(user) && isStudentAuthenticated();
 
   useEffect(() => {
-    if (isLoading) return;
-    if (!isStudentAuthenticated()) {
+    if (!isLoading && !authenticated) {
       router.replace("/login");
-      return;
     }
-    setAuthed(true);
-  }, [isLoading, router]);
+  }, [isLoading, authenticated, router]);
 
-  if (isLoading || !authed) {
+  if (isLoading) {
     return <DashboardShellSkeleton />;
+  }
+
+  if (!authenticated) {
+    return null;
   }
 
   return <>{children}</>;

@@ -35,9 +35,9 @@ export function useLogout() {
   return () => {
     clearStudentAuth();
     useSignupStore.getState().clearUser();
+    qc.setQueryData(sessionKey, null);
     void qc.invalidateQueries({ queryKey: sessionKey });
     void qc.invalidateQueries({ queryKey: studentProfileKey });
-    void qc.setQueryData(sessionKey, null);
     mutationToast.info("You have been logged out");
   };
 }

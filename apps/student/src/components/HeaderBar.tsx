@@ -79,7 +79,10 @@ export function HeaderBar() {
     );
 
   const logout = useLogout();
-  const handleLogout = () => logout();
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
+  };
 
   return (
     <>
