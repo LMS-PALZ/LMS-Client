@@ -2,7 +2,7 @@
 
 import { cn } from "@ssu/utils";
 import { CalendarDays, Clock3, ChevronRight } from "lucide-react";
-import { EmptyState } from "@ssu/ui";
+import { EmptyState, LiveIndicator } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
 
 export interface Session {
@@ -48,19 +48,13 @@ export function LiveSessions({
               key={session.id}
               className="rounded-[15px] border border-[#EFEFEF] bg-[#FCFCFC] p-3"
             >
-              <div
-                className={`inline-flex items-center rounded-full px-3 py-1 text-[9px] font-medium ${
-                  session.status === "live"
-                    ? "bg-[#F9D7D4] text-[#C24134]"
-                    : "bg-[#E2EBFF] text-[#356DFF]"
-                }`}
-              >
-                {session.status === "live" && (
-                  <div className="mr-2 h-2 w-2 animate-pulse rounded-full bg-[#2E7D32]" />
-                )}
-
-                {session.status === "live" ? "Live" : "Upcoming"}
-              </div>
+              {session.status === "live" ? (
+                <LiveIndicator label="Live" size="xs" tone="default" />
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-[#E2EBFF] px-3 py-1 text-[9px] font-semibold text-[#356DFF]">
+                  Upcoming
+                </span>
+              )}
 
               <h3 className="mt-5 text-[13px] font-medium leading-[24px] text-[#1D1D1D]">
                 {session.title}

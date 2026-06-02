@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import { Video } from "lucide-react";
 
@@ -23,9 +24,12 @@ export function MeetLivePanel({ meetUrl, className }: MeetLivePanelProps) {
       <div className="rounded-full bg-[#3c4043] p-5">
         <Video className="h-10 w-10 text-white" aria-hidden />
       </div>
-      <h2 className="mt-6 text-[22px] font-medium text-white md:text-[24px]">
-        Live class is ready
-      </h2>
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <LiveIndicator label="Live" size="md" tone="overlay" />
+        <h2 className="text-[22px] font-medium text-white md:text-[24px]">
+          Class is ready
+        </h2>
+      </div>
       <p className="mt-3 max-w-md text-[14px] leading-6 text-[#9aa0a6]">
         Google Meet cannot run inside this page for security reasons. Select
         below to open the class in Google Meet and join with your camera and

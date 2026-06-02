@@ -1,7 +1,9 @@
 "use client";
 
+import { LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import { CalendarClock, VideoOff } from "lucide-react";
+import type { ReactNode } from "react";
 import type { LiveVideoProvider } from "@/lib/classroom/live-video";
 import { JitsiLiveEmbed } from "./JitsiLiveEmbed";
 import { MeetLivePanel } from "./MeetLivePanel";
@@ -23,6 +25,27 @@ export interface ClassroomSessionMediaProps {
   className?: string;
 }
 
+function LiveMediaShell({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("relative", className)}>
+      {children}
+      <LiveIndicator
+        label="LIVE"
+        size="sm"
+        tone="overlay"
+        uppercase
+        className="absolute right-3 top-3 z-10"
+      />
+    </div>
+  );
+}
+
 export function ClassroomSessionMedia({
   mode,
   liveProvider = "google-meet",
@@ -36,17 +59,22 @@ export function ClassroomSessionMedia({
   if (mode === "live-meet") {
     if (liveProvider === "jitsi" && jitsiRoomName) {
       return (
-        <JitsiLiveEmbed
-          roomName={jitsiRoomName}
-          domain={jitsiDomain}
-          displayName={displayName}
-          className={className}
-        />
+        <LiveMediaShell className={className}>
+          <JitsiLiveEmbed
+            roomName={jitsiRoomName}
+            domain={jitsiDomain}
+            displayName={displayName}
+          />
+        </LiveMediaShell>
       );
     }
 
     if (meetUrl) {
-      return <MeetLivePanel meetUrl={meetUrl} className={className} />;
+      return (
+        <LiveMediaShell className={className}>
+          <MeetLivePanel meetUrl={meetUrl} />
+        </LiveMediaShell>
+      );
     }
   }
 

@@ -31,6 +31,7 @@ export * from "./molecules/SemiCircleGauge";
 export * from "./molecules/WelcomeCard";
 export * from "./molecules/DashboardEmptyState";
 export * from "./molecules/SessionCard";
+export * from "./molecules/LiveIndicator";
 export * from "./molecules/LiveSessionsPanel";
 export * from "./molecules/AssignmentSummaryCard";
 export * from "./molecules/InfoMetric";

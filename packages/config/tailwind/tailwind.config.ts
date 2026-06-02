@@ -46,6 +46,37 @@ const config: Partial<Config> = {
         "sidebar-collapsed": "64px",
         header: "64px",
       },
+      keyframes: {
+        "live-breathe": {
+          "0%, 100%": {
+            transform: "scale(1)",
+            boxShadow: "0 0 0 0 rgba(220, 38, 38, 0.35)",
+          },
+          "50%": {
+            transform: "scale(1.04)",
+            boxShadow: "0 0 0 8px rgba(220, 38, 38, 0)",
+          },
+        },
+        "live-dot-breathe": {
+          "0%, 100%": {
+            transform: "scale(1)",
+            opacity: "1",
+          },
+          "50%": {
+            transform: "scale(1.45)",
+            opacity: "0.55",
+          },
+        },
+        "live-text-breathe": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.72" },
+        },
+      },
+      animation: {
+        "live-breathe": "live-breathe 2s ease-in-out infinite",
+        "live-dot-breathe": "live-dot-breathe 1.5s ease-in-out infinite",
+        "live-text-breathe": "live-text-breathe 2s ease-in-out infinite",
+      },
     },
   },
 };

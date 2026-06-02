@@ -1,6 +1,7 @@
 import { cn } from "@ssu/utils";
 import { Calendar, Clock } from "lucide-react";
 import type { ReactNode } from "react";
+import { LiveIndicator } from "../LiveIndicator";
 
 export interface SessionCardProps {
   title: string;
@@ -12,21 +13,13 @@ export interface SessionCardProps {
 }
 
 function SessionStatusBadge({ status }: { status: "live" | "upcoming" }) {
-  const isLive = status === "live";
+  if (status === "live") {
+    return <LiveIndicator label="Live" size="sm" tone="default" />;
+  }
+
   return (
-    <span
-      className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold",
-        isLive ? "bg-[#FEE8E8] text-[#DC2626]" : "bg-[#E8F1FC] text-[#2563EB]",
-      )}
-    >
-      {isLive && (
-        <span
-          className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green"
-          aria-hidden
-        />
-      )}
-      {isLive ? "Live" : "Upcoming"}
+    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#E8F1FC] px-2.5 py-1 text-[11px] font-semibold text-[#2563EB]">
+      Upcoming
     </span>
   );
 }

@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@ssu/utils";
+import { LiveIndicator } from "../LiveIndicator";
 
 const statusBadgeVariants = cva(
   "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-micro font-semibold uppercase tracking-wide",
@@ -29,24 +30,30 @@ export interface StatusBadgeProps
 export function StatusBadge({
   className,
   variant,
-  showDot = variant === "live",
+  showDot: _showDot = variant === "live",
   children,
   ...props
 }: StatusBadgeProps) {
+  if (variant === "live") {
+    const label =
+      typeof children === "string" || typeof children === "number"
+        ? String(children)
+        : "Live";
+    return (
+      <LiveIndicator
+        label={label}
+        size="sm"
+        tone="default"
+        className={className}
+      />
+    );
+  }
+
   return (
     <span
       className={cn(statusBadgeVariants({ variant }), className)}
       {...props}
     >
-      {showDot && (
-        <span
-          className={cn(
-            "h-1.5 w-1.5 shrink-0 rounded-full",
-            variant === "live" ? "bg-brand-green" : "bg-current",
-          )}
-          aria-hidden
-        />
-      )}
       {children}
     </span>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSessionDetail } from "@ssu/queries";
-import { Badge, FullPageLayout, GoBack } from "@ssu/ui";
+import { FullPageLayout, GoBack, LiveIndicator } from "@ssu/ui";
 import { formatDate } from "@ssu/utils";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -59,12 +59,13 @@ export function ClassroomPage() {
                   className="h-full w-full"
                   src="about:blank"
                 />
-                <Badge
-                  variant="pending"
-                  className="absolute right-3 top-3 border-0 bg-brand-amber text-white"
-                >
-                  LIVE
-                </Badge>
+                <LiveIndicator
+                  label="LIVE"
+                  size="sm"
+                  tone="overlay"
+                  uppercase
+                  className="absolute right-3 top-3"
+                />
               </>
             )}
           </div>

@@ -140,6 +140,8 @@ export const resendCodeSchema = z.object({
 
 export type ResendCodeFormValues = z.infer<typeof resendCodeSchema>;
 
+const MIN_PROFILE_AGE = 15;
+
 export const accountSetupStepOneSchema = z
   .object({
     day: z.string(),
@@ -151,7 +153,54 @@ export const accountSetupStepOneSchema = z
   .refine((data) => !!data.day && !!data.month && !!data.year, {
     path: ["dateOfBirth"],
     message: "Please enter your date of birth",
-  });
+  })
+  .refine(
+    (data) => {
+      const day = Number.parseInt(data.day, 10);
+      const year = Number.parseInt(data.year, 10);
+      const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      const monthIndex = months.indexOf(data.month);
+      if (!Number.isFinite(day) || !Number.isFinite(year) || monthIndex < 0) {
+        return false;
+      }
+      const birthDate = new Date(year, monthIndex, day);
+      if (
+        birthDate.getFullYear() !== year ||
+        birthDate.getMonth() !== monthIndex ||
+        birthDate.getDate() !== day
+      ) {
+        return false;
+      }
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age -= 1;
+      }
+      return age >= MIN_PROFILE_AGE;
+    },
+    {
+      path: ["dateOfBirth"],
+      message:
+        "You are not up to the required age to register. You must be at least 15 years old.",
+    },
+  );
 
 export type AccountSetupStepOneValues = z.infer<
   typeof accountSetupStepOneSchema

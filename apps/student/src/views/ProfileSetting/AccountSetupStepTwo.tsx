@@ -1,48 +1,10 @@
 "use client";
 
-import { Input } from "@ssu/ui";
+import { Input, Skeleton } from "@ssu/ui";
+import { useNigeriaStates } from "@ssu/queries";
+import { useMemo } from "react";
 
 import { CustomSelect } from "@/components/ CustomSelect";
-
-const nigeriaStates = [
-  "Abia",
-  "Adamawa",
-  "Akwa Ibom",
-  "Anambra",
-  "Bauchi",
-  "Bayelsa",
-  "Benue",
-  "Borno",
-  "Cross River",
-  "Delta",
-  "Ebonyi",
-  "Edo",
-  "Ekiti",
-  "Enugu",
-  "FCT",
-  "Gombe",
-  "Imo",
-  "Jigawa",
-  "Kaduna",
-  "Kano",
-  "Katsina",
-  "Kebbi",
-  "Kogi",
-  "Kwara",
-  "Lagos",
-  "Nasarawa",
-  "Niger",
-  "Ogun",
-  "Ondo",
-  "Osun",
-  "Oyo",
-  "Plateau",
-  "Rivers",
-  "Sokoto",
-  "Taraba",
-  "Yobe",
-  "Zamfara",
-];
 
 interface AccountSetupStepTwoProps {
   address: string;
@@ -83,6 +45,13 @@ export function AccountSetupStepTwo({
   setCity,
   errors,
 }: AccountSetupStepTwoProps) {
+  const statesQuery = useNigeriaStates();
+
+  const stateOptions = useMemo(() => {
+    const rows = statesQuery.data ?? [];
+    return rows.map((row) => row.label);
+  }, [statesQuery.data]);
+
   return (
     <div className="space-y-7">
       <div>
@@ -106,13 +75,19 @@ export function AccountSetupStepTwo({
           State
         </label>
 
-        <CustomSelect
-          placeholder="Select state of residence"
-          options={nigeriaStates}
-          value={stateOfResidence}
-          onChange={setStateOfResidence}
-          error={errors?.stateOfResidence}
-        />
+        {statesQuery.isLoading ? (
+          <Skeleton className="h-[52px] w-full rounded-[14px]" />
+        ) : (
+          <CustomSelect
+            placeholder="Select state of residence"
+            options={
+              stateOptions.length > 0 ? stateOptions : ["Unable to load states"]
+            }
+            value={stateOfResidence}
+            onChange={setStateOfResidence}
+            error={errors?.stateOfResidence}
+          />
+        )}
       </div>
 
       <div>

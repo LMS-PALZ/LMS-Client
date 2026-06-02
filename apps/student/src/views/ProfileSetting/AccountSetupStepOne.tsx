@@ -1,6 +1,9 @@
 "use client";
 
 import { CustomSelect } from "@/components/ CustomSelect";
+import { useBirthYears } from "@ssu/queries";
+import { Skeleton } from "@ssu/ui";
+import { useMemo } from "react";
 
 interface AccountSetupStepOneProps {
   gender: string;
@@ -17,6 +20,7 @@ interface AccountSetupStepOneProps {
 
   year: string;
   setYear: (value: string) => void;
+  onYearChange?: (value: string) => void;
   errors?: {
     dateOfBirth?: string;
     gender?: string;
@@ -35,11 +39,18 @@ export function AccountSetupStepOne({
   setMonth,
   year,
   setYear,
+  onYearChange,
   errors,
 }: AccountSetupStepOneProps) {
+  const yearsQuery = useBirthYears();
+
+  const yearOptions = useMemo(() => {
+    const rows = yearsQuery.data ?? [];
+    return rows.map((row) => row.label);
+  }, [yearsQuery.data]);
+
   return (
     <div className="space-y-6">
-      {/* DATE */}
       <div>
         <label className="mb-3 block text-[15px] font-medium text-[#1D1D1D]">
           Date of birth
@@ -77,17 +88,26 @@ export function AccountSetupStepOne({
             ]}
           />
 
-          <CustomSelect
-            placeholder="Year"
-            value={year}
-            onChange={setYear}
-            error={errors?.dateOfBirth}
-            showErrorMessage={false}
-            options={Array.from(
-              { length: 20 },
-              (_, i) => `${new Date().getFullYear() - i}`,
-            )}
-          />
+          {yearsQuery.isLoading ? (
+            <Skeleton className="h-[52px] w-full rounded-[14px]" />
+          ) : (
+            <CustomSelect
+              placeholder="Year"
+              value={year}
+              onChange={(value) => {
+                if (onYearChange) {
+                  onYearChange(value);
+                  return;
+                }
+                setYear(value);
+              }}
+              error={errors?.dateOfBirth}
+              showErrorMessage={false}
+              options={
+                yearOptions.length > 0 ? yearOptions : ["Unable to load years"]
+              }
+            />
+          )}
         </div>
 
         {errors?.dateOfBirth && (
@@ -101,7 +121,6 @@ export function AccountSetupStepOne({
         )}
       </div>
 
-      {/* GENDER */}
       <div>
         <label className="mb-3 block text-[15px] font-medium text-[#1D1D1D]">
           Gender
@@ -116,7 +135,6 @@ export function AccountSetupStepOne({
         />
       </div>
 
-      {/* EMPLOYMENT */}
       <div>
         <label className="mb-3 block text-[15px] font-medium text-[#1D1D1D]">
           Employment status

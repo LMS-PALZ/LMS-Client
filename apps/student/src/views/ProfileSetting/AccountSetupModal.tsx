@@ -9,12 +9,18 @@ import {
   type AccountSetupStepTwoValues,
 } from "@ssu/schema";
 import { motion } from "framer-motion";
+import { mutationToast } from "@ssu/queries";
 import { useCreateProfileMutation, useSession } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Skeleton } from "@ssu/ui";
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import {
+  isCompleteDateOfBirth,
+  meetsMinimumAge,
+  MIN_AGE_ERROR_MESSAGE,
+} from "@/lib/dob-validation";
 import { AccountSetupProgress } from "@/views/ProfileSetting/AccountSetupProgress";
 import { AccountSetupStepOne } from "@/views/ProfileSetting/AccountSetupStepOne";
 import { AccountSetupStepThree } from "@/views/ProfileSetting/AccountSetupStepThree";
@@ -78,7 +84,23 @@ export function AccountSetupModal({
     Partial<Record<keyof AccountSetupStepThreeValues, string>>
   >({});
 
+  const validateDateOfBirthAge = (): boolean => {
+    if (!isCompleteDateOfBirth(day, month, year)) {
+      return true;
+    }
+    if (!meetsMinimumAge(day, month, year)) {
+      mutationToast.error(MIN_AGE_ERROR_MESSAGE);
+      setStepOneErrors({ dateOfBirth: MIN_AGE_ERROR_MESSAGE });
+      return false;
+    }
+    return true;
+  };
+
   const validateStepOne = () => {
+    if (!validateDateOfBirthAge()) {
+      return false;
+    }
+
     const result = accountSetupStepOneSchema.safeParse({
       day,
       month,
@@ -88,12 +110,35 @@ export function AccountSetupModal({
     });
 
     if (!result.success) {
-      setStepOneErrors(mapFieldErrors(result.error.flatten().fieldErrors));
+      const fieldErrors = mapFieldErrors<StepOneErrorKey>(
+        result.error.flatten().fieldErrors,
+      );
+      if (fieldErrors.dateOfBirth) {
+        mutationToast.error(fieldErrors.dateOfBirth);
+      }
+      setStepOneErrors(fieldErrors);
       return false;
     }
 
     setStepOneErrors({});
     return true;
+  };
+
+  const handleYearChange = (value: string) => {
+    if (
+      isCompleteDateOfBirth(day, month, value) &&
+      !meetsMinimumAge(day, month, value)
+    ) {
+      mutationToast.error(MIN_AGE_ERROR_MESSAGE);
+      setStepOneErrors({ dateOfBirth: MIN_AGE_ERROR_MESSAGE });
+      return;
+    }
+
+    setYear(value);
+    setStepOneErrors((prev) => ({
+      ...prev,
+      dateOfBirth: undefined,
+    }));
   };
 
   const validateStepTwo = () => {
@@ -236,13 +281,8 @@ export function AccountSetupModal({
               }));
             }}
             year={year}
-            setYear={(value) => {
-              setYear(value);
-              setStepOneErrors((prev) => ({
-                ...prev,
-                dateOfBirth: undefined,
-              }));
-            }}
+            setYear={setYear}
+            onYearChange={handleYearChange}
             errors={stepOneErrors}
           />
         )}

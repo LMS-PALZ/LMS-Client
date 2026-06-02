@@ -6,6 +6,7 @@ import {
   ClassroomPlaybackProvider,
   useClassroomPlayback,
 } from "@/contexts/ClassroomPlaybackContext";
+import { LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import { GoBack } from "@ssu/ui";
 import { CheckCircle2, ChevronDown, ChevronLeft, Circle } from "lucide-react";
@@ -167,13 +168,26 @@ function ClassroomCourseLayoutShellInner({
           <>
             <GoBack fallbackHref={backFallbackHref} />
 
-            <div className="mt-8 inline-flex w-fit max-w-full items-center justify-center rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
-              <span
-                className={cn("mr-2 h-3 w-3 rounded-full", statusDotClass)}
-              />
-              {statusLabel}
-              <span className="mx-2 text-[#D1D5DB]">|</span>
-              {course.sessionDuration}
+            <div className="mt-8 inline-flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
+              {liveActive ? (
+                <LiveIndicator
+                  label="LIVE SESSION"
+                  size="md"
+                  tone="classroom"
+                  uppercase
+                />
+              ) : (
+                <>
+                  <span
+                    className={cn("h-3 w-3 rounded-full", statusDotClass)}
+                  />
+                  <span className="font-medium text-[#6B7280]">
+                    {statusLabel}
+                  </span>
+                </>
+              )}
+              <span className="text-[#D1D5DB]">|</span>
+              <span>{course.sessionDuration}</span>
             </div>
 
             <div className="mt-4">

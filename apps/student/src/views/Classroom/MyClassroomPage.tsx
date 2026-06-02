@@ -3,6 +3,7 @@
 import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
 import { classroomProgram, getClassroomCourseById } from "@/lib/classroom-data";
+import { LiveIndicator } from "@ssu/ui";
 import { BookCopy, CalendarDays, ChevronRight, Clock3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ClassroomCourseCard } from "./ClassroomCourseCard";
@@ -86,20 +87,13 @@ export function MyClassroomPage() {
         </div>
 
         <div className="rounded-[18px] border border-[#EEF2F6] bg-white p-5 md:p-4">
-          <div
-            className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium ${
-              isLive
-                ? "bg-[#FCE3DE] text-[#D14B3D]"
-                : "bg-[#E8F4FC] text-[#2B6CB0]"
-            }`}
-          >
-            <span
-              className={`mr-2 h-2 w-2 rounded-full ${
-                isLive ? "bg-[#D14B3D]" : "bg-[#2B6CB0]"
-              }`}
-            />
-            {isLive ? "Live" : "Upcoming"}
-          </div>
+          {isLive ? (
+            <LiveIndicator label="Live" size="md" tone="classroom" />
+          ) : (
+            <span className="inline-flex items-center rounded-full bg-[#E8F4FC] px-3 py-1.5 text-[13px] font-semibold text-[#2B6CB0]">
+              Upcoming
+            </span>
+          )}
 
           <h2 className="mt-5 text-[16px] font-medium leading-9 text-[#1D1D1D]">
             {liveSession.title}
