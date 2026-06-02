@@ -1,24 +1,21 @@
 "use client";
 
-import { PageHeader } from "@ssu/ui";
-import dynamic from "next/dynamic";
-
-const ScheduleCalendar = dynamic(
-  () => import("./SchedulePage").then((m) => m.ScheduleCalendar),
-  {
-    ssr: false,
-    loading: () => <p className="text-neutral-500">Loading calendar…</p>,
-  },
-);
+import { DashboardEmptyState, PageHeader } from "@ssu/ui";
+import { CalendarDays } from "lucide-react";
 
 export function CalendarPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Calendar" />
-      <p className="text-body text-neutral-600 -mt-4">
-        Your upcoming classes and events.
-      </p>
-      <ScheduleCalendar />
+
+      <div className="rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+        <DashboardEmptyState
+          icon={CalendarDays}
+          title="Your calendar will appear here"
+          description="Soon you will see live classes, assignment due dates, and program milestones in one place so you can plan your week and never miss a session."
+          className="py-16"
+        />
+      </div>
     </div>
   );
 }
