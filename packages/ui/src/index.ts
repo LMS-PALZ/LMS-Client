@@ -49,7 +49,7 @@ export * from "./molecules/GoBack";
 
 export * from "./organisms/DataTable";
 export * from "./organisms/BrandLogo";
-export * from "./organisms/StudentSidebar";
+export * from "./organisms/Sidebar";
 export * from "./organisms/DashboardTopBar";
 export * from "./organisms/Modal";
 export * from "./organisms/NavigationSidebar";

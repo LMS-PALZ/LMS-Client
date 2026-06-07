@@ -6,6 +6,7 @@ export interface StatCardProps {
   value: string | number;
   icon: LucideIcon;
   trend?: { value: number; label: string };
+  description?: string;
   accent?: "green" | "amber" | "neutral";
   className?: string;
 }
@@ -15,6 +16,7 @@ export function StatCard({
   value,
   icon: Icon,
   trend,
+  description,
   accent = "green",
   className,
 }: StatCardProps) {
@@ -58,6 +60,9 @@ export function StatCard({
               {trend.value >= 0 ? "↑" : "↓"} {Math.abs(trend.value)}%{" "}
               {trend.label}
             </p>
+          )}
+          {description && (
+            <p className="text-small text-neutral-500 mt-2">{description}</p>
           )}
         </div>
         <div className={cn("p-2.5 rounded-xl border", a.bg, a.border)}>

@@ -9,3 +9,6 @@ coverage
 .DS_Store
 storybook-static
 *.tsbuildinfo
+.env
+.idea
+.vscode

@@ -2,7 +2,6 @@
   "name": "ssu-lms",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "npm@11.13.0",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -12,15 +11,14 @@
     "dev:student": "npm run dev -w @ssu/student",
     "dev:tutor": "npm run dev -w @ssu/tutor",
     "dev:admin": "npm run dev -w @ssu/admin",
-    "build": "turbo run build",
-    "build:student": "turbo run build --filter=@ssu/student",
-    "build:admin": "turbo run build --filter=@ssu/admin",
-    "build:tutor": "turbo run build --filter=@ssu/tutor",
-    "build:qa": "turbo run build --filter=@ssu/admin --filter=@ssu/student",
-    "lint": "turbo run lint && oxlint . --deny-warnings --react-plugin --jest-plugin",
-    "typecheck": "turbo run typecheck",
-    "verify": "npm run lint && npm run typecheck && npm run test",
-    "test": "turbo run test",
+    "build": "npm run build -ws --if-present --workspace-concurrency=1",
+    "build:student": "npm run build -w @ssu/student",
+    "build:admin": "npm run build -w @ssu/admin",
+    "build:qa": "npm run build -w @ssu/admin && npm run build -w @ssu/student",
+    "lint": "oxlint . --deny-warnings --react-plugin --jest-plugin",
+    "typecheck": "tsc --noEmit -p packages/types/tsconfig.json && tsc --noEmit -p packages/utils/tsconfig.json && tsc --noEmit -p packages/schema/tsconfig.json && tsc --noEmit -p packages/api/tsconfig.json && tsc --noEmit -p packages/queries/tsconfig.json && tsc --noEmit -p packages/ui/tsconfig.json && tsc --noEmit -p apps/student/tsconfig.json && tsc --noEmit -p apps/tutor/tsconfig.json && tsc --noEmit -p apps/admin/tsconfig.json",
+    "verify": "npm run lint && npm run typecheck && npm run test --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "storybook": "npm run storybook -w @ssu/ui",
     "prepare": "husky"
   },
@@ -31,7 +29,6 @@
     "lint-staged": "^15.4.3",
     "oxlint": "^1.61.0",
     "prettier": "^3.4.2",
-    "turbo": "^2.5.4",
     "typescript": "^5.7.2"
   },
   "lint-staged": {

@@ -18,6 +18,7 @@ export interface AuthUser {
   lastName: string;
   role: UserRole;
   status: string;
+  accessToken: string;
 }
 
 export interface CourseSummary {
@@ -116,4 +117,82 @@ export interface NotificationItem {
   message: string;
   createdAt: string;
   read: boolean;
+}
+
+export interface StudentProfile {
+  name: string;
+  programme: string;
+  image: string;
+}
+
+export interface StudentInfo {
+  email: string;
+  phone: string;
+  dob: string;
+  address: string;
+  cohort: string;
+  enrollmentDate: string;
+  idDocumentUrl?: string;
+}
+
+export interface ProgressData {
+  percentage: number;
+  completed: number;
+  total: number;
+  description?: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  title: string;
+  date: string;
+  week: string;
+  status: "present" | "absent";
+}
+
+export interface ProgressCardProps {
+  title: string;
+  data: ProgressData;
+}
+
+export type StudentStatus = "good-standing" | "flagged" | "access-revoked";
+
+export interface Student {
+  id: string;
+  first_name: string;
+  last_name: string;
+  initials: string;
+  avatarColor: string;
+
+  programme: string;
+  progress: number;
+
+  attendance: {
+    attended: number;
+    total: number;
+  };
+
+  status: StudentStatus;
+}
+
+export interface StudentStat {
+  id: string;
+  title: string;
+  value: number;
+  description: string;
+}
+
+export interface StudentManagementProps {
+  stats: StudentStat[];
+  students: Student[];
+
+  searchValue?: string;
+  statusFilter?: string;
+  programmeFilter?: string;
+
+  onSearchChange?: (value: string) => void;
+
+  onStatusChange?: (value: string) => void;
+
+  onProgrammeChange?: (value: string) => void;
 }

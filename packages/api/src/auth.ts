@@ -332,8 +332,8 @@ export async function adminlogin(
 
     return {
       ok: true,
-      data: res.data,
-      message: "Login successful",
+      data: res.data.data,
+      message: res.data.message || "Login successful",
     };
   } catch (error: unknown) {
     const err = error as {

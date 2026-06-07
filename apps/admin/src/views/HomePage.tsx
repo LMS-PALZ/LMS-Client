@@ -1,6 +1,6 @@
 "use client";
 
-import { adminPath } from "@ssu/config/portal-paths";
+// import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminUsers, usePendingTrainers } from "@ssu/queries";
 import {
   AlertBanner,
@@ -9,8 +9,7 @@ import {
   StatCardSkeleton,
   StatusBadge,
 } from "@ssu/ui";
-import { BookOpen, Megaphone, UserCheck, Users } from "lucide-react";
-import Link from "next/link";
+import { BookOpen, UserCheck, Users } from "lucide-react";
 
 export function HomePage() {
   const usersQ = useAdminUsers();
@@ -22,26 +21,16 @@ export function HomePage() {
   return (
     <div className="space-y-8">
       <PageHeader title="Admin dashboard" />
-      <p className="text-body text-neutral-600 -mt-4">
-        QA preview: full admin designs are in progress. Use the links below to
-        explore available areas.
-      </p>
 
       {(usersQ.isError || pendingQ.isError) && (
         <AlertBanner variant="error">Could not load admin data.</AlertBanner>
       )}
 
-      <div className="rounded-xl border border-brand-green-200 bg-brand-green-50 px-4 py-3 text-small text-brand-green">
-        <StatusBadge variant="enrolled" className="mb-2">
-          QA build
-        </StatusBadge>
-        <p>
-          This dashboard uses live mock data for navigation and layout review.
-          Final visuals will follow the admin Figma screens.
-        </p>
-      </div>
+      <StatusBadge variant="enrolled" className="mb-2">
+        QA build
+      </StatusBadge>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {usersQ.isLoading ? (
           <StatCardSkeleton />
         ) : (
@@ -58,61 +47,6 @@ export function HomePage() {
           />
         )}
         <StatCard label="Programs" value="N/A" icon={BookOpen} />
-        <StatCard label="Announcements" value="N/A" icon={Megaphone} />
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border bg-white p-5 shadow-card">
-          <h2 className="text-h3 font-bold text-neutral-900 mb-3">
-            Quick actions
-          </h2>
-          <ul className="space-y-2 text-small">
-            <li>
-              <Link
-                href={adminPath("/users")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Manage users ({userCount})
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={adminPath("/trainers/pending")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Review trainer applications ({pendingCount})
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={adminPath("/programs")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Programs
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={adminPath("/announcements")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Announcements
-              </Link>
-            </li>
-          </ul>
-        </section>
-
-        <section className="rounded-xl border bg-white p-5 shadow-card">
-          <h2 className="text-h3 font-bold text-neutral-900 mb-3">
-            What QA can test
-          </h2>
-          <ul className="list-disc pl-5 space-y-2 text-small text-neutral-600">
-            <li>Sidebar navigation and page routing</li>
-            <li>User list and trainer approval flows (mock API)</li>
-            <li>Auth: login, forgot password, reset password</li>
-            <li>Responsive layout on desktop and tablet widths</li>
-          </ul>
-        </section>
       </div>
     </div>
   );
