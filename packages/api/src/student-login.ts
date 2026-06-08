@@ -85,6 +85,7 @@ export function parseStudentLoginResponse(
     lastName: readString(userRecord, "lastName", "last_name"),
     role: mapRole(readString(userRecord, "role") || "students"),
     status: readString(userRecord, "status") || "active",
+    accessToken: accessToken,
   };
 
   const message =
