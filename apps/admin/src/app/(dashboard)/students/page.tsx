@@ -2,8 +2,8 @@
 
 import { StudentManagement } from "@/components/Studentmanagement";
 
-import { studentStats, students } from "@ssu/api";
+import { studentStats } from "@ssu/api";
 
 export default function Page() {
-  return <StudentManagement stats={studentStats} students={students} />;
+  return <StudentManagement stats={studentStats} />;
 }

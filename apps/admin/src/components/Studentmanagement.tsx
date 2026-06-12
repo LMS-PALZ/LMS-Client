@@ -1,17 +1,19 @@
 "use client";
 
 import { Card } from "./Card";
-
 import { Table } from "./Table";
-
 import { StudentManagementProps } from "@ssu/types";
+import { StudentList } from "@ssu/queries";
 
-export function StudentManagement({ stats, students }: StudentManagementProps) {
+export function StudentManagement({ stats }: StudentManagementProps) {
+  const { data } = StudentList(1, 10);
   return (
-    <section className="rounded-[28px] bg-[#F8FAF8] p-6">
-      <Card stats={stats} />
+    <section className="flex flex-col gap-8 rounded-[18px] bg-[#FFFFFF] p-6">
+      <section className="p-2 bg-[#FAFAFA] rounded-[12px]">
+        <Card stats={stats} />
+      </section>
 
-      <Table students={students} />
+      <Table students={data?.items ?? []} />
     </section>
   );
 }

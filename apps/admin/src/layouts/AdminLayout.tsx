@@ -5,6 +5,7 @@ import {
   DashboardLayout,
   useSidebarCollapsed,
   AdminSidebar,
+  HeaderBar,
   type NavigationSidebarItem,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
@@ -13,11 +14,14 @@ import {
   LayoutDashboard,
   GraduationCap,
   ClipboardList,
+  User,
+  Settings,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { HeaderBar } from "../components/HeaderBar";
+import { getStudentPageTitle } from "@/lib/adminRoutes";
 
 const mainItems: NavigationSidebarItem[] = [
   { href: adminPath(), label: "Home", icon: LayoutDashboard },
@@ -65,12 +69,22 @@ function AdminSidebarWrapper() {
 export function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
+
   return (
     <DashboardLayout
       variant="admin"
       fullWidthMain={isSessionPage}
       sidebar={<AdminSidebarWrapper />}
-      header={<HeaderBar />}
+      header={
+        <HeaderBar
+          pageTitle={getStudentPageTitle(pathname)}
+          menuItems={[
+            { label: "Account", href: "/account", icon: User },
+            { label: "Settings", href: "/settings", icon: Settings },
+            { label: "Support", href: "/support", icon: HelpCircle },
+          ]}
+        />
+      }
     >
       {children}
     </DashboardLayout>

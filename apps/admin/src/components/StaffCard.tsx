@@ -2,16 +2,15 @@
 
 import { Users, UserCheck, Flag } from "lucide-react";
 import { StatCard } from "@ssu/ui";
-import type { StudentStat } from "@ssu/types";
+import type { StaffStats } from "@ssu/types";
 import type { LucideIcon } from "lucide-react";
 
 const ICONS: LucideIcon[] = [Users, UserCheck, Flag];
-
 interface Props {
-  stats: StudentStat[];
+  stats: StaffStats[];
 }
 
-export function Card({ stats }: Props) {
+export function StaffCard({ stats }: Props) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       {stats.map((stat, index) => (
@@ -20,7 +19,6 @@ export function Card({ stats }: Props) {
           label={stat.title}
           value={stat.value}
           icon={ICONS[index]}
-          description={stat.description}
         />
       ))}
     </div>

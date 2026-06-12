@@ -6,8 +6,9 @@ import type {
   AttendanceRecord,
   StudentInfo,
   StudentProfile,
-  Student,
+  // Student,
   StudentStat,
+  StaffStats,
 } from "@ssu/types";
 
 export const mockCourses: CourseSummary[] = [
@@ -217,244 +218,22 @@ export const studentStats: StudentStat[] = [
   },
 ];
 
-export const students: Student[] = [
+export const StaffStat: StaffStats[] = [
   {
     id: "1",
-    first_name: "Tunde",
-    last_name: "Musa",
-    initials: "TM",
-    avatarColor: "bg-green-300",
-
-    programme: "Content Creation",
-
-    progress: 24,
-
-    attendance: {
-      attended: 8,
-      total: 8,
-    },
-
-    status: "good-standing",
+    title: "Administrators",
+    value: 6,
   },
 
   {
     id: "2",
-    first_name: "Kelechi",
-    last_name: "Eze",
-    initials: "KE",
-    avatarColor: "bg-slate-200",
-
-    programme: "Content Creation",
-
-    progress: 24,
-
-    attendance: {
-      attended: 8,
-      total: 8,
-    },
-
-    status: "good-standing",
+    title: "Active Trainers",
+    value: 10,
   },
 
   {
     id: "3",
-    first_name: "Funke",
-    last_name: "Obi",
-    initials: "FO",
-    avatarColor: "bg-sky-400",
-
-    programme: "Digital Marketing",
-
-    progress: 24,
-
-    attendance: {
-      attended: 8,
-      total: 8,
-    },
-
-    status: "good-standing",
-  },
-
-  {
-    id: "4",
-    first_name: "Adaeze",
-    last_name: "Ugwu",
-    initials: "AU",
-    avatarColor: "bg-red-400",
-
-    programme: "Data Analysis",
-
-    progress: 24,
-
-    attendance: {
-      attended: 8,
-      total: 8,
-    },
-
-    status: "good-standing",
-  },
-
-  {
-    id: "5",
-    first_name: "Bola",
-    last_name: "Idowu",
-    initials: "BI",
-    avatarColor: "bg-slate-200",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 5,
-      total: 8,
-    },
-
-    status: "flagged",
-  },
-
-  {
-    id: "6",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
-  },
-  {
-    id: "6",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
-  },
-  {
-    id: "7",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
-  },
-  {
-    id: "8",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
-  },
-  {
-    id: "9",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
-  },
-  {
-    id: "10",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
-  },
-  {
-    id: "11",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
-  },
-  {
-    id: "12",
-    first_name: "Zara",
-    last_name: "Nwosu",
-    initials: "ZN",
-    avatarColor: "bg-red-400",
-
-    programme: "UI/UX Design",
-
-    progress: 24,
-
-    attendance: {
-      attended: 3,
-      total: 8,
-    },
-
-    status: "access-revoked",
+    title: "Pending Invites",
+    value: 4,
   },
 ];

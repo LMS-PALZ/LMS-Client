@@ -1,23 +1,13 @@
 "use client";
 
-import { useLogout, useSession } from "@ssu/queries";
-import {
-  Bell,
-  Menu,
-  LogOut,
-  User,
-  Check,
-  X,
-  Award,
-  HelpCircle,
-} from "lucide-react";
+import { useSession, useLogout } from "@ssu/queries";
+import { Bell, Menu, LogOut, Check, X } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSidebar } from "@ssu/ui";
-import { useSignupStore } from "@ssu/store";
-import { getStudentPageTitle } from "@/lib/studentRoutes";
 import { mockNotifications } from "@ssu/api";
-import { NotificationItem } from "@ssu/types";
+import type { NotificationItem } from "@ssu/types";
+import type { LucideIcon } from "lucide-react";
 
 function timeAgo(dateStr: string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -27,22 +17,39 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-export function HeaderBar() {
+export interface HeaderBarMenuItem {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+export interface HeaderBarProps {
+  pageTitle?: string;
+  menuItems?: HeaderBarMenuItem[];
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+export function HeaderBar({
+  pageTitle,
+  menuItems = [],
+  firstName,
+  lastName,
+  email,
+}: HeaderBarProps) {
   const { data: user } = useSession();
   const { toggleMobileSidebar } = useSidebar();
   const router = useRouter();
-  const pathname = usePathname();
+  const logout = useLogout();
 
-  const signupUser = useSignupStore((state) => state.user);
-
-  const displayFirstName = user?.firstName ?? signupUser?.first_name ?? "";
-  const displayLastName = user?.lastName ?? signupUser?.last_name ?? "";
-  const displayEmail = user?.email ?? signupUser?.email ?? "";
+  const displayFirstName = firstName ?? user?.firstName ?? "";
+  const displayLastName = lastName ?? user?.lastName ?? "";
+  const displayEmail = email ?? user?.email ?? "";
   const displayInitial =
     displayFirstName.charAt(0).toUpperCase() ||
     displayEmail.charAt(0).toUpperCase() ||
     "U";
-  const pageTitle = getStudentPageTitle(pathname);
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -78,11 +85,13 @@ export function HeaderBar() {
       prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
 
-  const logout = useLogout();
   const handleLogout = () => {
     logout();
     router.replace("/login");
   };
+
+  const fullName =
+    [displayFirstName, displayLastName].filter(Boolean).join(" ") || "User";
 
   return (
     <>
@@ -96,9 +105,11 @@ export function HeaderBar() {
             <Menu className="h-5 w-5 text-[#1D1D1D]" />
           </button>
 
-          <h1 className="hidden text-[12px] text-[#1D1D1D] lg:block">
-            {pageTitle}
-          </h1>
+          {pageTitle && (
+            <h1 className="hidden text-[12px] text-[#1D1D1D] lg:block">
+              {pageTitle}
+            </h1>
+          )}
         </div>
 
         {user && (
@@ -119,7 +130,7 @@ export function HeaderBar() {
                 )}
               </button>
 
-              {/* Desktop dropdown */}
+              {/* Desktop notification dropdown */}
               {notifOpen && (
                 <div className="absolute right-0 top-[52px] z-50 hidden w-[320px] rounded-[18px] border border-[#EEF2F6] bg-white shadow-xl lg:block">
                   <div className="flex items-center justify-between border-b border-[#F3F4F6] px-4 py-3">
@@ -198,14 +209,12 @@ export function HeaderBar() {
                 </span>
               </button>
 
-              {/* Desktop dropdown */}
+              {/* Desktop user dropdown */}
               {userOpen && (
                 <div className="absolute right-0 top-[48px] z-50 hidden w-[210px] rounded-[18px] border border-[#EEF2F6] bg-white shadow-xl lg:block">
                   <div className="border-b border-[#F3F4F6] px-4 py-3">
                     <p className="text-[14px] font-semibold text-[#1D1D1D]">
-                      {[displayFirstName, displayLastName]
-                        .filter(Boolean)
-                        .join(" ") || "Student"}
+                      {fullName}
                     </p>
                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
                       {displayEmail}
@@ -213,39 +222,23 @@ export function HeaderBar() {
                   </div>
 
                   <div className="py-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        router.push("/profile");
-                        setUserOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
-                    >
-                      <User className="h-4 w-4 text-[#6B7280]" />
-                      Account
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        router.push("/certificate");
-                        setUserOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
-                    >
-                      <Award className="h-4 w-4 text-[#6B7280]" />
-                      Certificate
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        router.push("/support");
-                        setUserOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
-                    >
-                      <HelpCircle className="h-4 w-4 text-[#6B7280]" />
-                      Support
-                    </button>
+                    {menuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.href}
+                          type="button"
+                          onClick={() => {
+                            router.push(item.href);
+                            setUserOpen(false);
+                          }}
+                          className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
+                        >
+                          <Icon className="h-4 w-4 text-[#6B7280]" />
+                          {item.label}
+                        </button>
+                      );
+                    })}
                     <div className="my-1 h-px bg-[#F3F4F6]" />
                     <button
                       type="button"
@@ -263,7 +256,7 @@ export function HeaderBar() {
         )}
       </header>
 
-      {/* ── Mobile: Notifications full screen ── */}
+      {/* Mobile: Notifications full screen */}
       {notifOpen && (
         <div className="fixed inset-0 z-50 flex flex-col bg-white lg:hidden">
           <div className="flex items-center justify-between border-b border-[#F3F4F6] px-5 py-4">
@@ -327,7 +320,7 @@ export function HeaderBar() {
         </div>
       )}
 
-      {/* ── Mobile: Account full screen ── */}
+      {/* Mobile: Account full screen */}
       {userOpen && (
         <div className="fixed inset-0 z-50 flex flex-col bg-white lg:hidden">
           <div className="flex items-center justify-between border-b border-[#F3F4F6] px-5 py-4">
@@ -343,52 +336,31 @@ export function HeaderBar() {
           </div>
 
           <div className="px-5 py-6">
-            <p className="text-[18px] font-bold text-[#1D1D1D]">
-              {[displayFirstName, displayLastName].filter(Boolean).join(" ") ||
-                "Student"}
-            </p>
+            <p className="text-[18px] font-bold text-[#1D1D1D]">{fullName}</p>
             <p className="mt-1 text-[14px] text-[#6B7280]">{displayEmail}</p>
           </div>
 
           <div className="h-px bg-[#F3F4F6]" />
 
           <div className="flex-1 py-3">
-            <button
-              type="button"
-              onClick={() => {
-                router.push("/profile");
-                setUserOpen(false);
-              }}
-              className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
-            >
-              <User className="h-5 w-5 text-[#6B7280]" />
-              Account
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                router.push("/certificate");
-                setUserOpen(false);
-              }}
-              className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
-            >
-              <Award className="h-5 w-5 text-[#6B7280]" />
-              Certificate
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                router.push("/support");
-                setUserOpen(false);
-              }}
-              className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
-            >
-              <HelpCircle className="h-5 w-5 text-[#6B7280]" />
-              Support
-            </button>
-
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => {
+                    router.push(item.href);
+                    setUserOpen(false);
+                  }}
+                  className="flex w-full items-center gap-4 px-5 py-4 text-[16px] text-[#1D1D1D] transition hover:bg-[#F7F9FB]"
+                >
+                  <Icon className="h-5 w-5 text-[#6B7280]" />
+                  {item.label}
+                </button>
+              );
+            })}
             <div className="my-2 h-px bg-[#F3F4F6]" />
-
             <button
               type="button"
               onClick={handleLogout}

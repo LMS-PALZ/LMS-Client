@@ -2,7 +2,7 @@
 
 import { DataTable } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Student } from "@ssu/types";
+import type { Trainers } from "@ssu/types";
 import { useMemo } from "react";
 import { StatusBadge } from "./StatusBadge";
 import { useRouter } from "next/navigation";
@@ -36,33 +36,36 @@ function getAvatarColor(): string {
 }
 
 interface Props {
-  students: Student[];
+  trainers: Trainers[];
 }
 
-export function Table({ students }: Props) {
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export function TrainerTable({ trainers }: Props) {
   const router = useRouter();
 
   const avatarColors = useMemo(
     () =>
-      students.reduce<Record<string, string>>((acc, student) => {
-        acc[student.id] = getAvatarColor();
+      trainers.reduce<Record<string, string>>((acc, trainer) => {
+        acc[trainer.id] = getAvatarColor();
         return acc;
       }, {}),
-    [students],
+    [trainers],
   );
 
-  const columns: ColumnDef<Student, any>[] = [
-    {
-      id: "select",
-      header: () => <input type="checkbox" />,
-      cell: () => <input type="checkbox" />,
-    },
+  const columns: ColumnDef<Trainers, any>[] = [
     {
       accessorKey: "name",
-      header: "Student",
+      header: "Trainer",
       cell: ({ row }) => {
-        const { firstName, lastName, id } = row.original;
-        const initials = getInitials(`${firstName} ${lastName}`);
+        const { name, id } = row.original;
+        const initials = getInitials(name);
         const avatarColor = avatarColors[id] ?? AVATAR_COLORS[0];
 
         return (
@@ -72,54 +75,46 @@ export function Table({ students }: Props) {
             >
               {initials}
             </span>
-            <span>
-              {firstName} {lastName}
-            </span>
+            <span>{name}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "program",
-      header: "Program",
+      accessorKey: "course",
+      header: "Assigned Course",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.program}</span>
+          <span className="text-sm">{row.original.role}</span>
         </div>
       ),
     },
-    {
-      accessorKey: "progress",
-      header: "Progress",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.progress}%</span>
-        </div>
-      ),
-    },
-    // {
-    //     accessorKey: "attendance",
-    //     header: "Attendance",
-    //     cell: ({ row }) => (
-    //         <div className="flex items-center gap-2">
-    //             <span className="text-sm">
-    //                 {row.original.attendance.attended}/{row.original.attendance.total}
-    //             </span>
-    //         </div>
-    //     ),
-    // },
+
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
+
+    {
+      accessorKey: "date",
+      header: "Date Joined",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="text-sm">
+            {formatDate(row.original.inviteAcceptedAt)}
+          </span>
+        </div>
+      ),
+    },
+
     {
       id: "actions",
       header: "",
       cell: ({ row }) => (
         <button
           type="button"
-          onClick={() => router.push(`/students/${row.original.id}`)}
+          onClick={() => router.push(`/trainers/${row.original.id}`)}
           className="text-[13px] text-[#4E845F] hover:opacity-80"
         >
           View
@@ -128,5 +123,20 @@ export function Table({ students }: Props) {
     },
   ];
 
-  return <DataTable columns={columns} data={students} searchable />;
+  return (
+    <DataTable
+      columns={columns}
+      data={trainers}
+      searchable
+      courseOptions={[
+        "All",
+        "content creation",
+        "product design",
+        "data analysis",
+        "digital marketing",
+        "virtual assistance",
+      ]}
+      statusOptions={["All", "active", "suspended", "pending"]}
+    />
+  );
 }

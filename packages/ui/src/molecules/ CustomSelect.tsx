@@ -35,7 +35,6 @@ export function CustomSelect({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* SELECT BUTTON */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
@@ -56,7 +55,6 @@ export function CustomSelect({
         />
       </button>
 
-      {/* DROPDOWN */}
       {open && (
         <div className="absolute left-0 top-[60px] z-50 w-full overflow-hidden rounded-[18px] border border-[#EEF2F6] bg-white shadow-xl">
           <div className="max-h-[220px] overflow-y-auto py-2">

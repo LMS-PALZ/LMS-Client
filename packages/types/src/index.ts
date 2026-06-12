@@ -155,16 +155,19 @@ export interface ProgressCardProps {
   data: ProgressData;
 }
 
-export type StudentStatus = "good-standing" | "flagged" | "access-revoked";
+export type Status =
+  | "good-standing"
+  | "flagged"
+  | "access-revoked"
+  | "active"
+  | "pending"
+  | "suspended";
 
 export interface Student {
   id: string;
-  first_name: string;
-  last_name: string;
-  initials: string;
-  avatarColor: string;
-
-  programme: string;
+  firstName: string;
+  lastName: string;
+  program: string;
   progress: number;
 
   attendance: {
@@ -172,7 +175,7 @@ export interface Student {
     total: number;
   };
 
-  status: StudentStatus;
+  status: Status;
 }
 
 export interface StudentStat {
@@ -184,7 +187,6 @@ export interface StudentStat {
 
 export interface StudentManagementProps {
   stats: StudentStat[];
-  students: Student[];
 
   searchValue?: string;
   statusFilter?: string;
@@ -195,4 +197,26 @@ export interface StudentManagementProps {
   onStatusChange?: (value: string) => void;
 
   onProgrammeChange?: (value: string) => void;
+}
+
+export interface StaffStats {
+  id: string;
+  title: string;
+  value: number;
+}
+
+export interface Trainers {
+  id: string;
+  name: string;
+  role: string;
+  inviteAcceptedAt: string;
+  status: Status;
+}
+
+export interface Admins {
+  id: string;
+  name: string;
+  role: string;
+  inviteAcceptedAt: string;
+  status: Status;
 }

@@ -460,6 +460,64 @@ export async function createStudentProfile(data: {
   }
 }
 
+export async function getStaffList(
+  page = 1,
+  limit = 10,
+  role: "admin" | "tutor" = "admin",
+) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(`${API_BASE_URL}/api/v1/admins/staff`, {
+      params: { page, limit, role },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch staff list.",
+    };
+  }
+}
+
+export async function getStudentList(
+  page = 1,
+  limit = 10,
+  // role: "admin" | "tutor" = "admin",
+) {
+  try {
+    const token = getStoredAuthToken();
+
+    console.log("Fetching student list with token:", token);
+
+    const res = await axios.get(`${API_BASE_URL}/api/v1/admins/students`, {
+      params: { page, limit },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch student list.",
+    };
+  }
+}
+
 export const SESSION_STORAGE_KEY = "ssu_session";
 
 const AUTH_TOKEN_STORAGE_KEY = "token";

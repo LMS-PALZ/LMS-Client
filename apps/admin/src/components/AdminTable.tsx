@@ -2,7 +2,7 @@
 
 import { DataTable } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Student } from "@ssu/types";
+import type { Admins } from "@ssu/types";
 import { useMemo } from "react";
 import { StatusBadge } from "./StatusBadge";
 import { useRouter } from "next/navigation";
@@ -29,40 +29,42 @@ function getInitials(name: string): string {
 
   return `${first}${last}`;
 }
-
 function getAvatarColor(): string {
   const index = Math.floor(Math.random() * AVATAR_COLORS.length);
   return AVATAR_COLORS[index];
 }
 
 interface Props {
-  students: Student[];
+  admins: Admins[];
 }
 
-export function Table({ students }: Props) {
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export function AdminTable({ admins }: Props) {
   const router = useRouter();
 
   const avatarColors = useMemo(
     () =>
-      students.reduce<Record<string, string>>((acc, student) => {
-        acc[student.id] = getAvatarColor();
+      admins.reduce<Record<string, string>>((acc, admin) => {
+        acc[admin.id] = getAvatarColor();
         return acc;
       }, {}),
-    [students],
+    [admins],
   );
 
-  const columns: ColumnDef<Student, any>[] = [
-    {
-      id: "select",
-      header: () => <input type="checkbox" />,
-      cell: () => <input type="checkbox" />,
-    },
+  const columns: ColumnDef<Admins, any>[] = [
     {
       accessorKey: "name",
-      header: "Student",
+      header: "Admin",
       cell: ({ row }) => {
-        const { firstName, lastName, id } = row.original;
-        const initials = getInitials(`${firstName} ${lastName}`);
+        const { name, id } = row.original;
+        const initials = getInitials(name);
         const avatarColor = avatarColors[id] ?? AVATAR_COLORS[0];
 
         return (
@@ -72,54 +74,46 @@ export function Table({ students }: Props) {
             >
               {initials}
             </span>
-            <span>
-              {firstName} {lastName}
-            </span>
+            <span>{name}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "program",
-      header: "Program",
+      accessorKey: "course",
+      header: "Role",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.program}</span>
+          <span className="text-sm">{row.original.role}</span>
         </div>
       ),
     },
-    {
-      accessorKey: "progress",
-      header: "Progress",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.progress}%</span>
-        </div>
-      ),
-    },
-    // {
-    //     accessorKey: "attendance",
-    //     header: "Attendance",
-    //     cell: ({ row }) => (
-    //         <div className="flex items-center gap-2">
-    //             <span className="text-sm">
-    //                 {row.original.attendance.attended}/{row.original.attendance.total}
-    //             </span>
-    //         </div>
-    //     ),
-    // },
+
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
+
+    {
+      accessorKey: "date",
+      header: "Date Joined",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="text-sm">
+            {formatDate(row.original.inviteAcceptedAt)}
+          </span>
+        </div>
+      ),
+    },
+
     {
       id: "actions",
       header: "",
       cell: ({ row }) => (
         <button
           type="button"
-          onClick={() => router.push(`/students/${row.original.id}`)}
+          onClick={() => router.push(`/admins/${row.original.id}`)}
           className="text-[13px] text-[#4E845F] hover:opacity-80"
         >
           View
@@ -128,5 +122,13 @@ export function Table({ students }: Props) {
     },
   ];
 
-  return <DataTable columns={columns} data={students} searchable />;
+  return (
+    <DataTable
+      columns={columns}
+      data={admins}
+      searchable
+      roleOptions={["All", "super admin", "admin"]}
+      statusOptions={["All", "active", "suspended", "pending"]}
+    />
+  );
 }

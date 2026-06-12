@@ -1,9 +1,9 @@
 "use client";
 
-import { StudentStatus } from "@ssu/types";
+import { Status } from "@ssu/types";
 
 interface Props {
-  status: StudentStatus;
+  status: Status;
 }
 
 export function StatusBadge({ status }: Props) {
@@ -12,14 +12,21 @@ export function StatusBadge({ status }: Props) {
 
     flagged: "bg-[#FDE2DF] text-[#D32F2F]",
 
+    active: "bg-[#DBF1DC] text-[#1F6E2A]",
+
+    pending: "bg-[#E2E8F0] text-[#495057]",
+
+    suspended: "bg-[#F5D5D1] text-[#B22222]",
+
     "access-revoked": "bg-[#E9EEF5] text-[#5F6B7A]",
   };
 
   const labels = {
     "good-standing": "Good standing",
-
     flagged: "Flagged",
-
+    active: "Active",
+    pending: "Pending",
+    suspended: "Suspended",
     "access-revoked": "Access revoked",
   };
 
