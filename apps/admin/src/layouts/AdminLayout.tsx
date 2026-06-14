@@ -21,12 +21,12 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { getStudentPageTitle } from "@/lib/adminRoutes";
+import { getAdminPageTitle } from "@/lib/adminRoutes";
 
 const mainItems: NavigationSidebarItem[] = [
   { href: adminPath(), label: "Home", icon: LayoutDashboard },
   { href: adminPath("/students"), label: "Students", icon: BookOpen },
-  { href: adminPath("/calendar"), label: "Calendar", icon: BookOpen },
+  { href: adminPath("/calender"), label: "Calender", icon: BookOpen },
 ];
 
 const teachingItems = [
@@ -77,7 +77,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       sidebar={<AdminSidebarWrapper />}
       header={
         <HeaderBar
-          pageTitle={getStudentPageTitle(pathname)}
+          pageTitle={getAdminPageTitle(pathname)}
           menuItems={[
             { label: "Account", href: "/account", icon: User },
             { label: "Settings", href: "/settings", icon: Settings },

@@ -1,71 +1,83 @@
 "use client";
 
-import { tutorPath } from "@ssu/config/portal-paths";
-import { useEnrolledCourses } from "@ssu/queries";
-import { AlertBanner, CardSkeleton, PageHeader, StatCard } from "@ssu/ui";
-import { BookOpen, ClipboardList, Users, Video } from "lucide-react";
-import Link from "next/link";
+import { ShieldCheck, Users, BookOpen, Monitor } from "lucide-react";
+import { motion } from "framer-motion";
+interface TutorWelcomeProps {
+  title?: string;
+  description?: string;
+}
 
-export function HomePage() {
-  const q = useEnrolledCourses();
+export function HomePage({
+  title = "Welcome to the tutor dashboard",
+  description = "This is the secure back office for managing Skill Scale Up students and programs.",
+}: TutorWelcomeProps) {
+  const features = [
+    {
+      title: "Students",
+      icon: Users,
+    },
+    {
+      title: "Programs",
+      icon: BookOpen,
+    },
+    {
+      title: "Admins",
+      icon: Monitor,
+    },
+  ];
+
   return (
-    <div className="space-y-8">
-      <PageHeader title="Your Dashboard" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Courses published"
-          value={q.data?.length ?? 0}
-          icon={BookOpen}
+    <div className="mx-auto flex max-w-[900px] flex-col items-center text-center">
+      <motion.div
+        className="flex h-[120px] w-[120px] items-center justify-center"
+        animate={{
+          opacity: [0.4, 1, 0.4],
+          scale: [0.95, 1, 0.95],
+        }}
+        transition={{
+          duration: 2,
+          ease: "easeInOut",
+          repeat: Infinity,
+          repeatType: "loop",
+        }}
+      >
+        <img
+          src="/firstlogo.png"
+          alt="Skill Scale Up Logo"
+          className="h-full w-full object-contain"
         />
-        <StatCard
-          label="Active students"
-          value={48}
-          icon={Users}
-          accent="amber"
-        />
-        <StatCard label="Sessions this week" value={3} icon={Video} />
-        <StatCard
-          label="Pending reviews"
-          value={5}
-          icon={ClipboardList}
-          accent="amber"
-        />
+      </motion.div>
+
+      <div className="mt-8 rounded-full bg-[#0E5B1E] px-6 py-2">
+        <span className="flex items-center gap-2 text-[16px] font-medium text-[#B7FFB0]">
+          <ShieldCheck size={16} />
+          Secure tutor access
+        </span>
       </div>
-      {q.isError && (
-        <AlertBanner variant="error">Could not load courses.</AlertBanner>
-      )}
-      <div className="rounded-xl border bg-white p-4 shadow-card">
-        <h2 className="text-h3 text-neutral-900 mb-3">Quick links</h2>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={tutorPath("/courses/new")}
-            className="text-small font-medium text-brand-green hover:underline"
-          >
-            New course
-          </Link>
-          <span className="text-neutral-300">|</span>
-          <Link
-            href={tutorPath("/assignments")}
-            className="text-small font-medium text-brand-green hover:underline"
-          >
-            Submissions
-          </Link>
-        </div>
-        {q.isLoading ? (
-          <div className="mt-4 space-y-2">
-            <CardSkeleton lines={1} className="min-h-[48px]" />
-            <CardSkeleton lines={1} className="min-h-[48px]" />
-            <CardSkeleton lines={1} className="min-h-[48px]" />
-          </div>
-        ) : (
-          <ul className="mt-4 space-y-2">
-            {(q.data ?? []).map((c) => (
-              <li key={c.id} className="text-body text-neutral-800">
-                {c.title}
-              </li>
-            ))}
-          </ul>
-        )}
+
+      <h1 className="mt-5 text-[18px] font-semibold md:text-[25px]">{title}</h1>
+
+      <p className="mt-3 max-w-[760px] text-[17px] leading-[40px] text-[#BDBDBD]">
+        {description}
+      </p>
+
+      <div className="my-12 h-[3px] w-[100px] bg-gray-500 rounded-full" />
+
+      <div className="grid w-full gap-6 md:grid-cols-3">
+        {features.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <div
+              key={item.title}
+              className="flex py-8 flex-col items-center justify-center rounded-[20px] border border-[#BDBDBD] text-[#737373]"
+            >
+              <h3 className="mb-3 text-[18px] font-medium ">{item.title}</h3>
+
+              <Icon size={20} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

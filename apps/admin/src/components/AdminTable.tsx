@@ -5,7 +5,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { Admins } from "@ssu/types";
 import { useMemo } from "react";
 import { StatusBadge } from "./StatusBadge";
-import { useRouter } from "next/navigation";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -47,8 +46,6 @@ function formatDate(dateString: string) {
 }
 
 export function AdminTable({ admins }: Props) {
-  const router = useRouter();
-
   const avatarColors = useMemo(
     () =>
       admins.reduce<Record<string, string>>((acc, admin) => {
@@ -110,10 +107,9 @@ export function AdminTable({ admins }: Props) {
     {
       id: "actions",
       header: "",
-      cell: ({ row }) => (
+      cell: () => (
         <button
           type="button"
-          onClick={() => router.push(`/admins/${row.original.id}`)}
           className="text-[13px] text-[#4E845F] hover:opacity-80"
         >
           View

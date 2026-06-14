@@ -8,7 +8,7 @@ interface Props {
 
 export function StatusBadge({ status }: Props) {
   const styles = {
-    "good-standing": "bg-[#DFF2E1] text-[#2E7D32]",
+    "Good standing": "bg-[#DFF2E1] text-[#2E7D32]",
 
     flagged: "bg-[#FDE2DF] text-[#D32F2F]",
 
@@ -22,7 +22,7 @@ export function StatusBadge({ status }: Props) {
   };
 
   const labels = {
-    "good-standing": "Good standing",
+    "Good standing": "Good standing",
     flagged: "Flagged",
     active: "Active",
     pending: "Pending",

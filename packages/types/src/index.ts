@@ -120,23 +120,24 @@ export interface NotificationItem {
 }
 
 export interface StudentProfile {
-  name: string;
-  programme: string;
+  firstName: string;
+  lastName: string;
+  programTitle: string;
   image: string;
 }
 
 export interface StudentInfo {
   email: string;
-  phone: string;
+  phoneNumber: string;
   dob: string;
   address: string;
-  cohort: string;
+  cohortName: string;
   enrollmentDate: string;
   idDocumentUrl?: string;
 }
 
 export interface ProgressData {
-  percentage: number;
+  progressPercent: number;
   completed: number;
   total: number;
   description?: string;
@@ -156,7 +157,7 @@ export interface ProgressCardProps {
 }
 
 export type Status =
-  | "good-standing"
+  | "Good standing"
   | "flagged"
   | "access-revoked"
   | "active"
@@ -167,15 +168,12 @@ export interface Student {
   id: string;
   firstName: string;
   lastName: string;
-  program: string;
-  progress: number;
-
+  programTitle: string;
+  progressPercent: number;
   attendance: {
-    attended: number;
-    total: number;
+    display: string;
   };
-
-  status: Status;
+  statusLabel: Status;
 }
 
 export interface StudentStat {

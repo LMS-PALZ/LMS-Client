@@ -43,7 +43,7 @@ export function DataTable<TData, TValue>({
   const [courseFilter, setCourseFilter] = useState("");
 
   const filteredData = useMemo(() => {
-    return data.filter((row) => {
+    return data?.filter((row) => {
       const item = row as Record<string, string>;
 
       const statusMatch =
@@ -121,7 +121,7 @@ export function DataTable<TData, TValue>({
       <div className="overflow-x-auto rounded-xl border bg-white shadow-card">
         <table className="w-full text-left text-body">
           <thead className="border-b bg-neutral-50">
-            {table.getHeaderGroups().map((hg) => (
+            {table?.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((header) => (
                   <th

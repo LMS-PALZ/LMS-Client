@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { AdminTable } from "@/components/AdminTable";
 import { TrainerTable } from "@/components/TrainerTable";
-import { StaffStat } from "@ssu/api";
 import { StaffCard } from "@/components/StaffCard";
 import { StaffList } from "@ssu/queries";
 
@@ -16,7 +15,7 @@ export default function StaffPage() {
   return (
     <section className="flex flex-col gap-8 rounded-[18px] bg-[#FFFFFF] p-6">
       <section className="p-2 bg-[#FAFAFA] rounded-[12px]">
-        <StaffCard stats={StaffStat} />
+        <StaffCard />
       </section>
       <div className="mb-6 flex items-center gap-2 rounded-[12px] bg-[#ECF0F6] p-[2px] w-fit">
         <button

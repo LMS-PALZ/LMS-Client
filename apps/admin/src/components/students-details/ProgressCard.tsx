@@ -10,7 +10,7 @@ interface ProgressCardProps {
 export function ProgressCard({ title, data }: ProgressCardProps) {
   const bars = 32;
 
-  const activeBars = Math.round((data.percentage / 100) * bars);
+  const activeBars = Math.round((data?.progressPercent / 100) * bars);
 
   return (
     <div className="rounded-[24px] bg-[#F9FAFB] p-6">
@@ -25,11 +25,13 @@ export function ProgressCard({ title, data }: ProgressCardProps) {
             }`}
           />
         ))}
-        <span className="text-[28px] font-semibold">{data.percentage}%</span>
+        <span className="text-[28px] font-semibold">
+          {data?.progressPercent}%
+        </span>
       </div>
 
-      {data.description && (
-        <p className="mt-2 text-[#6B7280]">{data.description}</p>
+      {data?.description && (
+        <p className="mt-2 text-[#6B7280]">{data?.description}</p>
       )}
     </div>
   );

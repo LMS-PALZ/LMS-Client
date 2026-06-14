@@ -84,7 +84,7 @@ export function Table({ students }: Props) {
       header: "Program",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.program}</span>
+          <span className="text-sm">{row.original.programTitle}</span>
         </div>
       ),
     },
@@ -93,25 +93,23 @@ export function Table({ students }: Props) {
       header: "Progress",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.progress}%</span>
+          <span className="text-sm">{row.original.progressPercent}%</span>
         </div>
       ),
     },
-    // {
-    //     accessorKey: "attendance",
-    //     header: "Attendance",
-    //     cell: ({ row }) => (
-    //         <div className="flex items-center gap-2">
-    //             <span className="text-sm">
-    //                 {row.original.attendance.attended}/{row.original.attendance.total}
-    //             </span>
-    //         </div>
-    //     ),
-    // },
+    {
+      accessorKey: "attendance",
+      header: "Attendance",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="text-sm">{row.original.attendance.display}</span>
+        </div>
+      ),
+    },
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      cell: ({ row }) => <StatusBadge status={row.original.statusLabel} />,
     },
     {
       id: "actions",
@@ -128,5 +126,5 @@ export function Table({ students }: Props) {
     },
   ];
 
-  return <DataTable columns={columns} data={students} searchable />;
+  return <DataTable columns={columns} data={students ?? []} searchable />;
 }

@@ -1,11 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getStudentList } from "@ssu/api";
 
-export function StudentList(
-  page = 1,
-  limit = 10,
-  // role: "admin" | "tutor" = "admin",
-) {
+export function StudentList(page = 1, limit = 10) {
   return useQuery({
     queryKey: ["students", page, limit],
     queryFn: async () => {

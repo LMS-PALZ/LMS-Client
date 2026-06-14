@@ -488,11 +488,7 @@ export async function getStaffList(
   }
 }
 
-export async function getStudentList(
-  page = 1,
-  limit = 10,
-  // role: "admin" | "tutor" = "admin",
-) {
+export async function getStudentList(page = 1, limit = 10) {
   try {
     const token = getStoredAuthToken();
 
@@ -504,6 +500,59 @@ export async function getStudentList(
         Authorization: `Bearer ${token}`,
       },
     });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch student list.",
+    };
+  }
+}
+
+export async function getStaffAnalysis() {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/admins/staff/analysis`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message:
+        error.response?.data?.message || "Failed to fetch staff analysis.",
+    };
+  }
+}
+
+export async function getStudentDetails(userId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/admins/students/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     return {
       ok: true as const,
@@ -533,7 +582,6 @@ export function readSession(): AuthUser | null {
   }
 }
 
-/** True only after a successful login (not mid-signup). */
 export function isStudentAuthenticated(): boolean {
   if (typeof window === "undefined") return false;
   const session = readSession();

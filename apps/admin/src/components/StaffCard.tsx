@@ -2,25 +2,32 @@
 
 import { Users, UserCheck, Flag } from "lucide-react";
 import { StatCard } from "@ssu/ui";
-import type { StaffStats } from "@ssu/types";
-import type { LucideIcon } from "lucide-react";
+import { StaffAnalysis } from "@ssu/queries";
 
-const ICONS: LucideIcon[] = [Users, UserCheck, Flag];
-interface Props {
-  stats: StaffStats[];
-}
+const allStaff = "Administrators";
+const allTutors = "Active Trainers";
+const allPending = "Pending Invites";
 
-export function StaffCard({ stats }: Props) {
+export function StaffCard() {
+  const { data: analysisData } = StaffAnalysis();
+
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      {stats.map((stat, index) => (
-        <StatCard
-          key={stat.id}
-          label={stat.title}
-          value={stat.value}
-          icon={ICONS[index]}
-        />
-      ))}
+      <StatCard
+        icon={Users}
+        label={allStaff}
+        value={analysisData?.totalAdmins}
+      />
+      <StatCard
+        icon={UserCheck}
+        label={allTutors}
+        value={analysisData?.totalInstructors}
+      />
+      <StatCard
+        icon={Flag}
+        label={allPending}
+        value={analysisData?.pendingInvites}
+      />
     </div>
   );
 }

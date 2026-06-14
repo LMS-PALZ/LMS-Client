@@ -5,7 +5,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { Trainers } from "@ssu/types";
 import { useMemo } from "react";
 import { StatusBadge } from "./StatusBadge";
-import { useRouter } from "next/navigation";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -48,8 +47,6 @@ function formatDate(dateString: string) {
 }
 
 export function TrainerTable({ trainers }: Props) {
-  const router = useRouter();
-
   const avatarColors = useMemo(
     () =>
       trainers.reduce<Record<string, string>>((acc, trainer) => {
@@ -111,10 +108,9 @@ export function TrainerTable({ trainers }: Props) {
     {
       id: "actions",
       header: "",
-      cell: ({ row }) => (
+      cell: () => (
         <button
           type="button"
-          onClick={() => router.push(`/trainers/${row.original.id}`)}
           className="text-[13px] text-[#4E845F] hover:opacity-80"
         >
           View
