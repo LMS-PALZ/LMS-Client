@@ -18,6 +18,7 @@ export interface AuthUser {
   lastName: string;
   role: UserRole;
   status: string;
+  accessToken: string;
 }
 
 export interface CourseSummary {
@@ -116,4 +117,104 @@ export interface NotificationItem {
   message: string;
   createdAt: string;
   read: boolean;
+}
+
+export interface StudentProfile {
+  firstName: string;
+  lastName: string;
+  programTitle: string;
+  image: string;
+}
+
+export interface StudentInfo {
+  email: string;
+  phoneNumber: string;
+  dob: string;
+  address: string;
+  cohortName: string;
+  enrollmentDate: string;
+  idDocumentUrl?: string;
+}
+
+export interface ProgressData {
+  progressPercent: number;
+  completed: number;
+  total: number;
+  description?: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  title: string;
+  date: string;
+  week: string;
+  status: "present" | "absent";
+}
+
+export interface ProgressCardProps {
+  title: string;
+  data: ProgressData;
+}
+
+export type Status =
+  | "Good standing"
+  | "flagged"
+  | "access-revoked"
+  | "active"
+  | "pending"
+  | "suspended";
+
+export interface Student {
+  id: string;
+  firstName: string;
+  lastName: string;
+  programTitle: string;
+  progressPercent: number;
+  attendance: {
+    display: string;
+  };
+  statusLabel: Status;
+}
+
+export interface StudentStat {
+  id: string;
+  title: string;
+  value: number;
+  description: string;
+}
+
+export interface StudentManagementProps {
+  stats: StudentStat[];
+
+  searchValue?: string;
+  statusFilter?: string;
+  programmeFilter?: string;
+
+  onSearchChange?: (value: string) => void;
+
+  onStatusChange?: (value: string) => void;
+
+  onProgrammeChange?: (value: string) => void;
+}
+
+export interface StaffStats {
+  id: string;
+  title: string;
+  value: number;
+}
+
+export interface Trainers {
+  id: string;
+  name: string;
+  role: string;
+  inviteAcceptedAt: string;
+  status: Status;
+}
+
+export interface Admins {
+  id: string;
+  name: string;
+  role: string;
+  inviteAcceptedAt: string;
+  status: Status;
 }

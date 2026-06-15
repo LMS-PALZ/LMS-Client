@@ -4,6 +4,7 @@ import {
   DashboardLayout,
   StudentSidebar,
   useSidebarCollapsed,
+  HeaderBar,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
 import {
@@ -13,11 +14,13 @@ import {
   HelpCircle,
   Home,
 } from "lucide-react";
+import { User, Award } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { ProfileSetupProvider } from "@/contexts/ProfileSetupContext";
-import { HeaderBar } from "../components/HeaderBar";
+import { useSignupStore } from "@ssu/store";
+import { getStudentPageTitle } from "@/lib/studentRoutes";
 
 const mainItems = [
   { href: "/home", label: "Home", icon: Home },
@@ -64,13 +67,27 @@ export function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
 
+  const signupUser = useSignupStore((state) => state.user);
+
   return (
     <ProfileSetupProvider>
       <DashboardLayout
         variant="student"
         fullWidthMain={isSessionPage}
         sidebar={<StudentSidebarWrapper />}
-        header={<HeaderBar />}
+        header={
+          <HeaderBar
+            pageTitle={getStudentPageTitle(pathname)}
+            firstName={signupUser?.first_name}
+            lastName={signupUser?.last_name}
+            email={signupUser?.email}
+            menuItems={[
+              { label: "Account", href: "/profile", icon: User },
+              { label: "Certificate", href: "/certificate", icon: Award },
+              { label: "Support", href: "/support", icon: HelpCircle },
+            ]}
+          />
+        }
       >
         {children}
       </DashboardLayout>

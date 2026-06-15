@@ -1,118 +1,83 @@
 "use client";
 
-import { adminPath } from "@ssu/config/portal-paths";
-import { useAdminUsers, usePendingTrainers } from "@ssu/queries";
-import {
-  AlertBanner,
-  PageHeader,
-  StatCard,
-  StatCardSkeleton,
-  StatusBadge,
-} from "@ssu/ui";
-import { BookOpen, Megaphone, UserCheck, Users } from "lucide-react";
-import Link from "next/link";
+import { ShieldCheck, Users, BookOpen, Monitor } from "lucide-react";
+import { motion } from "framer-motion";
+interface AdminWelcomeProps {
+  title?: string;
+  description?: string;
+}
 
-export function HomePage() {
-  const usersQ = useAdminUsers();
-  const pendingQ = usePendingTrainers();
-
-  const userCount = usersQ.data?.length ?? 0;
-  const pendingCount = pendingQ.data?.length ?? 0;
+export function HomePage({
+  title = "Welcome to the admin dashboard",
+  description = "This is the secure back office for managing Skill Scale Up students, programs, and trainers.",
+}: AdminWelcomeProps) {
+  const features = [
+    {
+      title: "Students",
+      icon: Users,
+    },
+    {
+      title: "Programs",
+      icon: BookOpen,
+    },
+    {
+      title: "Trainers",
+      icon: Monitor,
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      <PageHeader title="Admin dashboard" />
-      <p className="text-body text-neutral-600 -mt-4">
-        QA preview: full admin designs are in progress. Use the links below to
-        explore available areas.
+    <div className="mx-auto flex max-w-[900px] flex-col items-center text-center">
+      <motion.div
+        className="flex h-[120px] w-[120px] items-center justify-center"
+        animate={{
+          opacity: [0.4, 1, 0.4],
+          scale: [0.95, 1, 0.95],
+        }}
+        transition={{
+          duration: 2,
+          ease: "easeInOut",
+          repeat: Infinity,
+          repeatType: "loop",
+        }}
+      >
+        <img
+          src="/firstlogo.png"
+          alt="Skill Scale Up Logo"
+          className="h-full w-full object-contain"
+        />
+      </motion.div>
+
+      <div className="mt-8 rounded-full bg-[#0E5B1E] px-6 py-2">
+        <span className="flex items-center gap-2 text-[16px] font-medium text-[#B7FFB0]">
+          <ShieldCheck size={16} />
+          Secure admin access
+        </span>
+      </div>
+
+      <h1 className="mt-5 text-[18px] font-semibold md:text-[25px]">{title}</h1>
+
+      <p className="mt-3 max-w-[760px] text-[17px] leading-[40px] text-[#BDBDBD]">
+        {description}
       </p>
 
-      {(usersQ.isError || pendingQ.isError) && (
-        <AlertBanner variant="error">Could not load admin data.</AlertBanner>
-      )}
+      <div className="my-12 h-[3px] w-[100px] bg-gray-500 rounded-full" />
 
-      <div className="rounded-xl border border-brand-green-200 bg-brand-green-50 px-4 py-3 text-small text-brand-green">
-        <StatusBadge variant="enrolled" className="mb-2">
-          QA build
-        </StatusBadge>
-        <p>
-          This dashboard uses live mock data for navigation and layout review.
-          Final visuals will follow the admin Figma screens.
-        </p>
-      </div>
+      <div className="grid w-full gap-6 md:grid-cols-3">
+        {features.map((item) => {
+          const Icon = item.icon;
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {usersQ.isLoading ? (
-          <StatCardSkeleton />
-        ) : (
-          <StatCard label="Registered users" value={userCount} icon={Users} />
-        )}
-        {pendingQ.isLoading ? (
-          <StatCardSkeleton />
-        ) : (
-          <StatCard
-            label="Pending trainers"
-            value={pendingCount}
-            icon={UserCheck}
-            accent="amber"
-          />
-        )}
-        <StatCard label="Programs" value="N/A" icon={BookOpen} />
-        <StatCard label="Announcements" value="N/A" icon={Megaphone} />
-      </div>
+          return (
+            <div
+              key={item.title}
+              className="flex py-8 flex-col items-center justify-center rounded-[20px] border border-[#BDBDBD] text-[#737373]"
+            >
+              <h3 className="mb-3 text-[18px] font-medium ">{item.title}</h3>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border bg-white p-5 shadow-card">
-          <h2 className="text-h3 font-bold text-neutral-900 mb-3">
-            Quick actions
-          </h2>
-          <ul className="space-y-2 text-small">
-            <li>
-              <Link
-                href={adminPath("/users")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Manage users ({userCount})
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={adminPath("/trainers/pending")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Review trainer applications ({pendingCount})
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={adminPath("/programs")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Programs
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={adminPath("/announcements")}
-                className="font-medium text-brand-green hover:underline"
-              >
-                Announcements
-              </Link>
-            </li>
-          </ul>
-        </section>
-
-        <section className="rounded-xl border bg-white p-5 shadow-card">
-          <h2 className="text-h3 font-bold text-neutral-900 mb-3">
-            What QA can test
-          </h2>
-          <ul className="list-disc pl-5 space-y-2 text-small text-neutral-600">
-            <li>Sidebar navigation and page routing</li>
-            <li>User list and trainer approval flows (mock API)</li>
-            <li>Auth: login, forgot password, reset password</li>
-            <li>Responsive layout on desktop and tablet widths</li>
-          </ul>
-        </section>
+              <Icon size={20} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

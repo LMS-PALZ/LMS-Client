@@ -4,7 +4,7 @@ import { Input, Skeleton } from "@ssu/ui";
 import { useNigeriaStates } from "@ssu/queries";
 import { useMemo } from "react";
 
-import { CustomSelect } from "@/components/ CustomSelect";
+import { CustomSelect } from "@ssu/ui";
 
 interface AccountSetupStepTwoProps {
   address: string;

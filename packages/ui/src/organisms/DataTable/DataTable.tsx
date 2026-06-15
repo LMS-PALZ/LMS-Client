@@ -11,6 +11,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { cn } from "@ssu/utils";
+import { CustomSelect } from "@ssu/ui";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../../atoms/Button";
@@ -20,6 +21,9 @@ export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchable?: boolean;
+  statusOptions?: string[];
+  roleOptions?: string[];
+  courseOptions?: string[];
   className?: string;
 }
 
@@ -28,14 +32,37 @@ export function DataTable<TData, TValue>({
   data,
   searchable,
   className,
+  statusOptions,
+  roleOptions,
+  courseOptions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [courseFilter, setCourseFilter] = useState("");
+
+  const filteredData = useMemo(() => {
+    return data?.filter((row) => {
+      const item = row as Record<string, string>;
+
+      const statusMatch =
+        !statusFilter || statusFilter === "All" || item.status === statusFilter;
+
+      const roleMatch =
+        !roleFilter || roleFilter === "All" || item.role === roleFilter;
+
+      const courseMatch =
+        !courseFilter || courseFilter === "All" || item.course === courseFilter;
+
+      return statusMatch && roleMatch && courseMatch;
+    });
+  }, [data, statusFilter, roleFilter, courseFilter]);
 
   const tableColumns = useMemo(() => columns, [columns]);
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns: tableColumns,
     state: { sorting, globalFilter },
     onSortingChange: setSorting,
@@ -49,18 +76,52 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={cn("space-y-3", className)}>
-      {searchable && (
-        <Input
-          placeholder="Filter…"
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-sm"
-        />
-      )}
+      <div className="flex items-center gap-3">
+        {searchable && (
+          <Input
+            placeholder="Search student..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="min-w-[250px]"
+          />
+        )}
+        {roleOptions && (
+          <div className="w-[300px]">
+            <CustomSelect
+              placeholder="All Role"
+              options={roleOptions}
+              value={roleFilter}
+              onChange={setRoleFilter}
+            />
+          </div>
+        )}
+
+        {courseOptions && (
+          <div className="w-[300px]">
+            <CustomSelect
+              placeholder="All Course"
+              options={courseOptions}
+              value={courseFilter}
+              onChange={setCourseFilter}
+            />
+          </div>
+        )}
+
+        {statusOptions && (
+          <div className="w-[300px]">
+            <CustomSelect
+              placeholder="All Status"
+              options={statusOptions}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+          </div>
+        )}
+      </div>
       <div className="overflow-x-auto rounded-xl border bg-white shadow-card">
         <table className="w-full text-left text-body">
           <thead className="border-b bg-neutral-50">
-            {table.getHeaderGroups().map((hg) => (
+            {table?.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((header) => (
                   <th

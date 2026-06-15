@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <PlusJakartaFontLinks />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

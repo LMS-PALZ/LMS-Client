@@ -1,6 +1,6 @@
 "use client";
 
-import { CustomSelect } from "@/components/ CustomSelect";
+import { CustomSelect } from "@ssu/ui";
 import { useBirthYears } from "@ssu/queries";
 import { Skeleton } from "@ssu/ui";
 import { useMemo } from "react";

@@ -45,11 +45,13 @@ export * from "./molecules/RecordingListItem";
 export * from "./molecules/ConnectGoogleBanner";
 export * from "./molecules/GreetingTitle";
 export * from "./molecules/SectionHeader";
+export * from "./molecules/HeaderBar";
 export * from "./molecules/GoBack";
+export * from "./molecules/ CustomSelect";
 
 export * from "./organisms/DataTable";
 export * from "./organisms/BrandLogo";
-export * from "./organisms/StudentSidebar";
+export * from "./organisms/Sidebar";
 export * from "./organisms/DashboardTopBar";
 export * from "./organisms/Modal";
 export * from "./organisms/NavigationSidebar";

@@ -3,6 +3,7 @@ import type {
   CourseSummary,
   LiveSessionItem,
   NotificationDto,
+  StudentStat,
 } from "@ssu/types";
 
 export const mockCourses: CourseSummary[] = [
@@ -98,5 +99,30 @@ export const mockNotifications: NotificationDto[] = [
       "This is to inform you that there won't be a live class on 9/05/2026",
     createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
     read: false,
+  },
+];
+
+import type {} from "@ssu/types";
+
+export const studentStats: StudentStat[] = [
+  {
+    id: "1",
+    title: "Total enrolled",
+    value: 427,
+    description: "Across 5 program",
+  },
+
+  {
+    id: "2",
+    title: "Active this week",
+    value: 364,
+    description: "85% of all students",
+  },
+
+  {
+    id: "3",
+    title: "Flagged Students",
+    value: 4,
+    description: "Missed 3+ live classes",
   },
 ];

@@ -5,7 +5,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { SidebarProvider } from "../../organisms/SidebarContext";
 import { MobileSidebar } from "../../organisms/NavigationSidebar/MobileSidebar";
 
-export type DashboardLayoutVariant = "default" | "student";
+export type DashboardLayoutVariant = "default" | "student" | "admin";
 
 export interface DashboardLayoutProps {
   sidebar: ReactNode;
