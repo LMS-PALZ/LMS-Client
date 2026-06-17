@@ -1,12 +1,5 @@
 import type { ReactNode } from "react";
-
-import {
-  getClassroomCourseById,
-  getClassroomWeeksForCourse,
-} from "@/lib/classroom-data";
-import { ClassroomCourseLayoutShell } from "@/views/Classroom/ClassroomCourseLayoutShell";
-import { EmptyState } from "@ssu/ui";
-import { Megaphone } from "lucide-react";
+import { CourseLayoutClient } from "@/views/Classroom/CourseLayoutClient";
 
 export default async function CourseLayout({
   children,
@@ -16,23 +9,6 @@ export default async function CourseLayout({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const course = getClassroomCourseById(id);
 
-  if (!course) {
-    return (
-      <EmptyState
-        icon={Megaphone}
-        title="You don't have any course video yet"
-        description="When you do, they'll show up here"
-      />
-    );
-  }
-  return (
-    <ClassroomCourseLayoutShell
-      course={course}
-      weeks={getClassroomWeeksForCourse(course.id)}
-    >
-      {children}
-    </ClassroomCourseLayoutShell>
-  );
+  return <CourseLayoutClient moduleId={id}>{children}</CourseLayoutClient>;
 }

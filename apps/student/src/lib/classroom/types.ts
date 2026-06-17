@@ -2,13 +2,21 @@ export type SessionPhase = "live" | "upcoming" | "ended";
 
 export type LiveVideoProvider = "google-meet" | "jitsi";
 
-export type ClassroomLessonType = "live" | "recording" | "reading";
+export type ClassroomLessonType = "live" | "recorded" | "reading";
 
 export interface ClassroomResource {
   id: string;
   title: string;
-  meta: string;
-  fileUrl: string;
+  type: string;
+  url?: string | null;
+  content?: string | null;
+}
+
+export interface ClassroomRecording {
+  id: string;
+  title: string;
+  recordingUrl: string;
+  duration: number;
 }
 
 export interface ClassroomLesson {
@@ -48,6 +56,7 @@ export interface ClassroomCourseDetail {
   recordingEmbedUrl: string | null;
   resources: ClassroomResource[];
   href: string;
+  recordings?: ClassroomRecording[];
 }
 
 export interface ClassroomCourseItem {

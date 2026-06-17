@@ -578,6 +578,55 @@ export async function getStudentDetails(userId: string) {
   }
 }
 
+export async function getStudentPofile() {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(`${API_BASE_URL}/api/v1/students/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getStudentclassroom(programId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/classroom/${programId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
 export const SESSION_STORAGE_KEY = "ssu_session";
 
 const AUTH_TOKEN_STORAGE_KEY = "token";
