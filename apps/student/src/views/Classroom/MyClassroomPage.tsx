@@ -4,9 +4,10 @@ import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
 import { classroomProgram, getClassroomCourseById } from "@/lib/classroom-data";
 import { LiveIndicator } from "@ssu/ui";
-import { BookCopy, CalendarDays, ChevronRight, Clock3 } from "lucide-react";
+import { CalendarDays, ChevronRight, Clock3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ClassroomCourseCard } from "./ClassroomCourseCard";
+import { useStudentclassroom } from "@ssu/queries";
 
 export function MyClassroomPage() {
   const router = useRouter();
@@ -14,6 +15,11 @@ export function MyClassroomPage() {
   const { liveSession } = classroomProgram;
   const isLive = liveSession.phase === "live";
   const sessionHref = `/classroom/${liveSession.sessionId}`;
+
+  const Id = localStorage.getItem("profileId") ?? "";
+  const { data } = useStudentclassroom(Id);
+
+  console.log("classroom data", data?.modules?.createdAt);
 
   const handleJoinSession = () => {
     if (!ensureProfileForAction()) return;
@@ -27,6 +33,27 @@ export function MyClassroomPage() {
     router.push(sessionHref);
   };
 
+  function formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+
+    const day = date.getDate();
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const year = date.getFullYear();
+
+    const suffix =
+      day % 10 === 1 && day !== 11
+        ? "st"
+        : day % 10 === 2 && day !== 12
+          ? "nd"
+          : day % 10 === 3 && day !== 13
+            ? "rd"
+            : "th";
+
+    return `${day}${suffix} ${month}, ${year}`;
+  }
+
+  console.log("modules", data?.classroom?.modules);
+
   return (
     <div className="space-y-5">
       <section className="grid gap-4 xl:grid-cols-[1.8fr_0.95fr]">
@@ -36,31 +63,21 @@ export function MyClassroomPage() {
           </div>
 
           <h1 className="mt-2 text-[18px] font-bold text-[#1D1D1D] md:text-[20px]">
-            {classroomProgram.title}
+            {data?.program?.title}
           </h1>
 
           <p className="mt-2 text-[15px] leading-7 text-[#495057]">
-            {classroomProgram.description}
+            {data?.program?.description}
           </p>
 
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
-                <BookCopy className="h-3 w-3" />
-                <span>Contents</span>
-              </div>
-              <p className="mt-1 text-[13px] text-[#6B7280]">
-                {classroomProgram.contentCount}
-              </p>
-            </div>
-
             <div>
               <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
                 <Clock3 className="h-3 w-3" />
                 <span>Duration</span>
               </div>
               <p className="mt-1 text-[13px] text-[#6B7280]">
-                {classroomProgram.duration}
+                {data?.program?.duration}
               </p>
             </div>
 
@@ -70,7 +87,7 @@ export function MyClassroomPage() {
                 <span>Start Date</span>
               </div>
               <p className="mt-1 text-[13px] text-[#6B7280]">
-                {classroomProgram.startDate}
+                {formatDate(data?.program?.startDate)}
               </p>
             </div>
 
@@ -80,7 +97,7 @@ export function MyClassroomPage() {
                 <span>End Date</span>
               </div>
               <p className="mt-1 text-[13px] text-[#6B7280]">
-                {classroomProgram.endDate}
+                {formatDate(data?.program?.endDate)}
               </p>
             </div>
           </div>
@@ -133,13 +150,13 @@ export function MyClassroomPage() {
 
       <section>
         <div className="mb-6 flex items-center gap-2">
-          <h2 className="text-[18px] font-semibold text-[#1D1D1D]">Courses</h2>
+          <h2 className="text-[18px] font-semibold text-[#1D1D1D]">Modules</h2>
           <span className="text-[#D2D8E2]">|</span>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {classroomProgram.courseItems.map((course) => (
-            <ClassroomCourseCard key={course.id} course={course} />
+          {data?.classroom?.modules?.map((module: any) => (
+            <ClassroomCourseCard key={module?.id} course={module} />
           ))}
         </div>
       </section>

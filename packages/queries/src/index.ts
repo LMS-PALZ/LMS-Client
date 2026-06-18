@@ -26,3 +26,5 @@ export * from "./use-stafflist";
 export * from "./use-studentlist";
 export * from "./use-staffanalysis";
 export * from "./use-studentdetails";
+export * from "./use-profiledetail";
+export * from "./use-studentclassroom";

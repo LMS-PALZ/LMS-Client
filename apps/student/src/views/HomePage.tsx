@@ -29,6 +29,7 @@ import { GraduationCap, Notebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
+import { Profiledetail } from "@ssu/queries";
 
 function greeting(first: string) {
   const h = new Date().getHours();
@@ -44,6 +45,9 @@ export function HomePage() {
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
   const assignments = useStudentAssignments();
+  const { data } = Profiledetail();
+
+  localStorage.setItem("profileId", data?.program?.id || "");
 
   const first = user?.firstName?.trim() || "there";
   const showGreetingSkeleton = !user;
