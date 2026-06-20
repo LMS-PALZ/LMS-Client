@@ -3,8 +3,6 @@
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
@@ -20,58 +18,78 @@ import { Input } from "../../atoms/Input";
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+
   searchable?: boolean;
+
   statusOptions?: string[];
   roleOptions?: string[];
   courseOptions?: string[];
+
+  pagination?: {
+    page: number;
+    totalPages: number;
+    total?: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+
+  statusFilter?: string;
+  onStatusFilterChange?: (value: string) => void;
+
+  roleFilter?: string;
+  onRoleFilterChange?: (value: string) => void;
+
+  courseFilter?: string;
+  onCourseFilterChange?: (value: string) => void;
+
+  onPageChange?: (page: number) => void;
+
   className?: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+
   searchable,
-  className,
+
+  searchValue,
+  onSearchChange,
+
+  statusFilter,
+  onStatusFilterChange,
+
+  roleFilter,
+  onRoleFilterChange,
+
+  courseFilter,
+  onCourseFilterChange,
+
   statusOptions,
   roleOptions,
   courseOptions,
+
+  pagination,
+  onPageChange,
+
+  className,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
-  const [courseFilter, setCourseFilter] = useState("");
-
-  const filteredData = useMemo(() => {
-    return data?.filter((row) => {
-      const item = row as Record<string, string>;
-
-      const statusMatch =
-        !statusFilter || statusFilter === "All" || item.status === statusFilter;
-
-      const roleMatch =
-        !roleFilter || roleFilter === "All" || item.role === roleFilter;
-
-      const courseMatch =
-        !courseFilter || courseFilter === "All" || item.course === courseFilter;
-
-      return statusMatch && roleMatch && courseMatch;
-    });
-  }, [data, statusFilter, roleFilter, courseFilter]);
 
   const tableColumns = useMemo(() => columns, [columns]);
 
   const table = useReactTable({
-    data: filteredData,
+    data,
     columns: tableColumns,
-    state: { sorting, globalFilter },
+    state: {
+      sorting,
+    },
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    globalFilterFn: "includesString",
   });
 
   return (
@@ -79,19 +97,19 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center gap-3">
         {searchable && (
           <Input
-            placeholder="Search student..."
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="min-w-[250px]"
+            placeholder="Search..."
+            value={searchValue ?? ""}
+            onChange={(e) => onSearchChange?.(e.target.value)}
           />
         )}
         {roleOptions && (
           <div className="w-[300px]">
             <CustomSelect
+              className="h-[40px] rounded-[11px]"
               placeholder="All Role"
               options={roleOptions}
-              value={roleFilter}
-              onChange={setRoleFilter}
+              value={roleFilter ?? ""}
+              onChange={(value) => onRoleFilterChange?.(value)}
             />
           </div>
         )}
@@ -99,10 +117,11 @@ export function DataTable<TData, TValue>({
         {courseOptions && (
           <div className="w-[300px]">
             <CustomSelect
+              className="h-[40px] rounded-[11px]"
               placeholder="All Course"
               options={courseOptions}
-              value={courseFilter}
-              onChange={setCourseFilter}
+              value={courseFilter ?? ""}
+              onChange={(value) => onCourseFilterChange?.(value)}
             />
           </div>
         )}
@@ -110,10 +129,11 @@ export function DataTable<TData, TValue>({
         {statusOptions && (
           <div className="w-[300px]">
             <CustomSelect
+              className="h-[40px] rounded-[11px]"
               placeholder="All Status"
               options={statusOptions}
-              value={statusFilter}
-              onChange={setStatusFilter}
+              value={statusFilter ?? ""}
+              onChange={(value) => onStatusFilterChange?.(value)}
             />
           </div>
         )}
@@ -169,23 +189,22 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-between gap-2">
         <p className="text-small text-neutral-500">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {table.getPageCount() || 1}
+          Page {pagination?.page ?? 1} of {pagination?.totalPages ?? 1}
         </p>
         <div className="flex gap-2">
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => onPageChange?.((pagination?.page ?? 1) - 1)}
+            disabled={!pagination?.hasPreviousPage}
           >
             Previous
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => onPageChange?.((pagination?.page ?? 1) + 1)}
+            disabled={!pagination?.hasNextPage}
           >
             Next
           </Button>

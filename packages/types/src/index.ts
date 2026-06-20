@@ -107,6 +107,7 @@ export interface CustomSelectProps {
   placeholder: string;
   options: string[];
   value: string;
+  className?: string;
   onChange: (value: string) => void;
   error?: string;
   showErrorMessage?: boolean;
@@ -129,7 +130,11 @@ export interface StudentProfile {
 export interface StudentInfo {
   email: string;
   phoneNumber: string;
-  dob: string;
+  dob: {
+    day: string;
+    month: string;
+    year: number;
+  };
   address: string;
   cohortName: string;
   enrollmentDate: string;
@@ -183,30 +188,10 @@ export interface StudentStat {
   description: string;
 }
 
-export interface StudentManagementProps {
-  stats: StudentStat[];
-
-  searchValue?: string;
-  statusFilter?: string;
-  programmeFilter?: string;
-
-  onSearchChange?: (value: string) => void;
-
-  onStatusChange?: (value: string) => void;
-
-  onProgrammeChange?: (value: string) => void;
-}
-
-export interface StaffStats {
-  id: string;
-  title: string;
-  value: number;
-}
-
 export interface Trainers {
   id: string;
   name: string;
-  role: string;
+  assignedProgram: string;
   inviteAcceptedAt: string;
   status: Status;
 }

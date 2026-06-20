@@ -33,8 +33,24 @@ function getAvatarColor(): string {
   return AVATAR_COLORS[index];
 }
 
-interface Props {
+interface AdminsTableProps {
   admins: Admins[];
+
+  pagination?: {
+    page: number;
+    totalPages: number;
+    total?: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+
+  search: string;
+  setSearch: (value: string) => void;
+
+  status: string;
+  setStatus: (value: string) => void;
+
+  setPage: (page: number) => void;
 }
 
 function formatDate(dateString: string) {
@@ -45,7 +61,15 @@ function formatDate(dateString: string) {
   });
 }
 
-export function AdminTable({ admins }: Props) {
+export function AdminTable({
+  admins,
+  pagination,
+  search,
+  setSearch,
+  status,
+  setStatus,
+  setPage,
+}: AdminsTableProps) {
   const avatarColors = useMemo(
     () =>
       admins.reduce<Record<string, string>>((acc, admin) => {
@@ -121,9 +145,14 @@ export function AdminTable({ admins }: Props) {
   return (
     <DataTable
       columns={columns}
-      data={admins}
+      data={admins ?? []}
+      pagination={pagination}
+      searchValue={search}
+      onSearchChange={setSearch}
+      statusFilter={status}
+      onStatusFilterChange={setStatus}
+      onPageChange={setPage}
       searchable
-      roleOptions={["All", "super admin", "admin"]}
       statusOptions={["All", "active", "suspended", "pending"]}
     />
   );

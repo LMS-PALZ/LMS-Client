@@ -70,6 +70,49 @@ export async function login(
   }
 }
 
+export type InviteStaffErrorCode =
+  | "invalid"
+  | "duplicate_email"
+  | "server_error";
+
+export async function inviteStaff(data: {
+  email: string;
+  name: string;
+  role: string;
+}): Promise<
+  | { ok: true; data: any; message: string }
+  | { ok: false; code: InviteStaffErrorCode; message: string }
+> {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/admins/admins/invitations`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true,
+      data: res.data.data,
+      message: res.data.message || "Invitation sent successfully",
+    };
+  } catch (error: any) {
+    return {
+      ok: false,
+      code: error.response?.data?.code || "invalid",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send invitation. Please try again.",
+    };
+  }
+}
+
 export type SignupErrorCode =
   | "email_exists"
   | "validation_error"
@@ -474,13 +517,22 @@ export async function createStudentProfile(data: {
 export async function getStaffList(
   page = 1,
   limit = 10,
+  search = "",
+  status = "",
   role: "admin" | "tutor" = "admin",
+  course = "",
 ) {
   try {
     const token = getStoredAuthToken();
 
+    const params: Record<string, any> = { page, limit, role };
+
+    if (search) params.search = search;
+    if (status && status !== "All") params.status = status;
+    if (course && course !== "All") params.course = course;
+
     const res = await axios.get(`${API_BASE_URL}/api/v1/admins/staff`, {
-      params: { page, limit, role },
+      params,
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -499,14 +551,26 @@ export async function getStaffList(
   }
 }
 
-export async function getStudentList(page = 1, limit = 10) {
+export async function getStudentList(
+  page = 1,
+  limit = 10,
+  search = "",
+  status = "",
+  role = "",
+  course = "",
+) {
   try {
     const token = getStoredAuthToken();
 
-    console.log("Fetching student list with token:", token);
+    const params: Record<string, any> = { page, limit };
+
+    if (search) params.search = search;
+    if (status && status !== "All") params.status = status;
+    if (role && role !== "All") params.role = role;
+    if (course && course !== "All") params.course = course;
 
     const res = await axios.get(`${API_BASE_URL}/api/v1/admins/students`, {
-      params: { page, limit },
+      params,
       headers: {
         Authorization: `Bearer ${token}`,
       },

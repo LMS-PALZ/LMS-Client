@@ -2,27 +2,36 @@
 
 import { Users, UserCheck, Flag } from "lucide-react";
 import { StatCard } from "@ssu/ui";
-import type { StudentStat } from "@ssu/types";
-import type { LucideIcon } from "lucide-react";
+import { useStudentList } from "@ssu/queries";
 
-const ICONS: LucideIcon[] = [Users, UserCheck, Flag];
+const title = "Total enrolled";
+const enrollstats = "Across 5 program";
+const weeks = "Active this week";
+const flags = "Flagged Students";
+const missclss = "Missed live classes";
 
-interface Props {
-  stats: StudentStat[];
-}
-
-export function Card({ stats }: Props) {
+export function Card() {
+  const { data: statsData } = useStudentList();
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      {stats.map((stat, index) => (
-        <StatCard
-          key={stat.id}
-          label={stat.title}
-          value={stat.value}
-          icon={ICONS[index]}
-          description={stat.description}
-        />
-      ))}
+      <StatCard
+        icon={Users}
+        label={title}
+        value={statsData?.meta?.totalEnrolled}
+        description={enrollstats}
+      />
+      <StatCard
+        icon={UserCheck}
+        label={weeks}
+        value={statsData?.meta?.activeThisWeek?.count}
+        description={`${statsData?.meta?.activeThisWeek?.percent ?? 0}%`}
+      />
+      <StatCard
+        icon={Flag}
+        label={flags}
+        value={statsData?.meta?.flaggedStudents}
+        description={missclss}
+      />
     </div>
   );
 }

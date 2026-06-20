@@ -34,8 +34,27 @@ function getAvatarColor(): string {
   return AVATAR_COLORS[index];
 }
 
-interface Props {
+interface TrainersTableProps {
   trainers: Trainers[];
+
+  pagination?: {
+    page: number;
+    totalPages: number;
+    total?: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+
+  search: string;
+  setSearch: (value: string) => void;
+
+  status: string;
+  setStatus: (value: string) => void;
+
+  course: string;
+  setCourse: (value: string) => void;
+
+  setPage: (page: number) => void;
 }
 
 function formatDate(dateString: string) {
@@ -46,7 +65,17 @@ function formatDate(dateString: string) {
   });
 }
 
-export function TrainerTable({ trainers }: Props) {
+export function TrainerTable({
+  trainers,
+  pagination,
+  search,
+  setSearch,
+  status,
+  setStatus,
+  course,
+  setCourse,
+  setPage,
+}: TrainersTableProps) {
   const avatarColors = useMemo(
     () =>
       trainers.reduce<Record<string, string>>((acc, trainer) => {
@@ -82,7 +111,7 @@ export function TrainerTable({ trainers }: Props) {
       header: "Assigned Course",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.role}</span>
+          <span className="text-sm">{row.original.assignedProgram}</span>
         </div>
       ),
     },
@@ -122,10 +151,19 @@ export function TrainerTable({ trainers }: Props) {
   return (
     <DataTable
       columns={columns}
-      data={trainers}
+      data={trainers ?? []}
+      pagination={pagination}
+      searchValue={search}
+      onSearchChange={setSearch}
+      statusFilter={status}
+      onStatusFilterChange={setStatus}
+      courseFilter={course}
+      onCourseFilterChange={setCourse}
+      onPageChange={setPage}
       searchable
       courseOptions={[
         "All",
+        "Frontend",
         "content creation",
         "product design",
         "data analysis",

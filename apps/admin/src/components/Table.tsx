@@ -35,11 +35,45 @@ function getAvatarColor(): string {
   return AVATAR_COLORS[index];
 }
 
-interface Props {
+interface StudentsTableProps {
   students: Student[];
+
+  pagination?: {
+    page: number;
+    totalPages: number;
+    total?: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+
+  search: string;
+  setSearch: (value: string) => void;
+
+  status: string;
+  setStatus: (value: string) => void;
+
+  role: string;
+  setRole: (value: string) => void;
+
+  course: string;
+  setCourse: (value: string) => void;
+
+  setPage: (page: number) => void;
 }
 
-export function Table({ students }: Props) {
+export function Table({
+  students,
+  pagination,
+  search,
+  setSearch,
+  status,
+  setStatus,
+  role,
+  setRole,
+  course,
+  setCourse,
+  setPage,
+}: StudentsTableProps) {
   const router = useRouter();
 
   const avatarColors = useMemo(
@@ -126,5 +160,35 @@ export function Table({ students }: Props) {
     },
   ];
 
-  return <DataTable columns={columns} data={students ?? []} searchable />;
+  return (
+    <DataTable
+      columns={columns}
+      data={students ?? []}
+      pagination={pagination}
+      searchValue={search}
+      onSearchChange={setSearch}
+      statusFilter={status}
+      onStatusFilterChange={setStatus}
+      roleFilter={role}
+      onRoleFilterChange={setRole}
+      courseFilter={course}
+      onCourseFilterChange={setCourse}
+      onPageChange={setPage}
+      searchable
+      statusOptions={["All", "active", "suspended", "pending"]}
+      // roleOptions={[
+      //   "All",
+      //   "student",
+      // ]}
+      courseOptions={[
+        "All",
+        "Frontend",
+        "content creation",
+        "product design",
+        "data analysis",
+        "digital marketing",
+        "virtual assistance",
+      ]}
+    />
+  );
 }
