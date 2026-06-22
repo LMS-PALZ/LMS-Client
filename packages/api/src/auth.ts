@@ -113,6 +113,37 @@ export async function inviteStaff(data: {
   }
 }
 
+export async function acceptinvite(data: {
+  email: string;
+  token: string;
+  password: string;
+}): Promise<
+  | { ok: true; data: any; message: string }
+  | { ok: false; code: InviteStaffErrorCode; message: string }
+> {
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/admins/invitations/accept`,
+      data,
+    );
+
+    return {
+      ok: true,
+      data: res.data.data,
+      message: res.data.message || "Invitation accepted successfully",
+    };
+  } catch (error: any) {
+    return {
+      ok: false,
+      code: error.response?.data?.code || "invalid",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to accept invitation.",
+    };
+  }
+}
+
 export type SignupErrorCode =
   | "email_exists"
   | "validation_error"

@@ -23,7 +23,6 @@ export function Modal({
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center px-4">
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -32,7 +31,6 @@ export function Modal({
             className="absolute inset-0 bg-black/40"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -40,7 +38,6 @@ export function Modal({
             transition={{ duration: 0.2 }}
             className={`relative w-full max-w-[480px] rounded-[28px] bg-white p-6 shadow-2xl md:p-8 ${className ?? ""}`}
           >
-            {/* Header */}
             <div className="mb-6 flex items-center justify-between">
               {title && (
                 <h2 className="text-[18px] font-semibold text-[#1D1D1D]">

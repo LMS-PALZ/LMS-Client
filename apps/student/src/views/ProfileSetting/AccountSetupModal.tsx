@@ -13,7 +13,6 @@ import { mutationToast } from "@ssu/queries";
 import { useCreateProfileMutation, useSession } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Skeleton } from "@ssu/ui";
-import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import {
@@ -29,7 +28,7 @@ import { AccountSetupStepTwo } from "@/views/ProfileSetting/AccountSetupStepTwo"
 type StepOneErrorKey = keyof AccountSetupStepOneValues | "dateOfBirth";
 
 export interface AccountSetupModalProps {
-  onClose: () => void;
+  // onClose: () => void;
   onCompleted?: () => void;
 }
 
@@ -48,7 +47,7 @@ function mapFieldErrors<T extends string>(
 }
 
 export function AccountSetupModal({
-  onClose,
+  // onClose,
   onCompleted,
 }: AccountSetupModalProps) {
   const [step, setStep] = useState(1);
@@ -203,7 +202,7 @@ export function AccountSetupModal({
       });
 
       onCompleted?.();
-      onClose();
+      // onClose();
     } catch {
       /* Toasts handled in useCreateProfileMutation */
     }
@@ -227,15 +226,6 @@ export function AccountSetupModal({
         }}
         className="relative w-full max-w-[490px] transform-gpu rounded-[32px] bg-white px-6 py-8 md:px-8"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-[#F3F4F6] hover:text-[#1D1D1D]"
-          aria-label="Close profile setup"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
         <div className="mb-8 text-center">
           <h2 className="text-[20px] font-semibold leading-tight text-[#1D1D1D] md:text-[24px]">
             Welcome, {firstName}!

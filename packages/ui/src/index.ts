@@ -63,6 +63,7 @@ export * from "./organisms/LoginForm";
 export * from "./organisms/ForgotPasswordForm";
 export * from "./organisms/ResetPasswordForm";
 export * from "./organisms/SetPasswordForm";
+export * from "./organisms/AcceptInviteForm";
 export * from "./organisms/SidebarContext";
 export * from "./organisms/NavigationSidebar/MobileSidebar";
 

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { acceptinvite } from "@ssu/api";
 
-export function useacceptInviteMutation() {
+export function useacceptinviteMutation() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -19,9 +19,7 @@ export function useacceptInviteMutation() {
       return res;
     },
     onSuccess: () => {
-      void qc.invalidateQueries({
-        queryKey: ["acceptInvite"],
-      });
+      void qc.invalidateQueries({ queryKey: ["acceptInvite"] });
     },
   });
 }
