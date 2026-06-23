@@ -4,6 +4,26 @@ interface StudentInfoCardProps {
   info: StudentInfo;
 }
 
+function formatDob(day: string, month: string, year: number): string {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const monthName = months[parseInt(month) - 1] ?? month;
+  return `${day} ${monthName}, ${year}`;
+}
+
 export function StudentInfoCard({ info }: StudentInfoCardProps) {
   return (
     <div className="rounded-[24px] border border-[#E6EBF0] bg-white p-8">
@@ -23,13 +43,15 @@ export function StudentInfoCard({ info }: StudentInfoCardProps) {
         <div>
           <p className="text-[#7B8794]">Date of birth</p>
 
-          <p className="mt-2 text-[14px] font-medium">07 july 2007</p>
+          <p className="mt-2 text-[14px] font-medium">
+            {formatDob(info?.dob?.day, info?.dob?.month, info?.dob?.year)}
+          </p>
         </div>
 
         <div>
           <p className="text-[#7B8794]">House address</p>
 
-          <p className="mt-2 text-[14px] font-medium">11, bukko estate</p>
+          <p className="mt-2 text-[14px] font-medium">{info?.address}</p>
         </div>
 
         <div>

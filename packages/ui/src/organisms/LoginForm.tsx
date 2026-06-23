@@ -10,7 +10,6 @@ import { useForm } from "react-hook-form";
 import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
 import type { z } from "zod";
-// import type { UserRole } from "@ssu/types";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { Button } from "../atoms/Button";
 import { Checkbox } from "../atoms/Checkbox";

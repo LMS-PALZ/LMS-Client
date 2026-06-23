@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CustomSelectProps } from "@ssu/types";
+import { cn } from "@ssu/utils";
 
 export function CustomSelect({
   placeholder,
@@ -10,6 +11,7 @@ export function CustomSelect({
   value,
   onChange,
   error,
+  className,
   showErrorMessage = true,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
@@ -38,9 +40,13 @@ export function CustomSelect({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={`flex h-[52px] w-full items-center justify-between rounded-[14px] border bg-white px-4 text-left text-[15px] text-[#1D1D1D] outline-none transition-all duration-200 ${
-          error ? "border-[#C62828]" : "border-[#D7E0EA] hover:border-[#B7C5D4]"
-        }`}
+        className={cn(
+          "flex h-[52px] w-full items-center justify-between rounded-[14px] border bg-white px-4 text-left text-[15px] text-[#1D1D1D] outline-none transition-all duration-200",
+          error
+            ? "border-[#C62828]"
+            : "border-[#D7E0EA] hover:border-[#B7C5D4]",
+          className,
+        )}
       >
         <span className={value ? "text-[#1D1D1D]" : "text-[#A0AEC0]"}>
           {value || placeholder}

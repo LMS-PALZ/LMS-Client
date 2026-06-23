@@ -131,7 +131,7 @@ export function AccountSetupStepOne({
           value={gender}
           onChange={setGender}
           error={errors?.gender}
-          options={["Male", "Female", "Non-binary"]}
+          options={["Male", "Female"]}
         />
       </div>
 

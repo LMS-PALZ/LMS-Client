@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 export interface ModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onClose?: () => void;
   title: string;
   description?: string;
   children: ReactNode;
@@ -18,12 +19,18 @@ export interface ModalProps {
 export function Modal({
   open,
   onOpenChange,
+  onClose,
   title,
   description,
   children,
   footer,
   className,
 }: ModalProps) {
+  const handleClose = () => {
+    onOpenChange(false);
+    onClose?.(); // ← call onClose if provided
+  };
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -46,6 +53,7 @@ export function Modal({
               )}
             </div>
             <Dialog.Close
+              onClick={handleClose}
               className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100"
               aria-label="Close"
             >

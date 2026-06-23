@@ -19,7 +19,6 @@ import {
   WelcomeCardSkeleton,
   WelcomeCard,
 } from "@ssu/ui";
-import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import {
   assignmentCardProps,
   formatSessionDate,
@@ -30,6 +29,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { Profiledetail } from "@ssu/queries";
+import { useProfileStore } from "@ssu/store";
+import { useEffect } from "react";
 
 function greeting(first: string) {
   const h = new Date().getHours();
@@ -40,14 +41,27 @@ function greeting(first: string) {
 
 export function HomePage() {
   const router = useRouter();
-  const { ensureProfileForAction } = useProfileSetup();
   const { data: user } = useSession();
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
   const assignments = useStudentAssignments();
-  const { data } = Profiledetail();
 
+  const { data } = Profiledetail();
   localStorage.setItem("profileId", data?.program?.id || "");
+  const setprofile = useProfileStore((state) => state.setUser);
+
+  useEffect(() => {
+    if (!data) return;
+
+    setprofile({
+      id: data?.student?._id ?? "",
+      email: data?.student?.email ?? "",
+      first_name: data?.student?.first_name ?? "",
+      last_name: data?.student?.last_name ?? "",
+      profileUploaded: data?.student?.profileUploaded,
+      role: data?.student?.role ?? "student",
+    });
+  }, [data, setprofile]);
 
   const first = user?.firstName?.trim() || "there";
   const showGreetingSkeleton = !user;
@@ -99,7 +113,6 @@ export function HomePage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!ensureProfileForAction()) return;
                   router.push(`/classroom/${s.id}`);
                 }}
                 className="font-semibold text-[#4E845F] hover:underline"

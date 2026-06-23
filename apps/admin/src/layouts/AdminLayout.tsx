@@ -9,6 +9,7 @@ import {
   type NavigationSidebarItem,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
+import { AdminModalProvider } from "@/contexts/AdminModalProvider ";
 import {
   BookOpen,
   LayoutDashboard,
@@ -71,22 +72,24 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
 
   return (
-    <DashboardLayout
-      variant="admin"
-      fullWidthMain={isSessionPage}
-      sidebar={<AdminSidebarWrapper />}
-      header={
-        <HeaderBar
-          pageTitle={getAdminPageTitle(pathname)}
-          menuItems={[
-            { label: "Account", href: "/account", icon: User },
-            { label: "Settings", href: "/settings", icon: Settings },
-            { label: "Support", href: "/support", icon: HelpCircle },
-          ]}
-        />
-      }
-    >
-      {children}
-    </DashboardLayout>
+    <AdminModalProvider>
+      <DashboardLayout
+        variant="admin"
+        fullWidthMain={isSessionPage}
+        sidebar={<AdminSidebarWrapper />}
+        header={
+          <HeaderBar
+            pageTitle={getAdminPageTitle(pathname)}
+            menuItems={[
+              { label: "Account", href: "/account", icon: User },
+              { label: "Settings", href: "/settings", icon: Settings },
+              { label: "Support", href: "/support", icon: HelpCircle },
+            ]}
+          />
+        }
+      >
+        {children}
+      </DashboardLayout>
+    </AdminModalProvider>
   );
 }

@@ -1,17 +1,13 @@
 "use client";
 
-import {
-  dismissProfileSetupPrompt,
-  isProfileSetupDismissed,
-  isStudentProfileComplete,
-} from "@ssu/api";
+import { isStudentProfileComplete } from "@ssu/api";
+import { useProfileStore } from "@ssu/store";
 import { useStudentProfile } from "@ssu/queries";
 import {
   createContext,
   useCallback,
   useContext,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
 import { isProfileSetupBypassed } from "@/lib/profile-setup-bypass";
@@ -30,40 +26,28 @@ const ProfileSetupContext = createContext<ProfileSetupContextValue | null>(
 
 export function ProfileSetupProvider({ children }: { children: ReactNode }) {
   const profileQuery = useStudentProfile();
-  const [dismissed, setDismissed] = useState(
-    () => typeof window !== "undefined" && isProfileSetupDismissed(),
-  );
-  const [forcedOpen, setForcedOpen] = useState(false);
+  const profile = useProfileStore((state) => state.user);
 
   const bypassProfileSetup = isProfileSetupBypassed();
+
   const profileComplete =
     bypassProfileSetup || isStudentProfileComplete(profileQuery.data);
+
   const isProfileLoading = profileQuery.isLoading;
 
-  const showAutoPrompt =
-    !bypassProfileSetup &&
-    !isProfileLoading &&
-    !profileQuery.isError &&
-    !profileComplete &&
-    !dismissed &&
-    !isProfileSetupDismissed();
-
-  const showModal = showAutoPrompt || (forcedOpen && !profileComplete);
-
-  const handleClose = useCallback(() => {
-    dismissProfileSetupPrompt();
-    setDismissed(true);
-    setForcedOpen(false);
-  }, []);
+  const showModal = profile?.profileUploaded === false;
 
   const openProfileSetup = useCallback(() => {
     if (profileComplete) return;
-    setForcedOpen(true);
   }, [profileComplete]);
 
   const ensureProfileForAction = useCallback(() => {
-    if (bypassProfileSetup || profileComplete || isProfileLoading) return true;
+    if (bypassProfileSetup || profileComplete || isProfileLoading) {
+      return true;
+    }
+
     openProfileSetup();
+
     return false;
   }, [bypassProfileSetup, profileComplete, isProfileLoading, openProfileSetup]);
 
@@ -85,17 +69,18 @@ export function ProfileSetupProvider({ children }: { children: ReactNode }) {
   return (
     <ProfileSetupContext.Provider value={value}>
       {children}
-      {showModal ? (
-        <AccountSetupModal onClose={handleClose} onCompleted={handleClose} />
-      ) : null}
+
+      {showModal && <AccountSetupModal />}
     </ProfileSetupContext.Provider>
   );
 }
 
 export function useProfileSetup() {
   const context = useContext(ProfileSetupContext);
+
   if (!context) {
     throw new Error("useProfileSetup must be used within ProfileSetupProvider");
   }
+
   return context;
 }
