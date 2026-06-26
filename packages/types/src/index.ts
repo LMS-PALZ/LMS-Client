@@ -166,7 +166,7 @@ export type Status =
   | "flagged"
   | "access-revoked"
   | "active"
-  | "pending"
+  | "invited"
   | "suspended";
 
 export interface Student {

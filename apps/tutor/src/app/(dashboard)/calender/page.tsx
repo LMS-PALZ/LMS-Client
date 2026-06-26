@@ -1,5 +1,5 @@
-import { CalenderPage } from "@/views/CalenderPage";
+// import { CalenderPage } from "@/views/CalenderPage";
 
 export default function Page() {
-  return <CalenderPage />;
+  // return <CalenderPage />;
 }

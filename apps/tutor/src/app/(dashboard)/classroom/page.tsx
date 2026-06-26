@@ -1,5 +1,5 @@
-import { ClassroomPage } from "@/views/ClassroomPage";
+// import { ClassroomPage } from "@/views/ClassroomPage";
 
 export default function Page() {
-  return <ClassroomPage />;
+  // return <ClassroomPage />;
 }

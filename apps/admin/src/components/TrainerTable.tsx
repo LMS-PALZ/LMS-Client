@@ -1,10 +1,14 @@
 "use client";
 
-import { DataTable } from "@ssu/ui";
+import { DataTable, StatusBadge } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Trainers } from "@ssu/types";
-import { useMemo } from "react";
-import { StatusBadge } from "./StatusBadge";
+import { useMemo, useState } from "react";
+import { EllipsisVertical } from "lucide-react";
+import { Assignrole } from "@/views/StaffManagement/Assignrole";
+import { StatusDialog } from "@/components/StatusDialog";
+import { useAdminModal } from "@/contexts/AdminModalProvider ";
+import { useUpdateStaffStatusMutation } from "@ssu/queries";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -76,6 +80,75 @@ export function TrainerTable({
   setCourse,
   setPage,
 }: TrainersTableProps) {
+  const { openModal, closeModal } = useAdminModal();
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const updateStaffStatus = useUpdateStaffStatusMutation();
+
+  const handleStatusChange = (trainer: Trainers) => {
+    const isSuspended = trainer.status === "suspended";
+    const nextStatus = isSuspended
+      ? !trainer.inviteAcceptedAt
+        ? "invited"
+        : "active"
+      : "suspended";
+
+    const actionLabel = isSuspended ? "Activate" : "Suspend";
+    const confirmVariant = isSuspended ? "primary" : "danger";
+
+    openModal(
+      `${actionLabel}`,
+      <StatusDialog
+        variant="confirm"
+        confirmVariant={confirmVariant}
+        title={`${actionLabel} ${trainer.name}?`}
+        description={
+          isSuspended
+            ? "They will regain access to the dashboard."
+            : "They will lose access to the dashboard until reinstated."
+        }
+        confirmLabel={actionLabel}
+        onCancel={closeModal}
+        onConfirm={async () => {
+          await updateStaffStatus.mutateAsync({
+            userId: trainer.id,
+            status: nextStatus,
+          });
+
+          openModal(
+            "",
+            <StatusDialog
+              variant="success"
+              title={`${actionLabel}d successfully`}
+              description={`${trainer.name}'s status has been updated.`}
+              onDismiss={closeModal}
+            />,
+          );
+        }}
+      />,
+    );
+  };
+
+  const handleAssignRole = (trainer: Trainers) => {
+    openModal(
+      "Assign Role",
+      <Assignrole
+        tutorId={trainer.id}
+        onClose={closeModal}
+        onSuccess={() => {
+          openModal(
+            "",
+            <StatusDialog
+              variant="success"
+              title="Invitation sent!"
+              description="You have successfully assign a role to this staff"
+              onDismiss={closeModal}
+            />,
+          );
+        }}
+      />,
+    );
+  };
+
   const avatarColors = useMemo(
     () =>
       trainers.reduce<Record<string, string>>((acc, trainer) => {
@@ -137,14 +210,53 @@ export function TrainerTable({
     {
       id: "actions",
       header: "",
-      cell: () => (
-        <button
-          type="button"
-          className="text-[13px] text-[#4E845F] hover:opacity-80"
-        >
-          View
-        </button>
-      ),
+      cell: ({ row }) => {
+        const trainer = row.original;
+        const isSuspended = trainer.status === "suspended";
+
+        return (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() =>
+                setOpenDropdownId(
+                  openDropdownId === trainer.id ? null : trainer.id,
+                )
+              }
+            >
+              <EllipsisVertical className="h-5 w-5" />
+            </button>
+
+            {openDropdownId === trainer.id && (
+              <div className="absolute right-0 z-50 mt-2 w-[180px] rounded-lg border bg-white p-2 shadow-lg">
+                <button
+                  type="button"
+                  className={`w-full rounded-md px-3 py-2 text-left text-[14px] hover:bg-gray-100 ${
+                    isSuspended ? "text-[#4E845F]" : "text-[#C62828]"
+                  }`}
+                  onClick={() => {
+                    setOpenDropdownId(null);
+                    handleStatusChange(trainer);
+                  }}
+                >
+                  {isSuspended ? "Activate" : "Suspend"}
+                </button>
+
+                <button
+                  type="button"
+                  className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                  onClick={() => {
+                    setOpenDropdownId(null);
+                    handleAssignRole(trainer);
+                  }}
+                >
+                  Assign Role
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

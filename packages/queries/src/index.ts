@@ -30,3 +30,5 @@ export * from "./use-profiledetail";
 export * from "./use-studentclassroom";
 export * from "./use-invitestaff-mutation";
 export * from "./use-acceptinvite-mutation";
+export * from "./use-updatestaffstatus-mutation";
+export * from "./use-assignrole-mutation";

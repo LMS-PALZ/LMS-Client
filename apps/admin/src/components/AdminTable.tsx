@@ -1,10 +1,13 @@
 "use client";
 
-import { DataTable } from "@ssu/ui";
+import { DataTable, StatusBadge } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Admins } from "@ssu/types";
-import { useMemo } from "react";
-import { StatusBadge } from "./StatusBadge";
+import { useMemo, useState } from "react";
+import { EllipsisVertical } from "lucide-react";
+import { StatusDialog } from "@/components/StatusDialog";
+import { useAdminModal } from "@/contexts/AdminModalProvider ";
+import { useUpdateStaffStatusMutation } from "@ssu/queries";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -70,6 +73,54 @@ export function AdminTable({
   setStatus,
   setPage,
 }: AdminsTableProps) {
+  const { openModal, closeModal } = useAdminModal();
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const updateStaffStatus = useUpdateStaffStatusMutation();
+
+  const handleStatusChange = (trainer: Admins) => {
+    const isSuspended = trainer.status === "suspended";
+    const nextStatus = isSuspended
+      ? !trainer.inviteAcceptedAt
+        ? "invited"
+        : "active"
+      : "suspended";
+
+    const actionLabel = isSuspended ? "Activate" : "Suspend";
+    const confirmVariant = isSuspended ? "primary" : "danger";
+
+    openModal(
+      `${actionLabel}`,
+      <StatusDialog
+        variant="confirm"
+        title={`${actionLabel} ${trainer.name}?`}
+        confirmVariant={confirmVariant}
+        description={
+          isSuspended
+            ? "They will regain access to the dashboard."
+            : "They will lose access to the dashboard until reinstated."
+        }
+        confirmLabel={actionLabel}
+        onCancel={closeModal}
+        onConfirm={async () => {
+          await updateStaffStatus.mutateAsync({
+            userId: trainer.id,
+            status: nextStatus,
+          });
+
+          openModal(
+            "",
+            <StatusDialog
+              variant="success"
+              title={`${actionLabel}d successfully`}
+              description={`${trainer.name}'s status has been updated.`}
+              onDismiss={closeModal}
+            />,
+          );
+        }}
+      />,
+    );
+  };
+
   const avatarColors = useMemo(
     () =>
       admins.reduce<Record<string, string>>((acc, admin) => {
@@ -131,14 +182,42 @@ export function AdminTable({
     {
       id: "actions",
       header: "",
-      cell: () => (
-        <button
-          type="button"
-          className="text-[13px] text-[#4E845F] hover:opacity-80"
-        >
-          View
-        </button>
-      ),
+      cell: ({ row }) => {
+        const trainer = row.original;
+        const isSuspended = trainer.status === "suspended";
+
+        return (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() =>
+                setOpenDropdownId(
+                  openDropdownId === trainer.id ? null : trainer.id,
+                )
+              }
+            >
+              <EllipsisVertical className="h-5 w-5" />
+            </button>
+
+            {openDropdownId === trainer.id && (
+              <div className="absolute right-0 z-50 mt-2 w-[180px] rounded-lg border bg-white p-2 shadow-lg">
+                <button
+                  type="button"
+                  className={`w-full rounded-md px-3 py-2 text-left text-[14px] hover:bg-gray-100 ${
+                    isSuspended ? "text-[#4E845F]" : "text-[#C62828]"
+                  }`}
+                  onClick={() => {
+                    setOpenDropdownId(null);
+                    handleStatusChange(trainer);
+                  }}
+                >
+                  {isSuspended ? "Activate" : "Suspend"}
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

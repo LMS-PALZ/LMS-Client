@@ -722,6 +722,57 @@ export async function getStudentclassroom(programId: string) {
   }
 }
 
+export async function updateStaffStatus(
+  userId: string,
+  status: "active" | "suspended" | "invited",
+) {
+  const token = getStoredAuthToken();
+
+  const res = await axios.patch(
+    `${API_BASE_URL}/api/v1/admins/staff/${userId}/status`,
+    { status },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return {
+    ok: true,
+    data: res.data.data,
+    message: res.data.message,
+  };
+}
+
+export async function assignRole({
+  programId,
+  tutorIds,
+}: {
+  programId: string;
+  tutorIds: string[];
+}) {
+  const token = getStoredAuthToken();
+
+  const res = await axios.patch(
+    `${API_BASE_URL}/api/v1/programs/${programId}/tutors`,
+    {
+      tutorIds,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return {
+    ok: true,
+    data: res.data.data,
+    message: res.data.message,
+  };
+}
+
 export const SESSION_STORAGE_KEY = "ssu_session";
 
 const AUTH_TOKEN_STORAGE_KEY = "token";
