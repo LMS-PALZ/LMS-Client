@@ -1,16 +1,15 @@
 # Admin portal (branch: dev-admin)
 #
-# Netlify UI — use the monorepo layout:
-#   Base directory:      /   (repo root — leave empty)
+# Netlify UI:
+#   Base directory:      (empty = repo root)
 #   Package directory:   apps/admin
-#   Build command:       (leave empty)
-#   Publish directory:   (leave empty)
-#   Functions directory: (leave empty)
-#
-# Do NOT set publish to apps/admin/.next — paths are relative to package dir.
+#   Build command:       (empty)
+#   Publish directory:   (empty — set via publish below, relative to repo root)
+#   Functions directory: (empty)
 
 [build]
   command = "npm ci && npm run build -w @ssu/admin"
+  publish = "apps/admin/.next"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
