@@ -1,0 +1,18 @@
+# Admin site (adminstg) — Netlify UI:
+#   Base directory:      (empty = repo root)
+#   Package directory:   (empty)
+#   Build command:       (empty)
+#   Publish directory:   (empty)
+#   Production branch:   dev-admin
+#
+# Student site uses apps/student/netlify.toml (base directory: apps/student).
+
+[build]
+  command = "npm ci && npm run build -w @ssu/admin"
+  publish = "apps/admin/.next"
+
+[build.environment]
+  NODE_VERSION = "24.14.0"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
