@@ -23,7 +23,7 @@ export function AssessmentsPage() {
         <Button
           variant="primary"
           className="rounded-full px-6 bg-[#4C7D5B] text-[#F8F9FA]"
-          onClick={() => router.push("/createAssignment")}
+          onClick={() => router.push("/createasignment")}
         >
           + create assignment
         </Button>
