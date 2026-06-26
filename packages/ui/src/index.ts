@@ -5,6 +5,7 @@ export * from "./icons";
 
 export * from "./atoms/Button";
 export * from "./atoms/Badge";
+export * from "./atoms/StatusBadge";
 export * from "./atoms/ProgressBar";
 export * from "./atoms/Input";
 export * from "./atoms/Textarea";
@@ -26,7 +27,6 @@ export * from "./molecules/FileDropzone";
 export * from "./molecules/CourseCard";
 export * from "./molecules/AssignmentCard";
 export * from "./molecules/UserRow";
-export * from "./molecules/StatusBadge";
 export * from "./molecules/SemiCircleGauge";
 export * from "./molecules/WelcomeCard";
 export * from "./molecules/DashboardEmptyState";
@@ -65,6 +65,7 @@ export * from "./organisms/ResetPasswordForm";
 export * from "./organisms/SetPasswordForm";
 export * from "./organisms/AcceptInviteForm";
 export * from "./organisms/SidebarContext";
+export * from "./organisms/CreateAssignment";
 export * from "./organisms/NavigationSidebar/MobileSidebar";
 
 export * from "./layouts/AuthLayout";

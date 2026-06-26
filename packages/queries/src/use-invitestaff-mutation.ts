@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { acceptinvite } from "@ssu/api";
+import { inviteStaff } from "@ssu/api";
 
-export function useacceptInviteMutation() {
+export function useInviteStaffMutation() {
   const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: {
       email: string;
-      token: string;
-      password: string;
+      name: string;
+      role: string;
     }) => {
-      const res = await acceptinvite(input);
+      const res = await inviteStaff(input);
 
       if (!res.ok) {
         throw new Error(res.message);
@@ -19,9 +19,7 @@ export function useacceptInviteMutation() {
       return res;
     },
     onSuccess: () => {
-      void qc.invalidateQueries({
-        queryKey: ["acceptInvite"],
-      });
+      void qc.invalidateQueries({ queryKey: ["staff"] });
     },
   });
 }

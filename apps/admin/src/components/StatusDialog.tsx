@@ -17,6 +17,7 @@ export interface StatusDialogProps {
   cancelLabel?: string;
   confirmLabel?: string;
   isConfirming?: boolean;
+  confirmVariant?: "danger" | "primary";
 
   icon?: React.ReactNode;
 }
@@ -32,6 +33,7 @@ export function StatusDialog({
   cancelLabel = "Cancel",
   confirmLabel = "Suspend",
   isConfirming = false,
+  confirmVariant = "danger",
   icon,
 }: StatusDialogProps) {
   return (
@@ -61,7 +63,7 @@ export function StatusDialog({
           {dismissLabel}
         </Button>
       ) : (
-        <div className="mt-7 flex w-full items-center gap-3">
+        <div className="flex items-center justify-end gap-3 pt-2">
           <Button
             type="button"
             variant="primary"
@@ -74,12 +76,13 @@ export function StatusDialog({
 
           <Button
             type="button"
-            variant="danger"
+            variant={confirmVariant}
             size="lg"
             onClick={onConfirm}
             disabled={isConfirming}
+            className="flex-1 rounded-[30px] text-white"
           >
-            {isConfirming ? "Suspending..." : confirmLabel}
+            {isConfirming ? "Processing..." : confirmLabel}
           </Button>
         </div>
       )}

@@ -5,7 +5,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { Student } from "@ssu/types";
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { EllipsisVertical } from "lucide-react";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -61,7 +60,7 @@ interface StudentsTableProps {
   setPage: (page: number) => void;
 }
 
-export function Table({
+export function AssignmentTable({
   students,
   pagination,
   search,
@@ -154,7 +153,7 @@ export function Table({
           onClick={() => router.push(`/students/${row.original.id}`)}
           className="text-[13px] text-[#4E845F] hover:opacity-80"
         >
-          <EllipsisVertical />
+          View
         </button>
       ),
     },
@@ -176,6 +175,10 @@ export function Table({
       onPageChange={setPage}
       searchable
       statusOptions={["All", "active", "suspended", "pending"]}
+      // roleOptions={[
+      //   "All",
+      //   "student",
+      // ]}
       courseOptions={[
         "All",
         "Frontend",

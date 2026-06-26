@@ -14,9 +14,9 @@ export function StatusBadge({ status }: Props) {
 
     active: "bg-[#DBF1DC] text-[#1F6E2A]",
 
-    pending: "bg-[#E2E8F0] text-[#495057]",
+    invited: "bg-[#CDE5FE] text-[#2563EB]",
 
-    suspended: "bg-[#F5D5D1] text-[#B22222]",
+    suspended: "bg-[#FFDFC5] text-[#F49221]",
 
     "access-revoked": "bg-[#E9EEF5] text-[#5F6B7A]",
   };
@@ -25,7 +25,7 @@ export function StatusBadge({ status }: Props) {
     "Good standing": "Good standing",
     flagged: "Flagged",
     active: "Active",
-    pending: "Pending",
+    invited: "Invited",
     suspended: "Suspended",
     "access-revoked": "Access revoked",
   };

@@ -61,7 +61,7 @@ interface StudentsTableProps {
   setPage: (page: number) => void;
 }
 
-export function Table({
+export function AssignmentTable({
   students,
   pagination,
   search,
@@ -92,8 +92,8 @@ export function Table({
       cell: () => <input type="checkbox" />,
     },
     {
-      accessorKey: "name",
-      header: "Student",
+      accessorKey: "Assessment",
+      header: "Assessment",
       cell: ({ row }) => {
         const { firstName, lastName, id } = row.original;
         const initials = getInitials(`${firstName} ${lastName}`);
@@ -113,9 +113,10 @@ export function Table({
         );
       },
     },
+
     {
-      accessorKey: "program",
-      header: "Program",
+      accessorKey: "Course",
+      header: "Course",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <span className="text-sm">{row.original.programTitle}</span>
@@ -123,8 +124,8 @@ export function Table({
       ),
     },
     {
-      accessorKey: "progress",
-      header: "Progress",
+      accessorKey: "Weight",
+      header: "Weight",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <span className="text-sm">{row.original.progressPercent}%</span>
@@ -132,8 +133,8 @@ export function Table({
       ),
     },
     {
-      accessorKey: "attendance",
-      header: "Attendance",
+      accessorKey: "Submissions",
+      header: "Submissions",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <span className="text-sm">{row.original.attendance.display}</span>
@@ -176,6 +177,10 @@ export function Table({
       onPageChange={setPage}
       searchable
       statusOptions={["All", "active", "suspended", "pending"]}
+      // roleOptions={[
+      //   "All",
+      //   "student",
+      // ]}
       courseOptions={[
         "All",
         "Frontend",

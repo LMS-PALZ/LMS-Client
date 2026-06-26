@@ -1,5 +1,5 @@
-import { AssignmentsPage } from "@/views/AssignmentsPage";
+import { AsignmentManagement } from "@/components/AsignmentManagement";
 
 export default function Page() {
-  return <AssignmentsPage />;
+  return <AsignmentManagement />;
 }
