@@ -7,9 +7,11 @@ export type ClassroomLessonType = "live" | "recorded" | "reading";
 export interface ClassroomResource {
   id: string;
   title: string;
-  type: string;
+  type?: string;
   url?: string | null;
   content?: string | null;
+  fileUrl?: string;
+  meta?: string;
 }
 
 export interface ClassroomRecording {
