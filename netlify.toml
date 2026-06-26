@@ -1,11 +1,11 @@
-# Admin site (adminstg) — Netlify UI:
+# Admin site ONLY (adminstg) — Netlify UI:
 #   Base directory:      (empty = repo root)
 #   Package directory:   (empty)
-#   Build command:       (empty)
-#   Publish directory:   (empty)
+#   Build / Publish:     (empty — set below)
 #   Production branch:   dev-admin
 #
-# Student site uses apps/student/netlify.toml (base directory: apps/student).
+# Student site MUST use base directory apps/student (not repo root).
+# Never set student Package directory to apps/student with empty base.
 
 [build]
   command = "npm ci && npm run build -w @ssu/admin"
