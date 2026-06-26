@@ -1,11 +1,21 @@
+# Student portal (deploy from branch: dev)
+#
+# Netlify site settings:
+#   Base directory:     apps/student
+#   Build command:      (leave empty — uses this file)
+#   Publish directory:  (leave empty — Next.js plugin handles output)
+#   Production branch:  dev
+#
+# Env (Netlify UI):
+#   NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org
+#   NEXT_PUBLIC_LIVE_VIDEO_PROVIDER=jitsi
+
 [build]
   base = "/"
-  command = "npm install && npm run build -w @ssu/student"
+  command = "npm ci && npm run build -w @ssu/student"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
-  NEXT_PUBLIC_APP_ENV = "staging"
-  NEXT_PUBLIC_STAGING_URL = "https://testcnflms.netlify.app"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
