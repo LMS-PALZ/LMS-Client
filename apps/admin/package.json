@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@netlify/plugin-nextjs": "^5.9.0",
     "@ssu/api": "file:../../packages/api",
     "@ssu/config": "file:../../packages/config",
     "@ssu/queries": "file:../../packages/queries",
@@ -33,7 +34,6 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "^5.9.0",
     "@ssu/config": "file:../../packages/config",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
