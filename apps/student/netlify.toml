@@ -1,17 +1,13 @@
-# Student portal (deploy from branch: dev)
+# Student portal (branch: dev)
 #
-# Netlify site settings:
-#   Base directory:     apps/student
-#   Build command:      (leave empty — uses this file)
-#   Publish directory:  (leave empty — Next.js plugin handles output)
-#   Production branch:  dev
-#
-# Env (Netlify UI):
-#   NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org
-#   NEXT_PUBLIC_LIVE_VIDEO_PROVIDER=jitsi
+# Netlify UI — use the monorepo layout:
+#   Base directory:      /   (repo root — leave empty)
+#   Package directory:   apps/student
+#   Build command:       (leave empty)
+#   Publish directory:   (leave empty)
+#   Functions directory: (leave empty)
 
 [build]
-  base = "/"
   command = "npm ci && npm run build -w @ssu/student"
 
 [build.environment]

@@ -1,16 +1,15 @@
-# Admin portal (deploy from branch: dev-admin)
+# Admin portal (branch: dev-admin)
 #
-# Netlify site settings:
-#   Base directory:     apps/admin
-#   Build command:      (leave empty — uses this file)
-#   Publish directory:  (leave empty — Next.js plugin handles output)
-#   Production branch:  dev-admin
+# Netlify UI — use the monorepo layout:
+#   Base directory:      /   (repo root — leave empty)
+#   Package directory:   apps/admin
+#   Build command:       (leave empty)
+#   Publish directory:   (leave empty)
+#   Functions directory: (leave empty)
 #
-# Env (Netlify UI):
-#   NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org
+# Do NOT set publish to apps/admin/.next — paths are relative to package dir.
 
 [build]
-  base = "/"
   command = "npm ci && npm run build -w @ssu/admin"
 
 [build.environment]

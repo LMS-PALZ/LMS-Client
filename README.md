@@ -128,41 +128,45 @@ Use `@/config/routes` inside an app, or `@ssu/config/routes` from packages. Next
 
 ## Netlify (student + admin on separate sites)
 
-Use **two Netlify sites** pointing at the same repo, different branches, different base directories.
+Use **two Netlify sites** pointing at the same repo, different branches.
+
+Netlify’s monorepo UI has **two** directory fields:
+
+- **Base directory** — repo root (leave **empty**). `npm ci` runs here so workspaces resolve.
+- **Package directory** — the app folder (`apps/admin` or `apps/student`). Netlify reads `netlify.toml` from here.
 
 ### Student site (`dev` branch → e.g. ssu-students.netlify.app)
 
-| Setting               | Value                                        |
-| --------------------- | -------------------------------------------- |
-| **Production branch** | `dev`                                        |
-| **Base directory**    | `apps/student`                               |
-| **Build command**     | _(empty — uses `apps/student/netlify.toml`)_ |
-| **Publish directory** | _(empty)_                                    |
+| Setting                 | Value                 |
+| ----------------------- | --------------------- |
+| **Production branch**   | `dev`                 |
+| **Base directory**      | _(empty = repo root)_ |
+| **Package directory**   | `apps/student`        |
+| **Build command**       | _(empty)_             |
+| **Publish directory**   | _(empty)_             |
+| **Functions directory** | _(empty)_             |
 
-Env in Netlify UI:
-
-- `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org`
-- `NEXT_PUBLIC_LIVE_VIDEO_PROVIDER=jitsi` _(optional)_
+Env: `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org`
 
 ### Admin site (`dev-admin` branch)
 
-| Setting               | Value                                      |
-| --------------------- | ------------------------------------------ |
-| **Production branch** | `dev-admin`                                |
-| **Base directory**    | `apps/admin`                               |
-| **Build command**     | _(empty — uses `apps/admin/netlify.toml`)_ |
-| **Publish directory** | _(empty)_                                  |
+| Setting                 | Value                 |
+| ----------------------- | --------------------- |
+| **Production branch**   | `dev-admin`           |
+| **Base directory**      | _(empty = repo root)_ |
+| **Package directory**   | `apps/admin`          |
+| **Build command**       | _(empty)_             |
+| **Publish directory**   | _(empty)_             |
+| **Functions directory** | _(empty)_             |
 
-Env in Netlify UI:
-
-- `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org`
+Env: `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org`
 
 ### Common deploy mistakes
 
-1. **Base directory left empty on admin** → Netlify uses root `netlify.toml` and builds the **student** app.
-2. **Build command set to `npm run build`** → builds all apps (tutor/admin/student) and can fail.
-3. **Publish directory set manually** → breaks `@netlify/plugin-nextjs`; leave it empty.
-4. **Wrong branch** → admin site must track `dev-admin`, student site must track `dev`.
+1. **Base = `apps/admin` and Package = `apps/admin`** — use empty base + package `apps/admin` instead.
+2. **Publish = `apps/admin/.next`** — must be **empty**; the Next.js plugin handles output.
+3. **Build command in the UI** — leave empty so `apps/<portal>/netlify.toml` is used.
+4. **Wrong branch** — admin → `dev-admin`, student → `dev`.
 
 Merge build fixes to the branch you deploy. Student build fixes on `dev-admin` must also be on `dev` for the student site to build.
 
