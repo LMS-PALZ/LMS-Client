@@ -1,6 +1,17 @@
+# Admin portal (deploy from branch: dev-admin)
+#
+# Netlify site settings:
+#   Base directory:     apps/admin
+#   Build command:      (leave empty — uses this file)
+#   Publish directory:  (leave empty — Next.js plugin handles output)
+#   Production branch:  dev-admin
+#
+# Env (Netlify UI):
+#   NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org
+
 [build]
   base = "/"
-  command = "npm install && npm run build -w @ssu/admin"
+  command = "npm ci && npm run build -w @ssu/admin"
 
 [build.environment]
   NODE_VERSION = "24.14.0"

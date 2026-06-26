@@ -1,14 +1,13 @@
-# Staging (testcnflms.netlify.app) — student portal only.
-# Admin and tutor use their own Netlify sites (see apps/admin/netlify.toml, apps/tutor/netlify.toml).
+# Default file at repo root — student portal only.
+# Do NOT point the admin Netlify site at repo root without overrides.
+# Admin site must use base directory: apps/admin (see apps/admin/netlify.toml).
 
 [build]
   base = "/"
-  command = "npm install && npm run build -w @ssu/student"
+  command = "npm ci && npm run build -w @ssu/student"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
-  NEXT_PUBLIC_APP_ENV = "staging"
-  NEXT_PUBLIC_STAGING_URL = "https://testcnflms.netlify.app"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
