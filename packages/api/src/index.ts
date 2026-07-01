@@ -18,3 +18,4 @@ export * from "./admin-programs";
 export * from "./program-classroom";
 export * from "./phone";
 export * from "./reference-data";
+export * from "./auth-errors";

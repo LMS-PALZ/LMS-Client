@@ -66,6 +66,7 @@ export function mapProgramToCourse(program: AdminProgram): Course {
     })),
     cohorts,
     createdAt: program.createdAt,
+    updatedAt: program.updatedAt,
   };
 }
 

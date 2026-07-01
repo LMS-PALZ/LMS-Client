@@ -38,6 +38,22 @@ function mapRole(value: string): UserRole {
   return "students";
 }
 
+function mapAdminRole(value: string): UserRole {
+  const normalized = value.toLowerCase().trim();
+  if (normalized === "super_admin" || normalized === "superadmin") {
+    return "super_admin";
+  }
+  if (normalized === "admin") return "admin";
+  if (
+    normalized === "tutor" ||
+    normalized === "trainer" ||
+    normalized === "instructor"
+  ) {
+    return "tutor";
+  }
+  return "admin";
+}
+
 /**
  * Parses student login API bodies:
  * `{ status: true, message, data: { …user, access_token } }`
@@ -111,6 +127,7 @@ export function parseAdminLoginResponse(
   const payload = asRecord(root.data) ?? root;
   const userRecord =
     asRecord(payload.admin) ??
+    asRecord(payload.staff) ??
     asRecord(payload.user) ??
     asRecord(payload.trainer) ??
     payload;
@@ -119,6 +136,15 @@ export function parseAdminLoginResponse(
   if (!email) return null;
 
   const accessToken =
+    readString(
+      root,
+      "access_token",
+      "accessToken",
+      "token",
+      "jwt",
+      "auth_token",
+      "bearer_token",
+    ) ||
     readString(
       payload,
       "access_token",
@@ -140,12 +166,21 @@ export function parseAdminLoginResponse(
   if (!accessToken) return null;
 
   const roleValue = readString(userRecord, "role");
+  const fullName = readString(userRecord, "name");
+  const firstName =
+    readString(userRecord, "firstName", "first_name") ||
+    fullName.split(/\s+/)[0] ||
+    "";
+  const lastName =
+    readString(userRecord, "lastName", "last_name") ||
+    fullName.split(/\s+/).slice(1).join(" ") ||
+    "";
   const user: AuthUser = {
     id: readString(userRecord, "id", "_id", "adminId"),
     email,
-    firstName: readString(userRecord, "firstName", "first_name"),
-    lastName: readString(userRecord, "lastName", "last_name"),
-    role: mapRole(roleValue || "admin"),
+    firstName,
+    lastName,
+    role: mapAdminRole(roleValue || "admin"),
     status: readString(userRecord, "status") || "active",
     accessToken,
   };

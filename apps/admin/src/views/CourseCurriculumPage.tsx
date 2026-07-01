@@ -8,7 +8,10 @@ import {
   useAdminProgram,
   useProgramClassroomModules,
   useUpdateProgramStatusMutation,
+  useUpsertProgramClassroomMutation,
+  mutationToast,
 } from "@ssu/queries";
+import type { ProgramClassroomModule } from "@ssu/types";
 import { AlertBanner, Button, Spinner } from "@ssu/ui";
 import {
   CourseBuilderShell,
@@ -16,6 +19,7 @@ import {
   CourseSuccessModal,
   type CourseSaveVariant,
 } from "@/features/courses/components";
+import { buildUpsertClassroomPayload } from "@/features/courses/lib/classroom-mappers";
 
 interface CourseCurriculumPageProps {
   courseId: string;
@@ -36,6 +40,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     error: modulesError,
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
   const updateStatus = useUpdateProgramStatusMutation();
+  const upsertClassroom = useUpsertProgramClassroomMutation();
   const [successOpen, setSuccessOpen] = useState(false);
   const [successVariant, setSuccessVariant] =
     useState<CourseSaveVariant>("published");
@@ -43,7 +48,28 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   const handleSuccessOpenChange = (open: boolean) => {
     setSuccessOpen(open);
     if (!open) {
-      router.push(adminPath("/courses"));
+      router.push(adminPath(`/courses/${courseId}`));
+    }
+  };
+
+  const saveModules = async (nextModules: ProgramClassroomModule[]) => {
+    if (!program || upsertClassroom.isPending) return;
+
+    try {
+      await upsertClassroom.mutateAsync({
+        programId: program.id,
+        payload: buildUpsertClassroomPayload(
+          program,
+          nextModules,
+          program.status === "published" ? "published" : "draft",
+        ),
+      });
+      mutationToast.success("Course activity saved");
+    } catch (error) {
+      mutationToast.error(
+        error instanceof Error ? error.message : "Failed to save modules.",
+      );
+      throw error;
     }
   };
 
@@ -94,14 +120,23 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
           Courses
         </Link>
         <span className="mx-2">&gt;</span>
+        <Link
+          href={adminPath(`/courses/${courseId}`)}
+          className="hover:text-[#4C7D5B]"
+        >
+          {program.title}
+        </Link>
+        <span className="mx-2">&gt;</span>
         <span className="text-[#1D1D1D]">Course builder</span>
       </nav>
 
-      {updateStatus.isError && (
+      {(updateStatus.isError || upsertClassroom.isError) && (
         <AlertBanner variant="error">
           {updateStatus.error instanceof Error
             ? updateStatus.error.message
-            : "Failed to update course."}
+            : upsertClassroom.error instanceof Error
+              ? upsertClassroom.error.message
+              : "Failed to update course."}
         </AlertBanner>
       )}
 
@@ -110,13 +145,13 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
         showStepper
         onSaveDraft={() => void saveCourse("draft")}
         onPublish={() => void saveCourse("published")}
-        isSaving={updateStatus.isPending}
+        isSaving={updateStatus.isPending || upsertClassroom.isPending}
         footer={
           <div className="flex justify-end border-t border-[#EEF2F6] px-6 py-5">
             <Button
               type="button"
               variant="ghost"
-              onClick={() => router.push(adminPath("/courses"))}
+              onClick={() => router.push(adminPath(`/courses/${courseId}`))}
               className="h-11 rounded-full bg-[#ECF0F6] px-8 text-[14px] font-medium text-[#1D1D1D] hover:bg-[#E2E8F0]"
             >
               Back
@@ -133,6 +168,8 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
               ? modulesError.message
               : null
           }
+          isSaving={upsertClassroom.isPending}
+          onSaveModules={saveModules}
         />
       </CourseBuilderShell>
 

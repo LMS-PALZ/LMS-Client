@@ -1,4 +1,5 @@
-export type UserRole = "students" | "trainer" | "admin";
+export type StaffPortalRole = "super_admin" | "admin" | "tutor" | "trainer";
+export type UserRole = "students" | StaffPortalRole;
 
 export type UserStatus = "active" | "pending" | "suspended";
 
@@ -107,8 +108,18 @@ export type {
   UpdateProgramStatusPayload,
 } from "./admin-program";
 export type {
+  ProgramApplicant,
+  ProgramApplicantStatus,
+  ProgramApplicantsResponse,
+} from "./program-applicant";
+export type {
+  ClassroomLessonType,
+  ProgramClassroomLesson,
   ProgramClassroomModule,
   ProgramClassroomSummary,
+  UpsertClassroomLessonPayload,
+  UpsertClassroomModulePayload,
+  UpsertProgramClassroomPayload,
 } from "./program-classroom";
 
 export interface NotificationDto {

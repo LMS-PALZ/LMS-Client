@@ -81,6 +81,16 @@ export function formatCourseStatus(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+export function formatCourseListDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export function formatPriceDisplay(value: string): string {
   const digits = value.replace(/[^\d]/g, "");
   if (!digits) return "";
@@ -121,3 +131,42 @@ export function createId(prefix: string): string {
 }
 
 export { MONTH_NAMES };
+
+export function parseTimeHHMM(
+  value: string,
+): { hours: number; minutes: number } | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return { hours, minutes };
+}
+
+export function formatTimeHHMM(date: Date): string {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+export function combineDateAndTime(
+  date: Date,
+  time: string,
+): string | undefined {
+  const parsed = parseTimeHHMM(time);
+  if (!parsed) return undefined;
+  const combined = new Date(date);
+  combined.setHours(parsed.hours, parsed.minutes, 0, 0);
+  return combined.toISOString();
+}
+
+export function splitStartsAt(value?: string): {
+  date: string;
+  time: string;
+} {
+  if (!value) return { date: "", time: "" };
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return { date: "", time: "" };
+  return {
+    date: formatDateDDMMYYYY(parsed),
+    time: formatTimeHHMM(parsed),
+  };
+}
