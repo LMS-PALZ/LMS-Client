@@ -9,6 +9,7 @@ import {
 import { clearProfileSetupDismissed } from "./student-profile";
 import {
   getStoredAuthToken,
+  parseAdminLoginResponse,
   parseStudentLoginResponse,
   type StudentLoginResult,
 } from "./student-login";
@@ -85,9 +86,16 @@ export async function inviteStaff(data: {
 > {
   try {
     const token = getStoredAuthToken();
+    if (!token) {
+      return {
+        ok: false,
+        code: "invalid",
+        message: "You are not signed in. Please log in again.",
+      };
+    }
 
     const res = await axios.post(
-      `${API_BASE_URL}/api/v1/admins/admins/invitations`,
+      `${API_BASE_URL}/api/v1/admins/invitations`,
       data,
       {
         headers: {
@@ -403,11 +411,23 @@ export async function adminlogin(
     const url = `${API_BASE_URL}/api/v1/admins/auth/login`;
 
     const res = await axios.post(url, { email, password });
+    const parsed = parseAdminLoginResponse(res.data);
+
+    if (!parsed) {
+      const body = res.data as { message?: string };
+      return {
+        ok: false,
+        code: "invalid",
+        message:
+          body?.message ??
+          "Login response was invalid. Please contact support.",
+      };
+    }
 
     return {
       ok: true,
-      data: res.data.data,
-      message: res.data.message || "Login successful",
+      data: parsed.data,
+      message: parsed.message,
     };
   } catch (error: unknown) {
     const err = error as {
@@ -550,13 +570,15 @@ export async function getStaffList(
   limit = 10,
   search = "",
   status = "",
-  role: "admin" | "tutor" = "admin",
+  role?: "admin" | "tutor" | "trainer",
   course = "",
 ) {
   try {
     const token = getStoredAuthToken();
 
-    const params: Record<string, any> = { page, limit, role };
+    const params: Record<string, string | number> = { page, limit };
+
+    if (role) params.role = role;
 
     if (search) params.search = search;
     if (status && status !== "All") params.status = status;
