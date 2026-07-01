@@ -14,5 +14,7 @@ export * from "./student-auth";
 export * from "./student-progress";
 export * from "./curriculum";
 export * from "./programs";
+export * from "./admin-programs";
+export * from "./program-classroom";
 export * from "./phone";
 export * from "./reference-data";
