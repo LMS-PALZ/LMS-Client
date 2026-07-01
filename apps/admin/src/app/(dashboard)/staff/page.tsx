@@ -5,10 +5,10 @@ import { AdminTable } from "@/components/AdminTable";
 import { TrainerTable } from "@/components/TrainerTable";
 import { StaffCard } from "@/components/StaffCard";
 import { StaffList } from "@ssu/queries";
-import { useAdminModal } from "@/contexts/AdminModalProvider ";
+import { useAdminModal } from "@/contexts/AdminModalProvider";
 import { InviteStaff } from "@/views/StaffManagement/InviteStaff";
 import { StatusDialog } from "@/components/StatusDialog";
-import { Button } from "../../../../../../packages/ui/src/atoms/Button/Button";
+import { Button } from "@ssu/ui";
 
 type StaffTab = "admin" | "tutor";
 
