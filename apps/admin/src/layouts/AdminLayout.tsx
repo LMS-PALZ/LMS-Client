@@ -8,8 +8,8 @@ import {
   HeaderBar,
   type NavigationSidebarItem,
   type NavigationSidebarLinkProps,
-  AdminModalProvider,
 } from "@ssu/ui";
+import { AdminModalProvider } from "@/contexts/AdminModalProvider";
 import {
   CalendarDays,
   ClipboardList,
@@ -33,16 +33,20 @@ const mainItems: NavigationSidebarItem[] = [
   { href: adminPath("/calender"), label: "Calender", icon: CalendarDays },
 ];
 
-const teachingItems = [
-  { href: "/programs", label: "Programs", icon: NotebookText },
-  { href: "/classroom", label: "Classroom", icon: ClipboardList },
-  { href: "/assessment", label: "Assessment", icon: FilePenLine },
+const teachingItems: NavigationSidebarItem[] = [
+  { href: adminPath("/courses"), label: "Courses", icon: GraduationCap },
+  { href: adminPath("/classroom"), label: "Classroom", icon: ClipboardList },
+  { href: adminPath("/assessment"), label: "Assessment", icon: FilePenLine },
 ];
 
-const toolsItems = [
-  { href: "/staff", label: "Staff", icon: BriefcaseBusiness },
-  { href: "/auditlog", label: "Audit log", icon: ClipboardList },
-  { href: "/certificates", label: "Certificates", icon: GraduationCap },
+const toolsItems: NavigationSidebarItem[] = [
+  { href: adminPath("/staff"), label: "Staff", icon: BriefcaseBusiness },
+  { href: adminPath("/auditlog"), label: "Audit log", icon: ClipboardList },
+  {
+    href: adminPath("/certificates"),
+    label: "Certificates",
+    icon: GraduationCap,
+  },
 ];
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
