@@ -1,12 +1,10 @@
-import { CourseCurriculumPage } from "@/views/CourseCurriculumPage";
+import { CourseDetailPage } from "@/views/CourseDetailPage";
 
-interface CourseDetailPageProps {
+interface CoursePageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function CourseDetailPage({
-  params,
-}: CourseDetailPageProps) {
+export default async function CoursePage({ params }: CoursePageProps) {
   const { id } = await params;
-  return <CourseCurriculumPage courseId={id} />;
+  return <CourseDetailPage courseId={id} />;
 }

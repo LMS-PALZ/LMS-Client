@@ -26,6 +26,7 @@ export interface Course {
   instructors: Instructor[];
   cohorts: Cohort[];
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface CourseDraft {

@@ -2,6 +2,8 @@ import type {
   AdminProgram,
   AdminProgramListResponse,
   CreateProgramPayload,
+  ProgramApplicantsResponse,
+  ProgramApplicant,
   ProgramStatus,
 } from "@ssu/types";
 import axios from "axios";
@@ -352,6 +354,125 @@ export async function assignAdminProgramTutors(
     return {
       ok: false as const,
       message: getErrorMessage(error, "Failed to assign tutors to course."),
+    };
+  }
+}
+
+function normalizeApplicant(
+  row: Record<string, unknown>,
+): ProgramApplicant | null {
+  const id = readString(row.id ?? row._id);
+  const studentName = readString(row.studentName ?? row.name);
+  if (!id || !studentName) return null;
+
+  return {
+    id,
+    programId: readString(row.programId),
+    studentName,
+    studentEmail: readString(row.studentEmail ?? row.email),
+    studentPhoneNumber:
+      readString(row.studentPhoneNumber ?? row.phoneNumber) || null,
+    motivation: readString(row.motivation) || null,
+    status: readString(row.status) || "pending",
+    reviewedBy: readString(row.reviewedBy) || null,
+    reviewedAt: readString(row.reviewedAt) || null,
+    createdAt: readString(row.createdAt),
+    updatedAt: readString(row.updatedAt),
+  };
+}
+
+function extractApplicants(payload: unknown): ProgramApplicantsResponse {
+  const empty: ProgramApplicantsResponse = {
+    items: [],
+    pagination: {
+      page: 1,
+      limit: 10,
+      offset: 0,
+      total: 0,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+  };
+
+  if (!payload || typeof payload !== "object") return empty;
+
+  const root = payload as Record<string, unknown>;
+  const data =
+    root.data && typeof root.data === "object"
+      ? (root.data as Record<string, unknown>)
+      : root;
+
+  const candidates: unknown[] = [];
+  if (Array.isArray(data.applicants)) candidates.push(...data.applicants);
+  if (Array.isArray(data.items)) candidates.push(...data.items);
+
+  const items = candidates
+    .map((item) =>
+      item && typeof item === "object"
+        ? normalizeApplicant(item as Record<string, unknown>)
+        : null,
+    )
+    .filter((item): item is ProgramApplicant => item !== null);
+
+  const paginationRaw =
+    data.pagination && typeof data.pagination === "object"
+      ? (data.pagination as Record<string, unknown>)
+      : {};
+
+  const total = readNumber(paginationRaw.total) || items.length;
+  const limit = readNumber(paginationRaw.limit) || 10;
+  const page = readNumber(paginationRaw.page) || 1;
+  const totalPages =
+    readNumber(paginationRaw.totalPages) || Math.ceil(total / limit) || 0;
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      offset: readNumber(paginationRaw.offset),
+      total,
+      totalPages,
+      hasNextPage: Boolean(paginationRaw.hasNextPage),
+      hasPreviousPage: Boolean(paginationRaw.hasPreviousPage),
+    },
+  };
+}
+
+export async function getProgramApplicants(
+  programId: string,
+  params?: { page?: number; limit?: number },
+) {
+  const trimmedId = programId.trim();
+  if (!trimmedId) {
+    return {
+      ok: false as const,
+      message: "Course id is required.",
+    };
+  }
+
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/programs/${trimmedId}/applicants`,
+      {
+        headers: authHeaders(),
+        params: {
+          page: params?.page ?? 1,
+          limit: params?.limit ?? 10,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: extractApplicants(res.data),
+      message: readString((res.data as { message?: string }).message),
+    };
+  } catch (error: unknown) {
+    return {
+      ok: false as const,
+      message: getErrorMessage(error, "Failed to fetch enrolled students."),
     };
   }
 }

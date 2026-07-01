@@ -28,6 +28,8 @@ export const adminProgramKeys = {
     status?: string;
   }) => [...adminProgramKeys.all, "list", params ?? {}] as const,
   detail: (id: string) => [...adminProgramKeys.all, "detail", id] as const,
+  applicants: (programId: string, params?: { page?: number; limit?: number }) =>
+    [...adminProgramKeys.all, "applicants", programId, params ?? {}] as const,
 };
 
 export const programClassroomKeys = {
