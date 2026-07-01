@@ -99,6 +99,17 @@ export interface AssignmentListItem {
 }
 
 export type { AvailableProgram } from "./programs";
+export type {
+  AdminProgram,
+  AdminProgramListResponse,
+  CreateProgramPayload,
+  ProgramStatus,
+  UpdateProgramStatusPayload,
+} from "./admin-program";
+export type {
+  ProgramClassroomModule,
+  ProgramClassroomSummary,
+} from "./program-classroom";
 
 export interface NotificationDto {
   id: string;
@@ -235,6 +246,8 @@ export interface StaffAssignmentsubmitted {
 export interface Trainers {
   id: string;
   name: string;
+  email?: string;
+  role?: string;
   assignedProgram: string;
   inviteAcceptedAt: string;
   status: Status;
@@ -243,6 +256,7 @@ export interface Trainers {
 export interface Admins {
   id: string;
   name: string;
+  email?: string;
   role: string;
   inviteAcceptedAt: string;
   status: Status;
