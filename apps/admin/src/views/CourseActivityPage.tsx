@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
@@ -74,8 +73,13 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
   const [meetingLink, setMeetingLink] = useState(
     existingLesson?.liveSessionUrl ?? "",
   );
-  const [sessionDate, setSessionDate] = useState(initialSchedule.date);
-  const [sessionTime, setSessionTime] = useState(initialSchedule.time);
+  const [sessionDate, setSessionDate] = useState<Date | null>(() => {
+    if (!initialSchedule.date) return null;
+    return parseDDMMYYYY(initialSchedule.date);
+  });
+  const [sessionTime, setSessionTime] = useState<string | null>(
+    initialSchedule.time || null,
+  );
   const [description, setDescription] = useState(
     existingLesson?.summary ?? existingLesson?.overview ?? "",
   );
@@ -92,17 +96,14 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
     !isSaving &&
     (!isLiveSession || description.trim().length > 0);
 
-  const backHref = adminPath(`/courses/${courseId}/modules/${moduleId}`);
+  const backHref = adminPath(`/courses/${courseId}/curriculum`);
 
   const handleSave = async () => {
     if (!program || !targetModule || !canSave) return;
 
     let startsAt: string | undefined;
-    if (isLiveSession && sessionDate) {
-      const date = parseDDMMYYYY(sessionDate);
-      if (date && sessionTime) {
-        startsAt = combineDateAndTime(date, sessionTime);
-      }
+    if (isLiveSession && sessionDate && sessionTime) {
+      startsAt = combineDateAndTime(sessionDate, sessionTime);
     }
 
     const nextLesson = {
@@ -186,26 +187,25 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-[1120px] space-y-6">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-[24px] font-semibold text-[#1D1D1D]">
           Course Activity
         </h1>
-        <div className="flex items-center gap-3">
-          <Button
+        <div className="flex items-center gap-4">
+          <button
             type="button"
-            variant="ghost"
             onClick={() => router.push(backHref)}
-            className="h-11 rounded-full px-5 text-[14px] font-medium text-[#1D1D1D]"
+            className="text-[14px] font-medium text-[#1D1D1D] transition hover:opacity-80"
           >
             Cancel
-          </Button>
+          </button>
           <Button
             type="button"
             onClick={() => void handleSave()}
             disabled={!canSave}
             loading={isSaving}
-            className="h-11 rounded-full bg-[#4C7D5B] px-6 text-[14px] font-medium text-white hover:bg-[#3d6549]"
+            className="h-10 rounded-lg bg-[#4C7D5B] px-6 text-[14px] font-medium text-white hover:bg-[#3d6549]"
           >
             Save
           </Button>
@@ -251,13 +251,6 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
             titlePlaceholder={program.title}
           />
         )}
-
-        <p className="text-[13px] text-[#94A3B8]">
-          Module:{" "}
-          <Link href={backHref} className="text-[#4C7D5B] hover:underline">
-            {targetModule.title}
-          </Link>
-        </p>
       </CourseActivityShell>
     </section>
   );

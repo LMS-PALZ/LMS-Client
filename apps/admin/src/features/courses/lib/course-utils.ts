@@ -1,26 +1,7 @@
 import type { CourseDraft } from "../types";
+import { formatDateDDMMYYYY } from "@ssu/utils";
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-export function formatDateDDMMYYYY(date: Date): string {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-}
+export { formatDateDDMMYYYY };
 
 export function parseDDMMYYYY(value: string): Date | null {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
@@ -129,8 +110,6 @@ export function isBasicStepComplete(draft: CourseDraft): boolean {
 export function createId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
-
-export { MONTH_NAMES };
 
 export function parseTimeHHMM(
   value: string,

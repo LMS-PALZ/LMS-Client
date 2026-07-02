@@ -1,18 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { FormField, Input } from "@ssu/ui";
+import { FormField, Input, DatePicker, TimePicker } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import {
   AlignCenter,
   AlignLeft,
   AlignRight,
   Bold,
+  FileText,
   Italic,
+  Link2,
   List,
   Strikethrough,
   Underline,
+  UploadCloud,
 } from "lucide-react";
+
+const fieldClassName = "h-11 rounded-lg border-[#D7DFEA] bg-white text-[14px]";
 
 interface ReadingActivityFormProps {
   title: string;
@@ -49,12 +54,12 @@ export function ReadingActivityForm({
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
           placeholder={titlePlaceholder}
-          className="h-11 rounded-xl border-[#D7DFEA]"
+          className={fieldClassName}
         />
       </FormField>
 
       <FormField id="reading-editor" label="Note Editor">
-        <div className="overflow-hidden rounded-[12px] border border-[#D7DFEA]">
+        <div className="overflow-hidden rounded-lg border border-[#D7DFEA]">
           <div className="flex flex-wrap items-center gap-2 border-b border-[#EEF2F6] bg-[#FAFBFC] px-3 py-2.5">
             <select
               value={fontSize}
@@ -73,7 +78,7 @@ export function ReadingActivityForm({
                 key={label}
                 type="button"
                 aria-label={label}
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-[#D7DFEA] bg-white text-[#475569] transition hover:bg-[#F7F9FB]"
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-[#D7DFEA] bg-white text-[#475569]"
               >
                 <Icon className="h-4 w-4" />
               </button>
@@ -85,7 +90,7 @@ export function ReadingActivityForm({
             style={{ fontSize: `${fontSize}px` }}
             rows={14}
             placeholder="Write the reading content here..."
-            className="min-h-[320px] w-full resize-y px-4 py-4 text-[#1D1D1D] outline-none"
+            className="min-h-[320px] w-full resize-y px-4 py-4 text-[14px] text-[#1D1D1D] outline-none"
           />
         </div>
       </FormField>
@@ -104,30 +109,40 @@ function UploadSection({ title }: UploadSectionProps) {
   return (
     <div className="space-y-3">
       <p className="text-[14px] font-semibold text-[#1D1D1D]">{title}</p>
-      <div className="inline-flex rounded-full border border-[#D7DFEA] bg-[#F7F9FB] p-1">
-        {(["device", "url"] as const).map((value) => (
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            { value: "device" as const, label: "From Device", icon: FileText },
+            { value: "url" as const, label: "From URL", icon: Link2 },
+          ] as const
+        ).map(({ value, label, icon: Icon }) => (
           <button
             key={value}
             type="button"
             onClick={() => setMode(value)}
             className={cn(
-              "rounded-full px-4 py-1.5 text-[13px] font-medium transition",
+              "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[13px] font-medium transition",
               mode === value
-                ? "bg-white text-[#4C7D5B] shadow-sm"
-                : "text-[#64748B]",
+                ? "border-[#4C7D5B] bg-[#E8F3EC] text-[#4C7D5B]"
+                : "border-[#D7DFEA] bg-white text-[#64748B]",
             )}
           >
-            {value === "device" ? "From Device" : "From URL"}
+            <Icon className="h-4 w-4" />
+            {label}
           </button>
         ))}
       </div>
 
       {mode === "device" ? (
-        <label className="flex min-h-[140px] cursor-pointer flex-col items-center justify-center rounded-[12px] border-2 border-dashed border-[#C5D6CB] bg-[#FAFBFC] px-4 py-6 text-center transition hover:bg-[#F4F8F5]">
-          <span className="text-[14px] font-medium text-[#4C7D5B]">
-            Drop file here or click to browse
+        <label className="flex min-h-[132px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#D7DFEA] bg-[#FAFBFC] px-4 py-6 text-center">
+          <UploadCloud className="h-5 w-5 text-[#64748B]" />
+          <span className="text-[14px] text-[#64748B]">
+            Drop file here or{" "}
+            <span className="font-semibold text-[#4C7D5B]">
+              click to browse
+            </span>
           </span>
-          <span className="mt-1 text-[13px] text-[#64748B]">
+          <span className="text-[13px] text-[#94A3B8]">
             You can upload files up to the maximum of 100 MB
           </span>
           <input type="file" className="hidden" />
@@ -137,7 +152,7 @@ function UploadSection({ title }: UploadSectionProps) {
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           placeholder="Paste file URL"
-          className="h-11 rounded-xl border-[#D7DFEA]"
+          className={fieldClassName}
         />
       )}
     </div>
@@ -149,10 +164,10 @@ interface LiveSessionActivityFormProps {
   onTitleChange: (value: string) => void;
   meetingLink: string;
   onMeetingLinkChange: (value: string) => void;
-  sessionDate: string;
-  onSessionDateChange: (value: string) => void;
-  sessionTime: string;
-  onSessionTimeChange: (value: string) => void;
+  sessionDate: Date | null;
+  onSessionDateChange: (value: Date | null) => void;
+  sessionTime: string | null;
+  onSessionTimeChange: (value: string | null) => void;
   description: string;
   onDescriptionChange: (value: string) => void;
   recordingUrl: string;
@@ -171,8 +186,8 @@ export function LiveSessionActivityForm({
   onSessionTimeChange,
   description,
   onDescriptionChange,
-  recordingUrl,
-  onRecordingUrlChange,
+  recordingUrl: _recordingUrl,
+  onRecordingUrlChange: _onRecordingUrlChange,
   titlePlaceholder = "Social Media Strategy: Viral Campaigns",
 }: LiveSessionActivityFormProps) {
   return (
@@ -182,7 +197,7 @@ export function LiveSessionActivityForm({
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
           placeholder={titlePlaceholder}
-          className="h-11 rounded-xl border-[#D7DFEA]"
+          className={fieldClassName}
         />
       </FormField>
 
@@ -191,53 +206,52 @@ export function LiveSessionActivityForm({
           value={meetingLink}
           onChange={(event) => onMeetingLinkChange(event.target.value)}
           placeholder="Enter your meeting link"
-          className="h-11 rounded-xl border-[#D7DFEA]"
+          className={fieldClassName}
         />
       </FormField>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField id="live-date" label="Date">
-          <Input
+          <DatePicker
+            id="live-date"
             value={sessionDate}
-            onChange={(event) => onSessionDateChange(event.target.value)}
-            placeholder="DD/MM/YYYY"
-            className="h-11 rounded-xl border-[#D7DFEA]"
+            onChange={onSessionDateChange}
+            buttonClassName={cn(fieldClassName, "h-11 rounded-lg px-3")}
           />
         </FormField>
         <FormField id="live-time" label="Time">
-          <Input
+          <TimePicker
+            id="live-time"
             value={sessionTime}
-            onChange={(event) => onSessionTimeChange(event.target.value)}
-            placeholder="HH:MM"
-            className="h-11 rounded-xl border-[#D7DFEA]"
+            onChange={onSessionTimeChange}
+            buttonClassName={cn(fieldClassName, "h-11 rounded-lg px-3")}
           />
         </FormField>
       </div>
 
-      <FormField id="live-description" label="Description*">
-        <div className="relative">
-          <textarea
-            value={description}
-            onChange={(event) =>
-              onDescriptionChange(event.target.value.slice(0, 140))
-            }
-            rows={4}
-            placeholder="What will this module be about?"
-            className="w-full rounded-xl border border-[#D7DFEA] px-4 py-3 text-[14px] text-[#1D1D1D] outline-none"
-          />
-          <span className="absolute bottom-3 right-3 text-[12px] text-[#94A3B8]">
-            {description.length}/140
-          </span>
-        </div>
-      </FormField>
+      <div className="space-y-2">
+        <label
+          htmlFor="live-description"
+          className="text-[14px] font-medium text-[#1D1D1D]"
+        >
+          Description<span className="text-[#C62828]">*</span>
+        </label>
+        <textarea
+          id="live-description"
+          value={description}
+          onChange={(event) =>
+            onDescriptionChange(event.target.value.slice(0, 140))
+          }
+          rows={4}
+          placeholder="What will this module be about?"
+          className="w-full rounded-lg border border-[#D7DFEA] px-4 py-3 text-[14px] text-[#1D1D1D] outline-none"
+        />
+        <p className="text-right text-[12px] text-[#94A3B8]">
+          {description.length}/140
+        </p>
+      </div>
 
       <UploadSection title="Add Recordings" />
-      <div className="hidden">
-        <Input
-          value={recordingUrl}
-          onChange={(event) => onRecordingUrlChange(event.target.value)}
-        />
-      </div>
       <UploadSection title="Add Resources" />
     </>
   );

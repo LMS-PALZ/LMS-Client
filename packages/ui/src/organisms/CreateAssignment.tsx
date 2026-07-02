@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Info, Upload, Link2, FileText, X } from "lucide-react";
 import {
   CustomSelect,
@@ -40,9 +40,7 @@ export function CreateAssignmentPage() {
   >([]);
 
   const { data: programs } = usePrograms();
-
   const { data: modulesData } = useClassroomModules(courseId);
-
   const moduleOptions = modulesData?.modules?.map((m: any) => m.title) ?? [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -324,15 +322,11 @@ export function CreateAssignmentPage() {
           <div>
             <label className="mb-2 block text-sm font-medium">Due date</label>
             <div className="relative">
-              <DatePicker value={dueDate} onChange={setDueDate} />
-              {/* <Input
-                type="date"
-                className="pl-10"
+              <DatePicker
+                id="assignment-due-date"
                 value={dueDate}
-
-                onChange={(e) => setDueDate(e.target.value)}
-              /> */}
-              {/* <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" /> */}
+                onChange={setDueDate}
+              />
             </div>
             <div className="mt-2 flex items-center gap-2 rounded-lg bg-[#E8F0FF] px-3 py-2 text-sm text-[#2563EB]">
               <Info className="h-4 w-4" />
