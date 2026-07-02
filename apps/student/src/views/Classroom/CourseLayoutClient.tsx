@@ -1,6 +1,6 @@
 "use client";
 
-import { useStudentclassroom } from "@ssu/queries";
+import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
 import { mapClassroomResponse } from "@/lib/classroom/mappers";
 import { ClassroomCourseLayoutShell } from "@/views/Classroom/ClassroomCourseLayoutShell";
 import { Spinner, EmptyState } from "@ssu/ui";
@@ -13,8 +13,8 @@ interface Props {
 }
 
 export function CourseLayoutClient({ moduleId, children }: Props) {
-  const Id = localStorage.getItem("profileId") ?? "";
-  const { data, isLoading, isError } = useStudentclassroom(Id);
+  const { programId } = useEnrolledProgram();
+  const { data, isLoading, isError } = useStudentclassroom(programId);
 
   if (isLoading) {
     return (
@@ -42,7 +42,7 @@ export function CourseLayoutClient({ moduleId, children }: Props) {
   }));
 
   const currentModule = data.classroom.modules.find(
-    (m: any) => m.id === moduleId,
+    (module) => module.id === moduleId,
   );
   const meetUrl = currentModule?.lessons?.[0]?.liveSessionUrl ?? "";
 
