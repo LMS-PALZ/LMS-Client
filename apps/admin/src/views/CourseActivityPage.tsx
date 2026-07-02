@@ -11,16 +11,18 @@ import {
 } from "@ssu/queries";
 import type { ClassroomLessonType } from "@ssu/types";
 import { AlertBanner, Button, Spinner } from "@ssu/ui";
-import { FileText, Radio } from "lucide-react";
 import { CourseActivityShell } from "@/features/courses/components/CourseActivityShell";
 import {
   LiveSessionActivityForm,
   ReadingActivityForm,
-} from "@/features/courses/components/CourseActivityForms";
+} from "@/features/courses/components/activity";
+import { ACTIVITY_TYPE_OPTIONS } from "@/features/courses/lib/activity-config";
+import {
+  buildLessonPayload,
+  upsertLessonInModules,
+} from "@/features/courses/lib/activity-mappers";
 import { buildUpsertClassroomPayload } from "@/features/courses/lib/classroom-mappers";
 import {
-  combineDateAndTime,
-  createId,
   parseDDMMYYYY,
   splitStartsAt,
 } from "@/features/courses/lib/course-utils";
@@ -28,11 +30,6 @@ import {
 interface CourseActivityPageProps {
   courseId: string;
 }
-
-const ACTIVITY_TYPES = [
-  { id: "live_session" as const, label: "Live Session", icon: Radio },
-  { id: "reading" as const, label: "Reading", icon: FileText },
-];
 
 function readLessonType(value: string | null): ClassroomLessonType {
   return value === "reading" ? "reading" : "live_session";
@@ -101,45 +98,24 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
   const handleSave = async () => {
     if (!program || !targetModule || !canSave) return;
 
-    let startsAt: string | undefined;
-    if (isLiveSession && sessionDate && sessionTime) {
-      startsAt = combineDateAndTime(sessionDate, sessionTime);
-    }
-
-    const nextLesson = {
-      id: existingLesson?.id ?? createId("temp-lesson"),
-      title: title.trim(),
-      overview: isLiveSession
-        ? description.trim()
-        : overview.trim() || undefined,
-      summary: isLiveSession ? description.trim() : undefined,
-      lessonType: activityType,
-      isPublished: true,
-      liveSessionUrl: isLiveSession
-        ? meetingLink.trim() || undefined
-        : undefined,
-      startsAt: isLiveSession ? startsAt : undefined,
-      recordingUrl: isLiveSession
-        ? recordingUrl.trim() || undefined
-        : undefined,
-    };
-
-    const nextModules = modules.map((module) => {
-      if (module.id !== targetModule.id) return module;
-
-      const lessons = [...(module.lessons ?? [])];
-      const existingIndex = lessonId
-        ? lessons.findIndex((lesson) => lesson.id === lessonId)
-        : -1;
-
-      if (existingIndex >= 0) {
-        lessons[existingIndex] = { ...lessons[existingIndex], ...nextLesson };
-      } else {
-        lessons.push(nextLesson);
-      }
-
-      return { ...module, lessons, lessonCount: lessons.length };
+    const nextLesson = buildLessonPayload({
+      existingLesson,
+      activityType,
+      title,
+      overview,
+      meetingLink,
+      sessionDate,
+      sessionTime,
+      description,
+      recordingUrl,
     });
+
+    const nextModules = upsertLessonInModules(
+      modules,
+      targetModule.id,
+      lessonId,
+      nextLesson,
+    );
 
     try {
       await upsertClassroom.mutateAsync({
@@ -222,7 +198,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
 
       <CourseActivityShell
         activityType={activityType}
-        activityTypes={ACTIVITY_TYPES}
+        activityTypes={ACTIVITY_TYPE_OPTIONS}
         onActivityTypeChange={setActivityType}
         disableTypeSwitch={Boolean(lessonId)}
       >

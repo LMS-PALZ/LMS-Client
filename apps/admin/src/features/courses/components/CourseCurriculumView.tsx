@@ -1,21 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import type {
   AdminProgram,
   ClassroomLessonType,
-  ProgramClassroomLesson,
   ProgramClassroomModule,
 } from "@ssu/types";
 import { Spinner } from "@ssu/ui";
+import { useExpandedModule } from "../hooks/use-expanded-module";
+import { createId } from "../lib/course-utils";
+import type { PendingLessonDelete } from "../types/activity";
 import { AddItemLink } from "./AddItemLink";
 import { ActivityDeletedModal } from "./DeleteActivityModal";
 import { AddModuleModal } from "./AddModuleModal";
 import { DeleteActivityModal } from "./DeleteActivityModal";
 import { ModuleAccordion } from "./ModuleAccordion";
-import { createId } from "../lib/course-utils";
 
 interface CourseCurriculumViewProps {
   program: AdminProgram;
@@ -26,11 +27,6 @@ interface CourseCurriculumViewProps {
   onSaveModules: (modules: ProgramClassroomModule[]) => Promise<void>;
 }
 
-type PendingDelete = {
-  module: ProgramClassroomModule;
-  lesson: ProgramClassroomLesson;
-};
-
 export function CourseCurriculumView({
   program,
   modules,
@@ -40,20 +36,13 @@ export function CourseCurriculumView({
   onSaveModules,
 }: CourseCurriculumViewProps) {
   const router = useRouter();
-  const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
-  const hasInitializedExpand = useRef(false);
-
-  useEffect(() => {
-    if (modules.length === 0 || hasInitializedExpand.current) return;
-    setExpandedModuleId(modules[0].id);
-    hasInitializedExpand.current = true;
-  }, [modules]);
+  const { expandedModuleId, setExpandedModuleId, toggleModule } =
+    useExpandedModule(modules);
   const [moduleModalOpen, setModuleModalOpen] = useState(false);
   const [deleteActivityOpen, setDeleteActivityOpen] = useState(false);
   const [deleteDoneOpen, setDeleteDoneOpen] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(
-    null,
-  );
+  const [pendingDelete, setPendingDelete] =
+    useState<PendingLessonDelete | null>(null);
 
   const hasModules = modules.length > 0;
 
@@ -181,11 +170,7 @@ export function CourseCurriculumView({
         <ModuleAccordion
           modules={modules}
           expandedModuleId={expandedModuleId}
-          onToggleModule={(moduleId) =>
-            setExpandedModuleId((current) =>
-              current === moduleId ? null : moduleId,
-            )
-          }
+          onToggleModule={toggleModule}
           mode="edit"
           onEditModule={openEditModule}
           onDeleteModule={(module) => void deleteModule(module)}

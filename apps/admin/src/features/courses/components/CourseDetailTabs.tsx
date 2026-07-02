@@ -1,8 +1,7 @@
 "use client";
 
 import { cn } from "@ssu/utils";
-
-export type CourseDetailTab = "students" | "modules" | "cohorts";
+import type { CourseDetailTab } from "../types/ui";
 
 interface CourseDetailTabsProps {
   value: CourseDetailTab;

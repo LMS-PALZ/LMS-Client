@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@ssu/utils";
+import type { CourseStatus } from "../types";
 
 interface ManageCourseMenuProps {
-  status: "draft" | "published" | string;
+  status: CourseStatus;
   onEdit: () => void;
   onTogglePublish: () => void;
   onDelete: () => void;

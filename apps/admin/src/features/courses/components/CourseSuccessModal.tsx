@@ -3,19 +3,12 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { StatusDialog } from "@/components/StatusDialog";
+import { COURSE_SUCCESS_MESSAGES, type CourseStatus } from "../types";
+import type { ModalControlProps } from "../types/ui";
 
-export type CourseSaveVariant = "published" | "draft";
-
-interface CourseSuccessModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  variant: CourseSaveVariant;
+interface CourseSuccessModalProps extends ModalControlProps {
+  variant: CourseStatus;
 }
-
-const MESSAGES: Record<CourseSaveVariant, string> = {
-  published: "You have successfully published a course.",
-  draft: "You have successfully saved a course as draft.",
-};
 
 export function CourseSuccessModal({
   open,
@@ -38,7 +31,7 @@ export function CourseSuccessModal({
             <StatusDialog
               variant="success"
               title="Success"
-              description={MESSAGES[variant]}
+              description={COURSE_SUCCESS_MESSAGES[variant]}
               onDismiss={() => onOpenChange(false)}
             />
           </div>

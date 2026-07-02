@@ -2,24 +2,8 @@
 
 import { Avatar, Checkbox } from "@ssu/ui";
 import { cn } from "@ssu/utils";
+import { getAvatarColorFromId } from "../lib/avatar-utils";
 import type { Instructor } from "../types";
-
-const AVATAR_COLORS = [
-  "bg-[#A3DEC1] text-[#084D2B]",
-  "bg-[#BFDBFE] text-[#1E3A8A]",
-  "bg-[#D1EFE0] text-[#0C693A]",
-  "bg-[#FDEBD0] text-[#C47218]",
-  "bg-[#E2E8F0] text-[#334155]",
-  "bg-[#FCE4EC] text-[#9D174D]",
-];
-
-function getAvatarColor(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
 
 interface InstructorListItemProps {
   instructor: Instructor;
@@ -33,7 +17,7 @@ export function InstructorListItem({
   onToggle,
 }: InstructorListItemProps) {
   const fullName = `${instructor.firstName} ${instructor.lastName}`.trim();
-  const avatarColor = getAvatarColor(instructor.id);
+  const avatarColor = getAvatarColorFromId(instructor.id);
 
   return (
     <div

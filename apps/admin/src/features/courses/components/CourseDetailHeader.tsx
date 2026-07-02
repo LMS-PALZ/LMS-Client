@@ -2,7 +2,7 @@
 
 import type { AdminProgram } from "@ssu/types";
 import { cn } from "@ssu/utils";
-import { formatCourseStatus } from "../lib/course-utils";
+import { formatCourseStatus, normalizeCourseStatus } from "../lib/course-utils";
 import { ManageCourseMenu } from "./ManageCourseMenu";
 
 interface CourseDetailHeaderProps {
@@ -62,7 +62,7 @@ export function CourseDetailHeader({
         </div>
 
         <ManageCourseMenu
-          status={program.status}
+          status={normalizeCourseStatus(program.status)}
           onEdit={onEdit}
           onTogglePublish={onTogglePublish}
           onDelete={onDelete}

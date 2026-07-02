@@ -3,6 +3,7 @@ import type {
   ProgramClassroomModule,
   UpsertProgramClassroomPayload,
 } from "@ssu/types";
+import type { CourseStatus } from "../types";
 
 function isTemporaryId(id: string): boolean {
   return id.startsWith("temp-");
@@ -31,8 +32,8 @@ export function countPublishedLessons(
  */
 export function resolveClassroomStatus(
   modules: ProgramClassroomModule[],
-  requestedStatus: "draft" | "published",
-): "draft" | "published" {
+  requestedStatus: CourseStatus,
+): CourseStatus {
   if (requestedStatus === "draft") return "draft";
   return countPublishedLessons(modules) > 0 ? "published" : "draft";
 }
@@ -47,7 +48,7 @@ export function countTotalLessons(modules: ProgramClassroomModule[]): number {
 export function buildUpsertClassroomPayload(
   program: AdminProgram,
   modules: ProgramClassroomModule[],
-  status: "draft" | "published" = "draft",
+  status: CourseStatus = "draft",
 ): UpsertProgramClassroomPayload {
   const resolvedStatus = resolveClassroomStatus(modules, status);
 

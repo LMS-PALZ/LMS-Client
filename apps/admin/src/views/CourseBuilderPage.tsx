@@ -10,11 +10,10 @@ import {
   CourseBasicForm,
   CourseBuilderShell,
   CourseSuccessModal,
-  type CourseSaveVariant,
 } from "@/features/courses/components";
 import { mapDraftToCreatePayload } from "@/features/courses/lib/program-mappers";
 import { isBasicStepComplete } from "@/features/courses/lib/course-utils";
-import type { CourseDraft } from "@/features/courses/types";
+import type { CourseDraft, CourseStatus } from "@/features/courses/types";
 
 const emptyDraft: CourseDraft = {
   name: "",
@@ -31,7 +30,7 @@ export function CourseBuilderPage() {
   const [draft, setDraft] = useState<CourseDraft>(emptyDraft);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successVariant, setSuccessVariant] =
-    useState<CourseSaveVariant>("published");
+    useState<CourseStatus>("published");
 
   const canPublish = isBasicStepComplete(draft);
   const canSaveDraft = draft.name.trim().length > 0;
