@@ -4,6 +4,26 @@ import type {
   ClassroomLesson,
 } from "@/lib/classroom-data";
 
+function readIsoDate(value: unknown): Date | null {
+  if (typeof value !== "string" || value.trim() === "") return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function findActiveLiveLesson(lessons: any[]): any | null {
+  const liveNow = lessons.find(
+    (l) => l?.lessonType === "live_session" && l?.isLiveNow,
+  );
+  if (liveNow) return liveNow;
+
+  const upcoming = lessons
+    .filter((l) => l?.lessonType === "live_session" && readIsoDate(l?.startsAt))
+    .map((l) => ({ lesson: l, startsAt: readIsoDate(l?.startsAt)! }))
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())[0];
+
+  return upcoming?.lesson ?? null;
+}
+
 export function mapClassroomResponse(data: any): {
   course: ClassroomCourseDetail;
   weeks: ClassroomWeek[];
@@ -11,7 +31,8 @@ export function mapClassroomResponse(data: any): {
   const { program, classroom } = data;
 
   const allLessons = classroom.modules.flatMap((m: any) => m.lessons);
-  const liveLesson = allLessons.find((l: any) => l.isLiveNow);
+  const liveLesson = findActiveLiveLesson(allLessons);
+  const liveStartsAt = readIsoDate(liveLesson?.startsAt)?.toISOString();
 
   const recordings = allLessons.map((lesson: any) => ({
     id: lesson.id,
@@ -25,11 +46,13 @@ export function mapClassroomResponse(data: any): {
     title: classroom.title,
     courseLabel: program.cohortName,
     syllabusCount: data.summary.totalLessons,
-    sessionPhase: liveLesson ? "live" : "upcoming",
-    sessionId: undefined,
+    sessionPhase: liveLesson?.isLiveNow ? "live" : "upcoming",
+    sessionId: liveLesson?.id,
     sessionLabel: program.cohortCode,
     sessionDuration: program.duration,
     meetUrl: liveLesson?.liveSessionUrl ?? "",
+    scheduledAt: liveStartsAt ?? undefined,
+    liveVideoProvider: "zoom",
     description: classroom.description,
     overview: program.description,
 

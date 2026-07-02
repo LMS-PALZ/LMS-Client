@@ -5,6 +5,7 @@ import {
   useSession,
   useStudentProgress,
   useUpcomingSessions,
+  useEnrolledProgram,
 } from "@ssu/queries";
 import {
   AlertBanner,
@@ -21,16 +22,17 @@ import {
 } from "@ssu/ui";
 import {
   assignmentCardProps,
-  formatSessionDate,
   formatSessionTime,
 } from "@/lib/assignment-display";
+import {
+  filterTodayRemainingSessions,
+  formatSessionDayLabel,
+} from "@/lib/sessions/today-sessions";
 import { GraduationCap, Notebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
-import { Profiledetail } from "@ssu/queries";
+import { useMemo, useEffect } from "react";
 import { useProfileStore } from "@ssu/store";
-import { useEffect } from "react";
 
 function greeting(first: string) {
   const h = new Date().getHours();
@@ -42,30 +44,31 @@ function greeting(first: string) {
 export function HomePage() {
   const router = useRouter();
   const { data: user } = useSession();
+  const { data: profileData, program } = useEnrolledProgram();
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
   const assignments = useStudentAssignments();
-
-  const { data } = Profiledetail();
-  localStorage.setItem("profileId", data?.program?.id || "");
   const setprofile = useProfileStore((state) => state.setUser);
 
   useEffect(() => {
-    if (!data) return;
+    if (!profileData) return;
 
     setprofile({
-      id: data?.student?._id ?? "",
-      email: data?.student?.email ?? "",
-      first_name: data?.student?.first_name ?? "",
-      last_name: data?.student?.last_name ?? "",
-      profileUploaded: data?.student?.profileUploaded,
-      role: data?.student?.role ?? "student",
+      id: profileData?.student?._id ?? "",
+      email: profileData?.student?.email ?? "",
+      first_name: profileData?.student?.first_name ?? "",
+      last_name: profileData?.student?.last_name ?? "",
+      profileUploaded: profileData?.student?.profileUploaded,
+      role: profileData?.student?.role ?? "student",
     });
-  }, [data, setprofile]);
+  }, [profileData, setprofile]);
 
   const first = user?.firstName?.trim() || "there";
   const showGreetingSkeleton = !user;
-  const sessionList = sessions.data ?? [];
+  const sessionList = useMemo(
+    () => filterTodayRemainingSessions(sessions.data ?? []),
+    [sessions.data],
+  );
   const assignmentList = (assignments.data ?? []).slice(0, 4);
 
   const overallPercent = useMemo(() => {
@@ -73,7 +76,8 @@ export function HomePage() {
     return 0;
   }, [progress.data]);
 
-  const programTitle = progress.data?.enrolledProgramTitle ?? "web development";
+  const programTitle =
+    progress.data?.enrolledProgramTitle || program?.title || "your course";
 
   return (
     <div className="space-y-8">
@@ -94,20 +98,21 @@ export function HomePage() {
         )}
 
         <LiveSessionsPanel
+          title="Today's classes"
           isLoading={sessions.isLoading}
           loadingSkeleton={<SessionListSkeleton count={3} />}
           emptyState={
             <DashboardEmptyState
               icon={GraduationCap}
-              title="You don't have any live session yet"
-              description="When you do, they'll show up here"
+              title="No classes scheduled for today"
+              description="When you have a live or upcoming class today, it will show up here. Browse your full schedule in Calendar or My Classroom."
             />
           }
           sessions={sessionList.map((s) => ({
             id: s.id,
             title: s.title,
             time: formatSessionTime(s.startsAt),
-            date: formatSessionDate(s.startsAt),
+            date: formatSessionDayLabel(s.startsAt),
             status: s.isLive ? ("live" as const) : ("upcoming" as const),
             action: s.isLive ? (
               <button

@@ -718,32 +718,6 @@ export async function getStudentPofile() {
   }
 }
 
-export async function getStudentclassroom(programId: string) {
-  try {
-    const token = getStoredAuthToken();
-
-    const res = await axios.get(
-      `${API_BASE_URL}/api/v1/students/classroom/${programId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    return {
-      ok: true as const,
-      data: res.data.data,
-      message: res.data.message,
-    };
-  } catch (error: any) {
-    return {
-      ok: false as const,
-      message: error.response?.data?.message,
-    };
-  }
-}
-
 export async function updateStaffStatus(
   userId: string,
   status: "active" | "suspended" | "invited",
