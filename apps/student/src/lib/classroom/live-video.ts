@@ -1,13 +1,13 @@
 import type { ClassroomCourseDetail } from "./types";
 
-export type LiveVideoProvider = "google-meet" | "jitsi";
+export type LiveVideoProvider = "zoom" | "jitsi";
 
 const DEFAULT_JITSI_DOMAIN = "meet.jit.si";
 
 export function getLiveVideoProvider(): LiveVideoProvider {
   const env = process.env.NEXT_PUBLIC_LIVE_VIDEO_PROVIDER;
-  if (env === "jitsi" || env === "google-meet") return env;
-  return "google-meet";
+  if (env === "jitsi" || env === "zoom") return env;
+  return "zoom";
 }
 
 export function resolveJitsiDomain(): string {
