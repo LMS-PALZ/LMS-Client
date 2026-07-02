@@ -3,16 +3,23 @@
 import { cn } from "@ssu/utils";
 import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
 
-export interface ZoomLiveEmbedProps {
+export interface MeetingIframeEmbedProps {
   meetUrl: string;
-  displayName?: string;
   className?: string;
 }
 
-export function ZoomLiveEmbed({ meetUrl, className }: ZoomLiveEmbedProps) {
+export function MeetingIframeEmbed({
+  meetUrl,
+  className,
+}: MeetingIframeEmbedProps) {
   const target = parseMeetingTarget(meetUrl);
 
-  if (!target || target.kind !== "zoom" || !target.embedUrl) {
+  if (
+    !target ||
+    target.kind === "jitsi" ||
+    !("embedUrl" in target) ||
+    !target.embedUrl
+  ) {
     return (
       <div
         className={cn(

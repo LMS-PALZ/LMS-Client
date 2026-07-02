@@ -40,6 +40,35 @@ export function findNextTodaySession(
   })[0];
 }
 
+function isUpcomingSession(session: LiveSessionItem, now: Date): boolean {
+  if (session.isLive) return false;
+  if (!session.startsAt) return false;
+
+  const start = new Date(session.startsAt);
+  if (Number.isNaN(start.getTime())) return false;
+
+  return start.getTime() > now.getTime();
+}
+
+/** Home dashboard: one live card plus the next two upcoming classes. */
+export function buildHomeSessionCards(
+  sessions: LiveSessionItem[],
+  now = new Date(),
+): LiveSessionItem[] {
+  const sorted = [...sessions].sort(
+    (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+  );
+
+  const live = sorted.find((session) => session.isLive) ?? null;
+  const upcoming = sorted.filter((session) => isUpcomingSession(session, now));
+
+  if (live) {
+    return [live, ...upcoming.slice(0, 2)];
+  }
+
+  return upcoming.slice(0, 3);
+}
+
 export function formatSessionDayLabel(iso: string, now = new Date()): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";

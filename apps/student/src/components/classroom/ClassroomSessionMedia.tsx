@@ -6,7 +6,9 @@ import { CalendarClock, VideoOff } from "lucide-react";
 import type { ReactNode } from "react";
 import type { LiveVideoProvider } from "@/lib/classroom/live-video";
 import { JitsiLiveEmbed } from "./JitsiLiveEmbed";
+import { MeetingIframeEmbed } from "./MeetingIframeEmbed";
 import { ZoomLiveEmbed } from "./ZoomLiveEmbed";
+import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
 
 export type ClassroomMediaMode =
   | "live-meet"
@@ -57,6 +59,20 @@ export function ClassroomSessionMedia({
   className,
 }: ClassroomSessionMediaProps) {
   if (mode === "live-meet") {
+    const meetingTarget = meetUrl ? parseMeetingTarget(meetUrl) : null;
+
+    if (meetingTarget?.kind === "jitsi") {
+      return (
+        <LiveMediaShell className={className}>
+          <JitsiLiveEmbed
+            roomName={meetingTarget.roomName}
+            domain={meetingTarget.domain}
+            displayName={displayName}
+          />
+        </LiveMediaShell>
+      );
+    }
+
     if (liveProvider === "jitsi" && jitsiRoomName) {
       return (
         <LiveMediaShell className={className}>
@@ -69,13 +85,40 @@ export function ClassroomSessionMedia({
       );
     }
 
-    if (meetUrl) {
+    if (meetingTarget?.kind === "zoom") {
       return (
         <LiveMediaShell className={className}>
-          <ZoomLiveEmbed meetUrl={meetUrl} />
+          <ZoomLiveEmbed meetUrl={meetUrl!} displayName={displayName} />
         </LiveMediaShell>
       );
     }
+
+    if (meetUrl) {
+      return (
+        <LiveMediaShell className={className}>
+          <MeetingIframeEmbed meetUrl={meetUrl} />
+        </LiveMediaShell>
+      );
+    }
+
+    return (
+      <LiveMediaShell className={className}>
+        <div
+          className={cn(
+            "flex min-h-[360px] flex-col items-center justify-center rounded-[18px] bg-[#F4F7FA] px-6 text-center",
+            className,
+          )}
+        >
+          <p className="text-[18px] font-semibold text-[#1D1D1D]">
+            Meeting link not available
+          </p>
+          <p className="mt-2 max-w-md text-[14px] leading-6 text-[#6B7280]">
+            This session is live, but no join link was provided. Please contact
+            your instructor or check back shortly.
+          </p>
+        </div>
+      </LiveMediaShell>
+    );
   }
 
   if (mode === "recording-embed" && recordingEmbedUrl) {
