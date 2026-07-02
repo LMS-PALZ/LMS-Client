@@ -108,6 +108,14 @@ export type {
   UpdateProgramStatusPayload,
 } from "./admin-program";
 export type {
+  AdminTransaction,
+  AdminTransactionDetail,
+  AdminTransactionListMeta,
+  AdminTransactionListResult,
+  AdminTransactionPagination,
+  TransactionStatus,
+} from "./admin-transaction";
+export type {
   ProgramApplicant,
   ProgramApplicantStatus,
   ProgramApplicantsResponse,
@@ -127,6 +135,8 @@ export interface NotificationDto {
   message: string;
   createdAt: string;
   read: boolean;
+  href?: string;
+  kind?: string;
 }
 
 export interface CustomSelectProps {
@@ -144,6 +154,8 @@ export interface NotificationItem {
   message: string;
   createdAt: string;
   read: boolean;
+  href?: string;
+  kind?: string;
 }
 
 export interface StudentProfile {

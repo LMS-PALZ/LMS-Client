@@ -98,7 +98,7 @@ export function HomePage() {
         )}
 
         <LiveSessionsPanel
-          title="Upcoming classes"
+          title="Classes Overview"
           isLoading={sessions.isLoading}
           loadingSkeleton={<SessionListSkeleton count={3} />}
           emptyState={

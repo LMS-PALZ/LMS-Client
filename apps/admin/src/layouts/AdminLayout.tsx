@@ -9,6 +9,7 @@ import {
 } from "@ssu/ui";
 import { useSession } from "@ssu/queries";
 import { AdminModalProvider } from "@/contexts/AdminModalProvider";
+import { recordAuditEvent } from "@/lib/audit-log";
 import { HelpCircle, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,6 +49,13 @@ function AdminSidebarWrapper() {
 export function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
+  const { data: user } = useSession();
+
+  const handleBeforeLogout = async () => {
+    if (user) {
+      await recordAuditEvent("sign_out", user);
+    }
+  };
 
   return (
     <AdminModalProvider>
@@ -58,6 +66,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         header={
           <HeaderBar
             pageTitle={getAdminPageTitle(pathname)}
+            onBeforeLogout={handleBeforeLogout}
             menuItems={[
               { label: "Account", href: "/account", icon: Users },
               { label: "Settings", href: "/settings", icon: Settings },
