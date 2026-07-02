@@ -7,6 +7,7 @@ export const adminRoutes = {
   users: "/users",
   trainersPending: "/trainers/pending",
   programs: "/programs",
+  courses: "/courses",
   announcements: "/announcements",
 } as const;
 

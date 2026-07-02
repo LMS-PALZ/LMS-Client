@@ -1,46 +1,20 @@
 "use client";
 
-import { adminPath } from "@ssu/config/portal-paths";
 import {
   DashboardLayout,
   useSidebarCollapsed,
   AdminSidebar,
   HeaderBar,
-  type NavigationSidebarItem,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
-import { AdminModalProvider } from "@/contexts/AdminModalProvider ";
-import {
-  BookOpen,
-  LayoutDashboard,
-  GraduationCap,
-  ClipboardList,
-  User,
-  Settings,
-  HelpCircle,
-} from "lucide-react";
+import { useSession } from "@ssu/queries";
+import { AdminModalProvider } from "@/contexts/AdminModalProvider";
+import { User, Settings, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { getAdminPageTitle } from "@/lib/adminRoutes";
-
-const mainItems: NavigationSidebarItem[] = [
-  { href: adminPath(), label: "Home", icon: LayoutDashboard },
-  { href: adminPath("/students"), label: "Students", icon: BookOpen },
-  { href: adminPath("/calender"), label: "Calender", icon: BookOpen },
-];
-
-const teachingItems = [
-  { href: "/programs", label: "Programs", icon: GraduationCap },
-  { href: "/classroom", label: "Classroom", icon: ClipboardList },
-  { href: "/assessment", label: "Assessment", icon: ClipboardList },
-];
-
-const toolsItems = [
-  { href: "/staff", label: "Staff", icon: GraduationCap },
-  { href: "/auditlog", label: "Audit log", icon: ClipboardList },
-  { href: "/certificates", label: "Certificates", icon: ClipboardList },
-];
+import { getNavSectionsForRole } from "@/lib/admin-roles";
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   return (
@@ -53,6 +27,10 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
 function AdminSidebarWrapper() {
   const pathname = usePathname();
   const { toggle } = useSidebarCollapsed();
+  const { data: user } = useSession();
+  const { mainItems, teachingItems, toolsItems } = getNavSectionsForRole(
+    user?.role,
+  );
 
   return (
     <AdminSidebar

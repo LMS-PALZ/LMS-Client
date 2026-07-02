@@ -6,7 +6,7 @@ export function StaffList(
   limit = 10,
   search = "",
   status = "",
-  role: "admin" | "tutor" = "admin",
+  role?: "admin" | "tutor" | "trainer",
   course = "",
 ) {
   return useQuery({

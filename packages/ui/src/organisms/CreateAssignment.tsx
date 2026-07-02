@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Info, Calendar, Upload, Link2 } from "lucide-react";
-import { CustomSelect, Button, Input } from "@ssu/ui";
+import { Info, Upload, Link2 } from "lucide-react";
+import { CustomSelect, Button, Input, DatePicker } from "@ssu/ui";
 
 export function CreateAssignmentPage() {
   const [course, setCourse] = useState("");
   const [student, setStudent] = useState("");
   const [module, setModule] = useState("");
+  const [dueDate, setDueDate] = useState<Date | null>(null);
 
   return (
     <div className="space-y-8">
@@ -136,11 +137,11 @@ export function CreateAssignmentPage() {
           <div>
             <label className="mb-2 block text-sm font-medium">Due date</label>
 
-            <div className="relative">
-              <Input type="date" className="pr-10" />
-
-              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" />
-            </div>
+            <DatePicker
+              id="assignment-due-date"
+              value={dueDate}
+              onChange={setDueDate}
+            />
 
             <div className="mt-2 flex items-center gap-2 rounded-lg bg-[#E8F0FF] px-3 py-2 text-sm text-[#2563EB]">
               <Info className="h-4 w-4" />

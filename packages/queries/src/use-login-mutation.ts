@@ -23,7 +23,10 @@ export function useLoginMutation(portal: LoginPortal = "student") {
     },
     onSuccess: (data) => {
       writeSession(data.data);
-      localStorage.setItem("token", data.data.accessToken);
+      const token = data.data.accessToken;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
       void qc.setQueryData(sessionKey, data.data);
     },
 

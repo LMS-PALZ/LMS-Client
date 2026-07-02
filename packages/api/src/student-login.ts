@@ -38,6 +38,22 @@ function mapRole(value: string): UserRole {
   return "students";
 }
 
+function mapAdminRole(value: string): UserRole {
+  const normalized = value.toLowerCase().trim();
+  if (normalized === "super_admin" || normalized === "superadmin") {
+    return "super_admin";
+  }
+  if (normalized === "admin") return "admin";
+  if (
+    normalized === "tutor" ||
+    normalized === "trainer" ||
+    normalized === "instructor"
+  ) {
+    return "tutor";
+  }
+  return "admin";
+}
+
 /**
  * Parses student login API bodies:
  * `{ status: true, message, data: { …user, access_token } }`
@@ -96,10 +112,89 @@ export function parseStudentLoginResponse(
   return { ok: true, data: user, accessToken, message };
 }
 
-export function getStoredAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  const raw = localStorage.getItem("token");
-  if (!raw) return null;
+/**
+ * Parses admin/tutor login API bodies:
+ * `{ status: "success", message, data: { admin/user, access_token } }`
+ */
+export function parseAdminLoginResponse(
+  body: unknown,
+): StudentLoginSuccess | null {
+  const root = asRecord(body);
+  if (!root) return null;
+
+  if (root.status === false) return null;
+
+  const payload = asRecord(root.data) ?? root;
+  const userRecord =
+    asRecord(payload.admin) ??
+    asRecord(payload.staff) ??
+    asRecord(payload.user) ??
+    asRecord(payload.trainer) ??
+    payload;
+
+  const email = readString(userRecord, "email");
+  if (!email) return null;
+
+  const accessToken =
+    readString(
+      root,
+      "access_token",
+      "accessToken",
+      "token",
+      "jwt",
+      "auth_token",
+      "bearer_token",
+    ) ||
+    readString(
+      payload,
+      "access_token",
+      "accessToken",
+      "token",
+      "jwt",
+      "auth_token",
+      "bearer_token",
+    ) ||
+    readString(
+      userRecord,
+      "access_token",
+      "accessToken",
+      "token",
+      "jwt",
+      "auth_token",
+    );
+
+  if (!accessToken) return null;
+
+  const roleValue = readString(userRecord, "role");
+  const fullName = readString(userRecord, "name");
+  const firstName =
+    readString(userRecord, "firstName", "first_name") ||
+    fullName.split(/\s+/)[0] ||
+    "";
+  const lastName =
+    readString(userRecord, "lastName", "last_name") ||
+    fullName.split(/\s+/).slice(1).join(" ") ||
+    "";
+  const user: AuthUser = {
+    id: readString(userRecord, "id", "_id", "adminId"),
+    email,
+    firstName,
+    lastName,
+    role: mapAdminRole(roleValue || "admin"),
+    status: readString(userRecord, "status") || "active",
+    accessToken,
+  };
+
+  const message =
+    typeof root.message === "string" && root.message.trim()
+      ? root.message
+      : "Login successful";
+
+  return { ok: true, data: user, accessToken, message };
+}
+
+function readTokenFromRaw(raw: string | null): string | null {
+  if (!raw || raw === "undefined" || raw === "null") return null;
 
   if (raw.startsWith("{")) {
     try {
@@ -114,5 +209,26 @@ export function getStoredAuthToken(): string | null {
     }
   }
 
-  return raw;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  return trimmed.startsWith("Bearer ") ? trimmed.slice(7).trim() : trimmed;
+}
+
+export function getStoredAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+
+  const fromTokenKey = readTokenFromRaw(localStorage.getItem("token"));
+  if (fromTokenKey) return fromTokenKey;
+
+  try {
+    const sessionRaw = localStorage.getItem("ssu_session");
+    if (!sessionRaw) return null;
+    const session = asRecord(JSON.parse(sessionRaw));
+    if (!session) return null;
+    return (
+      readString(session, "accessToken", "access_token", "token", "jwt") || null
+    );
+  } catch {
+    return null;
+  }
 }
