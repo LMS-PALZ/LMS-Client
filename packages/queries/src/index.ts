@@ -28,6 +28,7 @@ export * from "./use-staffanalysis";
 export * from "./use-studentdetails";
 export * from "./use-profiledetail";
 export * from "./use-studentclassroom";
+export * from "./use-enrolled-program";
 export * from "./use-invitestaff-mutation";
 export * from "./use-acceptinvite-mutation";
 export * from "./use-updatestaffstatus-mutation";

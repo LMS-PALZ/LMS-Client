@@ -1,22 +1,9 @@
-import {
-  getClassroomSessionCourseId,
-  getClassroomCourseById,
-} from "@/lib/classroom-data";
+"use client";
+
+import { useClassroomCourse } from "@/contexts/ClassroomCourseContext";
 import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
-import { redirect } from "next/navigation";
 
-export default async function ClassroomSessionOverviewPage({
-  params,
-}: {
-  params: Promise<{ sessionId: string }>;
-}) {
-  const { sessionId } = await params;
-  const courseId = getClassroomSessionCourseId(sessionId);
-  const course = courseId ? getClassroomCourseById(courseId) : null;
-
-  if (!course) {
-    redirect("/classroom");
-  }
-
+export default function ClassroomSessionOverviewPage() {
+  const { course } = useClassroomCourse();
   return <ClassroomOverviewPage course={course} />;
 }
