@@ -1,56 +1,94 @@
 "use client";
 
 import { useProfileSetup } from "@/contexts/ProfileSetupContext";
-import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
-import { classroomProgram, getClassroomCourseById } from "@/lib/classroom-data";
-import { LiveIndicator } from "@ssu/ui";
-import { CalendarDays, ChevronRight, Clock3 } from "lucide-react";
+import { findNextTodaySession } from "@/lib/sessions/today-sessions";
+import { mapClassroomLessonsToSessions } from "@ssu/api";
+import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
+import { DashboardEmptyState, LiveIndicator } from "@ssu/ui";
+import {
+  CalendarDays,
+  ChevronRight,
+  Clock3,
+  GraduationCap,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { ClassroomCourseCard } from "./ClassroomCourseCard";
-import { useStudentclassroom } from "@ssu/queries";
+
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  const day = date.getDate();
+  const month = date.toLocaleString("en-US", { month: "long" });
+  const year = date.getFullYear();
+
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+          ? "rd"
+          : "th";
+
+  return `${day}${suffix} ${month}, ${year}`;
+}
 
 export function MyClassroomPage() {
   const router = useRouter();
   const { ensureProfileForAction } = useProfileSetup();
-  const { liveSession } = classroomProgram;
-  const isLive = liveSession.phase === "live";
-  const sessionHref = `/classroom/${liveSession.sessionId}`;
+  const {
+    programId,
+    program: enrolledProgram,
+    isLoading: isProfileLoading,
+  } = useEnrolledProgram();
+  const { data, isLoading: isClassroomLoading } =
+    useStudentclassroom(programId);
 
-  const Id = localStorage.getItem("profileId") ?? "";
-  const { data } = useStudentclassroom(Id);
+  const isLoading =
+    isProfileLoading || (Boolean(programId) && isClassroomLoading);
 
-  const handleJoinSession = () => {
+  const handleJoinSession = (sessionId: string) => {
     if (!ensureProfileForAction()) return;
-    const course = getClassroomCourseById(liveSession.courseId);
-    if (course) {
-      const liveVideo = resolveLiveVideoForCourse(course, liveSession.meetUrl);
-      if (liveVideo.provider === "google-meet" && liveVideo.meetUrl) {
-        window.open(liveVideo.meetUrl, "_blank", "noopener,noreferrer");
-      }
-    }
-    router.push(sessionHref);
+    router.push(`/classroom/${sessionId}`);
   };
 
-  function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
+  const nextSession = useMemo(() => {
+    if (!data) return null;
 
-    const day = date.getDate();
-    const month = date.toLocaleString("en-US", { month: "long" });
-    const year = date.getFullYear();
+    const sessions = mapClassroomLessonsToSessions(
+      data.classroom.modules,
+      data.program.title || enrolledProgram?.title || "",
+    );
 
-    const suffix =
-      day % 10 === 1 && day !== 11
-        ? "st"
-        : day % 10 === 2 && day !== 12
-          ? "nd"
-          : day % 10 === 3 && day !== 13
-            ? "rd"
-            : "th";
+    return findNextTodaySession(sessions);
+  }, [data, enrolledProgram?.title]);
 
-    return `${day}${suffix} ${month}, ${year}`;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#D4E2D8] border-t-[#4E845F]" />
+      </div>
+    );
   }
 
-  // console.log("modules", data?.classroom?.modules);
+  if (!programId) {
+    return (
+      <DashboardEmptyState
+        icon={GraduationCap}
+        title="You are not enrolled in a course yet"
+        description="When you enroll in a program, your classroom will appear here."
+      />
+    );
+  }
+
+  const program = data?.program ?? enrolledProgram;
+  const modules = data?.classroom?.modules ?? [];
+  const isLive = Boolean(nextSession?.isLive);
+  const hasModules = modules.length > 0;
+  const hasTodaySession = Boolean(nextSession);
 
   return (
     <div className="space-y-5">
@@ -61,21 +99,22 @@ export function MyClassroomPage() {
           </div>
 
           <h1 className="mt-2 text-[18px] font-bold text-[#1D1D1D] md:text-[20px]">
-            {data?.program?.title}
+            {program?.title || "Your course"}
           </h1>
 
           <p className="mt-2 text-[15px] leading-7 text-[#495057]">
-            {data?.program?.description}
+            {program?.description ||
+              "Course details will appear here once your classroom is published."}
           </p>
 
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div>
               <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
                 <Clock3 className="h-3 w-3" />
                 <span>Duration</span>
               </div>
               <p className="mt-1 text-[13px] text-[#6B7280]">
-                {data?.program?.duration}
+                {program?.duration || "—"}
               </p>
             </div>
 
@@ -85,7 +124,7 @@ export function MyClassroomPage() {
                 <span>Start Date</span>
               </div>
               <p className="mt-1 text-[13px] text-[#6B7280]">
-                {formatDate(data?.program?.startDate)}
+                {formatDate(program?.startDate)}
               </p>
             </div>
 
@@ -95,54 +134,71 @@ export function MyClassroomPage() {
                 <span>End Date</span>
               </div>
               <p className="mt-1 text-[13px] text-[#6B7280]">
-                {formatDate(data?.program?.endDate)}
+                {formatDate(program?.endDate)}
               </p>
             </div>
           </div>
         </div>
 
         <div className="rounded-[18px] border border-[#EEF2F6] bg-white p-5 md:p-4">
-          {isLive ? (
-            <LiveIndicator label="Live" size="md" tone="classroom" />
+          {!hasTodaySession ? (
+            <DashboardEmptyState
+              icon={GraduationCap}
+              title="No class scheduled for today"
+              description="Your next live session will appear here when one is scheduled for today."
+            />
           ) : (
-            <span className="inline-flex items-center rounded-full bg-[#E8F4FC] px-3 py-1.5 text-[13px] font-semibold text-[#2B6CB0]">
-              Upcoming
-            </span>
+            <>
+              {isLive ? (
+                <LiveIndicator label="Live" size="md" tone="classroom" />
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-[#E8F4FC] px-3 py-1.5 text-[13px] font-semibold text-[#2B6CB0]">
+                  Upcoming
+                </span>
+              )}
+
+              <h2 className="mt-5 text-[16px] font-medium leading-9 text-[#1D1D1D]">
+                {nextSession?.title}
+              </h2>
+
+              <div className="mt-3 flex items-center gap-5 text-[16px] text-[#6B7280]">
+                <div className="flex items-center gap-2">
+                  <Clock3 size={12} />
+                  <span className="text-[12px]">
+                    {nextSession?.startsAt
+                      ? new Date(nextSession.startsAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "—"}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <CalendarDays size={12} />
+                  <span className="text-[12px]">Today</span>
+                </div>
+              </div>
+
+              <div className="mt-10 flex justify-end">
+                {isLive ? (
+                  <button
+                    type="button"
+                    onClick={() => handleJoinSession(nextSession!.id)}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
+                  >
+                    Join Session
+                    <ChevronRight size={16} />
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
+                    Join Session
+                    <ChevronRight size={16} />
+                  </span>
+                )}
+              </div>
+            </>
           )}
-
-          <h2 className="mt-5 text-[16px] font-medium leading-9 text-[#1D1D1D]">
-            {liveSession.title}
-          </h2>
-
-          <div className="mt-3 flex items-center gap-5 text-[16px] text-[#6B7280]">
-            <div className="flex items-center gap-2">
-              <Clock3 size={12} />
-              <span className="text-[12px]">{liveSession.time}</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <CalendarDays size={12} />
-              <span className="text-[12px]">{liveSession.date}</span>
-            </div>
-          </div>
-
-          <div className="mt-10 flex justify-end">
-            {isLive ? (
-              <button
-                type="button"
-                onClick={handleJoinSession}
-                className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
-              >
-                Join Session
-                <ChevronRight size={16} />
-              </button>
-            ) : (
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
-                Join Session
-                <ChevronRight size={16} />
-              </span>
-            )}
-          </div>
         </div>
       </section>
 
@@ -152,11 +208,19 @@ export function MyClassroomPage() {
           <span className="text-[#D2D8E2]">|</span>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {data?.classroom?.modules?.map((module: any) => (
-            <ClassroomCourseCard key={module?.id} course={module} />
-          ))}
-        </div>
+        {!hasModules ? (
+          <DashboardEmptyState
+            icon={GraduationCap}
+            title="No modules available yet"
+            description="Your course modules will appear here once they are published."
+          />
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {modules.map((module) => (
+              <ClassroomCourseCard key={module.id} course={module} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

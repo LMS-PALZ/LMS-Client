@@ -1,6 +1,6 @@
 "use client";
 
-import { useStudentclassroom } from "@ssu/queries";
+import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
 import { mapClassroomResponse } from "@/lib/classroom/mappers";
 import { Spinner } from "@ssu/ui";
 import type { ClassroomCourseDetail } from "@/lib/classroom-data";
@@ -10,8 +10,8 @@ interface Props {
 }
 
 export function CoursePageClient({ render }: Props) {
-  const Id = localStorage.getItem("profileId") ?? "";
-  const { data, isLoading } = useStudentclassroom(Id);
+  const { programId } = useEnrolledProgram();
+  const { data, isLoading } = useStudentclassroom(programId);
 
   if (isLoading) {
     return (

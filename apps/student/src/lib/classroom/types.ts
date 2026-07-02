@@ -1,6 +1,6 @@
 export type SessionPhase = "live" | "upcoming" | "ended";
 
-export type LiveVideoProvider = "google-meet" | "jitsi";
+export type LiveVideoProvider = "zoom" | "jitsi";
 
 export type ClassroomLessonType = "live" | "recorded" | "reading";
 
