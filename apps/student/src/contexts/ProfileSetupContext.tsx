@@ -35,7 +35,11 @@ export function ProfileSetupProvider({ children }: { children: ReactNode }) {
 
   const isProfileLoading = profileQuery.isLoading;
 
-  const showModal = profile?.profileUploaded === false;
+  const showModal =
+    !bypassProfileSetup &&
+    !isProfileLoading &&
+    !profileComplete &&
+    profile?.profileUploaded === false;
 
   const openProfileSetup = useCallback(() => {
     if (profileComplete) return;
