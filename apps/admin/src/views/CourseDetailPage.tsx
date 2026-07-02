@@ -17,8 +17,8 @@ import {
   CourseDetailTabs,
   CourseStudentsTab,
   CourseModulesTab,
-  type CourseDetailTab,
 } from "@/features/courses/components";
+import type { CourseDetailTab } from "@/features/courses/types";
 import {
   mapProgramToCourse,
   mapStaffToInstructor,

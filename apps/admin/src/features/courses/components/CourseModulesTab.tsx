@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import type { ProgramClassroomModule } from "@ssu/types";
 import { Spinner } from "@ssu/ui";
+import { useExpandedModule } from "../hooks/use-expanded-module";
 import {
   countTotalLessons,
   formatModuleSummary,
@@ -20,14 +20,7 @@ export function CourseModulesTab({
   isLoading = false,
   error = null,
 }: CourseModulesTabProps) {
-  const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
-  const hasInitializedExpand = useRef(false);
-
-  useEffect(() => {
-    if (modules.length === 0 || hasInitializedExpand.current) return;
-    setExpandedModuleId(modules[0].id);
-    hasInitializedExpand.current = true;
-  }, [modules]);
+  const { expandedModuleId, toggleModule } = useExpandedModule(modules);
 
   if (isLoading) {
     return (
@@ -63,11 +56,7 @@ export function CourseModulesTab({
       <ModuleAccordion
         modules={modules}
         expandedModuleId={expandedModuleId}
-        onToggleModule={(moduleId) =>
-          setExpandedModuleId((current) =>
-            current === moduleId ? null : moduleId,
-          )
-        }
+        onToggleModule={toggleModule}
         mode="view"
       />
     </div>

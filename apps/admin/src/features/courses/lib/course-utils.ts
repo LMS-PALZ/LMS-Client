@@ -1,4 +1,4 @@
-import type { CourseDraft } from "../types";
+import type { CourseDraft, CourseStatus } from "../types";
 import { formatDateDDMMYYYY } from "@ssu/utils";
 
 export { formatDateDDMMYYYY };
@@ -60,6 +60,10 @@ export function countCohortsInYear(
 
 export function formatCourseStatus(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+export function normalizeCourseStatus(status: string): CourseStatus {
+  return status === "published" ? "published" : "draft";
 }
 
 export function formatCourseListDate(value: string): string {

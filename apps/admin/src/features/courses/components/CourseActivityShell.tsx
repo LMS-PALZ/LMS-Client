@@ -1,23 +1,7 @@
 "use client";
 
-import type { ClassroomLessonType } from "@ssu/types";
 import { cn } from "@ssu/utils";
-import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
-
-interface ActivityTypeOption {
-  id: ClassroomLessonType;
-  label: string;
-  icon: LucideIcon;
-}
-
-interface CourseActivityShellProps {
-  activityType: ClassroomLessonType;
-  activityTypes: ActivityTypeOption[];
-  onActivityTypeChange: (type: ClassroomLessonType) => void;
-  children: ReactNode;
-  disableTypeSwitch?: boolean;
-}
+import type { CourseActivityShellProps } from "../types/activity";
 
 export function CourseActivityShell({
   activityType,

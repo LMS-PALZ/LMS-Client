@@ -17,9 +17,9 @@ import {
   CourseBuilderShell,
   CourseCurriculumView,
   CourseSuccessModal,
-  type CourseSaveVariant,
 } from "@/features/courses/components";
 import { buildUpsertClassroomPayload } from "@/features/courses/lib/classroom-mappers";
+import type { CourseStatus } from "@/features/courses/types";
 
 interface CourseCurriculumPageProps {
   courseId: string;
@@ -43,7 +43,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   const upsertClassroom = useUpsertProgramClassroomMutation();
   const [successOpen, setSuccessOpen] = useState(false);
   const [successVariant, setSuccessVariant] =
-    useState<CourseSaveVariant>("published");
+    useState<CourseStatus>("published");
 
   const handleSuccessOpenChange = (open: boolean) => {
     setSuccessOpen(open);
