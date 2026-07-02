@@ -3,7 +3,7 @@ import type { AuthUser } from "@ssu/types";
 import { clearStudentAuth, readSession, writeSession } from "@ssu/api";
 import { useSignupStore } from "@ssu/store";
 import { useSyncExternalStore } from "react";
-import { sessionKey, studentProfileKey } from "./keys";
+import { notificationKeys, sessionKey, studentProfileKey } from "./keys";
 import { mutationToast } from "./notify";
 
 function useIsClient() {
@@ -38,6 +38,7 @@ export function useLogout() {
     qc.setQueryData(sessionKey, null);
     void qc.invalidateQueries({ queryKey: sessionKey });
     void qc.invalidateQueries({ queryKey: studentProfileKey });
+    void qc.invalidateQueries({ queryKey: notificationKeys.all });
     mutationToast.info("You have been logged out");
   };
 }

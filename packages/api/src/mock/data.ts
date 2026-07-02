@@ -2,7 +2,6 @@ import type {
   AssignmentListItem,
   CourseSummary,
   LiveSessionItem,
-  NotificationDto,
   StudentStat,
 } from "@ssu/types";
 
@@ -83,22 +82,6 @@ export const mockAssignments: AssignmentListItem[] = [
     courseName: "Data Literacy",
     dueAt: new Date(Date.now() - 86400000).toISOString(),
     status: "overdue",
-  },
-];
-
-export const mockNotifications: NotificationDto[] = [
-  {
-    id: "n1",
-    message: "Your assignment for 6th May has been graded.",
-    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    read: false,
-  },
-  {
-    id: "n2",
-    message:
-      "This is to inform you that there won't be a live class on 9/05/2026",
-    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    read: false,
   },
 ];
 
