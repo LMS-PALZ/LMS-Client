@@ -25,7 +25,7 @@ import {
   formatSessionTime,
 } from "@/lib/assignment-display";
 import {
-  filterTodayRemainingSessions,
+  buildHomeSessionCards,
   formatSessionDayLabel,
 } from "@/lib/sessions/today-sessions";
 import { GraduationCap, Notebook } from "lucide-react";
@@ -66,7 +66,7 @@ export function HomePage() {
   const first = user?.firstName?.trim() || "there";
   const showGreetingSkeleton = !user;
   const sessionList = useMemo(
-    () => filterTodayRemainingSessions(sessions.data ?? []),
+    () => buildHomeSessionCards(sessions.data ?? []),
     [sessions.data],
   );
   const assignmentList = (assignments.data ?? []).slice(0, 4);
@@ -98,14 +98,14 @@ export function HomePage() {
         )}
 
         <LiveSessionsPanel
-          title="Today's classes"
+          title="Upcoming classes"
           isLoading={sessions.isLoading}
           loadingSkeleton={<SessionListSkeleton count={3} />}
           emptyState={
             <DashboardEmptyState
               icon={GraduationCap}
-              title="No classes scheduled for today"
-              description="When you have a live or upcoming class today, it will show up here. Browse your full schedule in Calendar or My Classroom."
+              title="No upcoming classes"
+              description="When you have a live session or upcoming classes scheduled, they will show up here."
             />
           }
           sessions={sessionList.map((s) => ({

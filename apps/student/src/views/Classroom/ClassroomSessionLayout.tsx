@@ -93,6 +93,9 @@ export function ClassroomSessionLayout({
     recordingTitle: lesson?.title ?? mapped.course.recordingTitle,
     recordingEmbedUrl:
       lesson?.recordingUrl ?? mapped.course.recordingEmbedUrl ?? null,
+    sessionDuration: lesson?.durationMinutes
+      ? `${lesson.durationMinutes} mins`
+      : mapped.course.sessionDuration,
     resources:
       extendedLesson?.resources?.map((resource, index) => ({
         id: resource.id ?? `${sessionId}-resource-${index}`,
