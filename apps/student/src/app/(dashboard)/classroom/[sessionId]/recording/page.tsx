@@ -1,22 +1,9 @@
-import {
-  getClassroomSessionCourseId,
-  getClassroomCourseById,
-} from "@/lib/classroom-data";
+"use client";
+
 import { ClassroomRecordingPage } from "@/views/Classroom/ClassroomRecordingPage";
-import { redirect } from "next/navigation";
+import { useClassroomCourse } from "@/contexts/ClassroomCourseContext";
 
-export default async function ClassroomSessionRecordingPage({
-  params,
-}: {
-  params: Promise<{ sessionId: string }>;
-}) {
-  const { sessionId } = await params;
-  const courseId = getClassroomSessionCourseId(sessionId);
-  const course = courseId ? getClassroomCourseById(courseId) : null;
-
-  if (!course) {
-    redirect("/classroom");
-  }
-
+export default function ClassroomSessionRecordingPage() {
+  const { course } = useClassroomCourse();
   return <ClassroomRecordingPage course={course} />;
 }

@@ -6,7 +6,7 @@ import { CalendarClock, VideoOff } from "lucide-react";
 import type { ReactNode } from "react";
 import type { LiveVideoProvider } from "@/lib/classroom/live-video";
 import { JitsiLiveEmbed } from "./JitsiLiveEmbed";
-import { MeetLivePanel } from "./MeetLivePanel";
+import { ZoomLiveEmbed } from "./ZoomLiveEmbed";
 
 export type ClassroomMediaMode =
   | "live-meet"
@@ -48,7 +48,7 @@ function LiveMediaShell({
 
 export function ClassroomSessionMedia({
   mode,
-  liveProvider = "google-meet",
+  liveProvider = "zoom",
   meetUrl,
   jitsiRoomName,
   jitsiDomain,
@@ -72,7 +72,7 @@ export function ClassroomSessionMedia({
     if (meetUrl) {
       return (
         <LiveMediaShell className={className}>
-          <MeetLivePanel meetUrl={meetUrl} />
+          <ZoomLiveEmbed meetUrl={meetUrl} />
         </LiveMediaShell>
       );
     }
