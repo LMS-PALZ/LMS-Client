@@ -2,13 +2,23 @@
 
 import { LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
+import dynamic from "next/dynamic";
 import { CalendarClock, VideoOff } from "lucide-react";
 import type { ReactNode } from "react";
-import type { LiveVideoProvider } from "@/lib/classroom/live-video";
-import { JitsiLiveEmbed } from "./JitsiLiveEmbed";
 import { MeetingIframeEmbed } from "./MeetingIframeEmbed";
-import { ZoomLiveEmbed } from "./ZoomLiveEmbed";
 import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
+
+const ZoomLiveEmbed = dynamic(
+  () => import("./ZoomLiveEmbed").then((module) => module.ZoomLiveEmbed),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[560px] items-center justify-center rounded-[18px] bg-[#202124]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+      </div>
+    ),
+  },
+);
 
 export type ClassroomMediaMode =
   | "live-meet"
@@ -18,10 +28,7 @@ export type ClassroomMediaMode =
 
 export interface ClassroomSessionMediaProps {
   mode: ClassroomMediaMode;
-  liveProvider?: LiveVideoProvider;
   meetUrl?: string;
-  jitsiRoomName?: string;
-  jitsiDomain?: string;
   displayName?: string;
   recordingEmbedUrl?: string | null;
   className?: string;
@@ -50,10 +57,7 @@ function LiveMediaShell({
 
 export function ClassroomSessionMedia({
   mode,
-  liveProvider = "zoom",
   meetUrl,
-  jitsiRoomName,
-  jitsiDomain,
   displayName,
   recordingEmbedUrl,
   className,
@@ -61,31 +65,10 @@ export function ClassroomSessionMedia({
   if (mode === "live-meet") {
     const meetingTarget = meetUrl ? parseMeetingTarget(meetUrl) : null;
 
-    if (meetingTarget?.kind === "jitsi") {
-      return (
-        <LiveMediaShell className={className}>
-          <JitsiLiveEmbed
-            roomName={meetingTarget.roomName}
-            domain={meetingTarget.domain}
-            displayName={displayName}
-          />
-        </LiveMediaShell>
-      );
-    }
-
-    if (liveProvider === "jitsi" && jitsiRoomName) {
-      return (
-        <LiveMediaShell className={className}>
-          <JitsiLiveEmbed
-            roomName={jitsiRoomName}
-            domain={jitsiDomain}
-            displayName={displayName}
-          />
-        </LiveMediaShell>
-      );
-    }
-
-    if (meetingTarget?.kind === "zoom") {
+    if (
+      meetingTarget?.kind === "zoom" ||
+      (meetUrl && /zoom\.(us|com)/i.test(meetUrl))
+    ) {
       return (
         <LiveMediaShell className={className}>
           <ZoomLiveEmbed meetUrl={meetUrl!} displayName={displayName} />

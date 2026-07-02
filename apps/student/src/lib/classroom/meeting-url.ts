@@ -5,7 +5,7 @@ export function normalizeMeetingJoinUrl(url: string): string {
   return `https://${trimmed}`;
 }
 
-export type MeetingEmbedKind = "zoom" | "jitsi" | "google-meet" | "generic";
+export type MeetingEmbedKind = "zoom" | "google-meet" | "generic";
 
 export type ParsedMeetingTarget =
   | {
@@ -14,12 +14,6 @@ export type ParsedMeetingTarget =
       embedUrl: string;
       meetingNumber: string;
       password?: string;
-    }
-  | {
-      kind: "jitsi";
-      joinUrl: string;
-      domain: string;
-      roomName: string;
     }
   | {
       kind: "google-meet";
@@ -37,8 +31,6 @@ export function getMeetingProviderLabel(url: string): string {
   switch (target?.kind) {
     case "zoom":
       return "Zoom";
-    case "jitsi":
-      return "Jitsi";
     case "google-meet":
       return "Google Meet";
     default:
@@ -87,26 +79,6 @@ export function toZoomWebClientEmbedUrl(url: string): string {
   return `https://zoom.us/wc/join/${parsed.meetingNumber}${query ? `?${query}` : ""}`;
 }
 
-function parseJitsiMeeting(
-  url: string,
-): { domain: string; roomName: string } | null {
-  const normalized = normalizeMeetingJoinUrl(url);
-  if (!normalized) return null;
-
-  try {
-    const parsed = new URL(normalized);
-    const roomName = parsed.pathname.replace(/^\//, "").split("/")[0];
-    if (!roomName) return null;
-
-    return {
-      domain: parsed.host,
-      roomName: decodeURIComponent(roomName),
-    };
-  } catch {
-    return null;
-  }
-}
-
 export function parseMeetingTarget(url: string): ParsedMeetingTarget | null {
   const joinUrl = normalizeMeetingJoinUrl(url);
   if (!joinUrl) return null;
@@ -127,16 +99,6 @@ export function parseMeetingTarget(url: string): ParsedMeetingTarget | null {
       embedUrl: toZoomWebClientEmbedUrl(joinUrl),
       meetingNumber: zoom?.meetingNumber ?? "",
       password: zoom?.password,
-    };
-  }
-
-  const jitsi = parseJitsiMeeting(joinUrl);
-  if (jitsi && /jit\.si|jitsi/i.test(jitsi.domain)) {
-    return {
-      kind: "jitsi",
-      joinUrl,
-      domain: jitsi.domain,
-      roomName: jitsi.roomName,
     };
   }
 

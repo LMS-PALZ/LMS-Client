@@ -14,12 +14,7 @@ export function MeetingIframeEmbed({
 }: MeetingIframeEmbedProps) {
   const target = parseMeetingTarget(meetUrl);
 
-  if (
-    !target ||
-    target.kind === "jitsi" ||
-    !("embedUrl" in target) ||
-    !target.embedUrl
-  ) {
+  if (!target || !("embedUrl" in target) || !target.embedUrl) {
     return (
       <div
         className={cn(

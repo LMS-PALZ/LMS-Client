@@ -2,7 +2,7 @@ import type {
   ClassroomCourseDetail,
   ClassroomWeek,
   ClassroomLesson,
-} from "@/lib/classroom-data";
+} from "@/lib/classroom/types";
 
 function readIsoDate(value: unknown): Date | null {
   if (typeof value !== "string" || value.trim() === "") return null;
