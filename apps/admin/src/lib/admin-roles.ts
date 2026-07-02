@@ -6,6 +6,7 @@ import {
   ClipboardList,
   GraduationCap,
   LayoutDashboard,
+  Receipt,
 } from "lucide-react";
 
 export type AdminPortalRole = "super_admin" | "admin" | "tutor";
@@ -15,6 +16,7 @@ type NavItemConfig = NavigationSidebarItem & { tutorHidden?: boolean };
 const TUTOR_BLOCKED_PREFIXES = [
   "/students",
   "/staff",
+  "/transactions",
   "/auditlog",
   "/certificates",
 ];
@@ -107,17 +109,23 @@ export function getNavSectionsForRole(role: UserRole | string | undefined) {
       tutorHidden: true,
     },
     {
+      href: adminPath("/transactions"),
+      label: "Transaction",
+      icon: Receipt,
+      tutorHidden: true,
+    },
+    {
       href: adminPath("/auditlog"),
       label: "Audit log",
       icon: ClipboardList,
       tutorHidden: true,
     },
-    {
-      href: adminPath("/certificates"),
-      label: "Certificates",
-      icon: ClipboardList,
-      tutorHidden: true,
-    },
+    // {
+    //   href: adminPath("/certificates"),
+    //   label: "Certificates",
+    //   icon: ClipboardList,
+    //   tutorHidden: true,
+    // },
   ];
 
   return {

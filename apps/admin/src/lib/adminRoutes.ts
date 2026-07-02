@@ -8,6 +8,7 @@ export function getAdminPageTitle(pathname: string): string {
   if (pathname.startsWith("/assessment")) return "Assessment";
   if (pathname.startsWith("/auditlog")) return "Audit Log";
   if (pathname.startsWith("/staff")) return "Staff";
+  if (pathname.startsWith("/transactions")) return "Transactions";
   if (pathname.startsWith("/certificates")) return "Certificates";
   if (pathname.startsWith("/profile")) return "Profile";
   return "Home";

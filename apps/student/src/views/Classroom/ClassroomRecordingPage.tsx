@@ -1,7 +1,7 @@
 "use client";
 
 import { useClassroomPlayback } from "@/contexts/ClassroomPlaybackContext";
-import type { ClassroomCourseDetail } from "@/lib/classroom-data";
+import type { ClassroomCourseDetail } from "@/lib/classroom/types";
 import { cn } from "@ssu/utils";
 import { DashboardEmptyState } from "@ssu/ui";
 import { Video } from "lucide-react";

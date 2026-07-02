@@ -1,16 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
-import { getStudentclassroom } from "@ssu/api";
+import { getStudentClassroom } from "@ssu/api";
+import { Profiledetail } from "./use-profiledetail";
+
+export function useEnrolledProgram() {
+  const profileQuery = Profiledetail();
+  const programId = profileQuery.data?.program?.id ?? "";
+
+  return {
+    ...profileQuery,
+    programId,
+    program: profileQuery.data?.program,
+    student: profileQuery.data?.student,
+  };
+}
 
 export function useStudentclassroom(programId: string) {
   return useQuery({
     queryKey: ["studentclassroom", programId],
     queryFn: async () => {
-      const res = await getStudentclassroom(programId);
-
+      const res = await getStudentClassroom(programId);
       if (!res.ok) throw new Error(res.message);
-
       return res.data;
     },
-    enabled: !!programId,
+    enabled: Boolean(programId),
   });
 }

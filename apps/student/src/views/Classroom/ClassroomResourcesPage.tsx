@@ -1,4 +1,4 @@
-import type { ClassroomCourseDetail } from "@/lib/classroom-data";
+import type { ClassroomCourseDetail } from "@/lib/classroom/types";
 import { DashboardEmptyState } from "@ssu/ui";
 import { FileText, ExternalLink } from "lucide-react";
 

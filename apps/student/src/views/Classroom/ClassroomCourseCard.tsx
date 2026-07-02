@@ -6,8 +6,8 @@ import { BookCopy, GraduationCap } from "lucide-react";
 interface Module {
   id: string;
   title: string;
-  weekLabel: string;
-  lessons: {
+  weekLabel?: string;
+  lessons?: {
     id: string;
     title: string;
   }[];

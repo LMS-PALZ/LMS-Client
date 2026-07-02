@@ -86,7 +86,7 @@ export function StudentCalendar({
     <div className="ssu-calendar">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
+        initialView="dayGridMonth"
         headerToolbar={{
           left: "prev,next today",
           center: "title",
@@ -110,7 +110,7 @@ export function StudentCalendar({
       {rangeEmpty && events.length > 0 ? (
         <p className="mt-4 text-center text-[13px] text-neutral-500">
           No classes or due dates in this period. Use the arrows to browse other
-          weeks or switch to month view.
+          months or switch to week or day view.
         </p>
       ) : null}
     </div>

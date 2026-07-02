@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import type { ClassroomResource } from "@/lib/classroom-data";
+import type { ClassroomResource } from "@/lib/classroom/types";
 
 export function ClassroomResourceRow({
   resource,

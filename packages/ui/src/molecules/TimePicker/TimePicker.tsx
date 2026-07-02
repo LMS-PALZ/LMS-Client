@@ -16,37 +16,17 @@ export interface TimePickerProps {
   minuteStep?: number;
 }
 
-const HOURS = Array.from({ length: 24 }, (_, index) => index);
-
-function buildMinutes(step: number): number[] {
-  const minutes: number[] = [];
-  for (let minute = 0; minute < 60; minute += step) {
-    minutes.push(minute);
+function buildTimeOptions(step: number): string[] {
+  const safeStep = Math.min(Math.max(step, 1), 60);
+  const options: string[] = [];
+  for (let hours = 0; hours < 24; hours += 1) {
+    for (let minutes = 0; minutes < 60; minutes += safeStep) {
+      options.push(
+        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`,
+      );
+    }
   }
-  return minutes;
-}
-
-function parseTimeValue(value: string | null): {
-  hours: number;
-  minutes: number;
-} | null {
-  if (!value) return null;
-  const match = /^(\d{2}):(\d{2})$/.exec(value.trim());
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (hours > 23 || minutes > 59) return null;
-
-  return { hours, minutes };
-}
-
-function formatTimeValue(hours: number, minutes: number): string {
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-}
-
-function snapMinute(minute: number, step: number): number {
-  return Math.min(Math.round(minute / step) * step, 60 - step);
+  return options;
 }
 
 interface TimePickerPanelProps {
@@ -60,65 +40,23 @@ function TimePickerPanel({
   minuteStep,
   onSelect,
 }: TimePickerPanelProps) {
-  const parsed = parseTimeValue(value);
-  const minutes = buildMinutes(minuteStep);
-  const [hours, setHours] = useState(parsed?.hours ?? 9);
-  const [selectedMinutes, setSelectedMinutes] = useState(() => {
-    if (parsed) return snapMinute(parsed.minutes, minuteStep);
-    return minutes.includes(0) ? 0 : minutes[0];
-  });
-
-  useEffect(() => {
-    const nextParsed = parseTimeValue(value);
-    if (!nextParsed) return;
-    setHours(nextParsed.hours);
-    setSelectedMinutes(snapMinute(nextParsed.minutes, minuteStep));
-  }, [value, minuteStep]);
-
-  const handleMinuteSelect = (minute: number) => {
-    setSelectedMinutes(minute);
-    onSelect(formatTimeValue(hours, minute));
-  };
+  const options = buildTimeOptions(minuteStep);
 
   return (
-    <div className="time-picker__panel">
-      <div className="time-picker__column">
-        <p className="time-picker__column-title">Hour</p>
-        <div className="time-picker__list">
-          {HOURS.map((hour) => (
-            <button
-              key={hour}
-              type="button"
-              onClick={() => setHours(hour)}
-              className={cn(
-                "time-picker__option",
-                hours === hour && "time-picker__option--selected",
-              )}
-            >
-              {String(hour).padStart(2, "0")}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="time-picker__column">
-        <p className="time-picker__column-title">Minute</p>
-        <div className="time-picker__list">
-          {minutes.map((minute) => (
-            <button
-              key={minute}
-              type="button"
-              onClick={() => handleMinuteSelect(minute)}
-              className={cn(
-                "time-picker__option",
-                selectedMinutes === minute && "time-picker__option--selected",
-              )}
-            >
-              {String(minute).padStart(2, "0")}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="time-picker__list">
+      {options.map((option) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => onSelect(option)}
+          className={cn(
+            "time-picker__option",
+            value === option && "time-picker__option--selected",
+          )}
+        >
+          {option}
+        </button>
+      ))}
     </div>
   );
 }
@@ -131,7 +69,7 @@ export function TimePicker({
   className,
   buttonClassName,
   popoverAlign = "start",
-  minuteStep = 1,
+  minuteStep = 15,
 }: TimePickerProps) {
   const fallbackId = useId();
   const fieldId = id || fallbackId;
@@ -187,7 +125,7 @@ export function TimePicker({
       {open && (
         <div
           className={cn(
-            "absolute top-full z-[60] mt-2 w-[220px] rounded-[14px] border border-[#EEF2F6] bg-white p-3 shadow-xl",
+            "absolute top-full z-[60] mt-2 w-[220px] rounded-[14px] border border-[#EEF2F6] bg-white p-2 shadow-xl",
             popoverAlign === "end" ? "right-0" : "left-0",
           )}
         >
