@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProgramClassroomModule } from "@ssu/types";
 import { Spinner } from "@ssu/ui";
 import {
@@ -21,12 +21,13 @@ export function CourseModulesTab({
   error = null,
 }: CourseModulesTabProps) {
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
+  const hasInitializedExpand = useRef(false);
 
   useEffect(() => {
-    if (modules.length > 0 && !expandedModuleId) {
-      setExpandedModuleId(modules[0].id);
-    }
-  }, [modules, expandedModuleId]);
+    if (modules.length === 0 || hasInitializedExpand.current) return;
+    setExpandedModuleId(modules[0].id);
+    hasInitializedExpand.current = true;
+  }, [modules]);
 
   if (isLoading) {
     return (

@@ -27,16 +27,17 @@ export function CourseActivityShell({
   disableTypeSwitch = false,
 }: CourseActivityShellProps) {
   return (
-    <div className="overflow-hidden rounded-[18px] border border-[#D7DFEA] bg-white shadow-[0_1px_4px_rgba(15,23,42,0.04)]">
-      <div className="grid lg:grid-cols-[240px_1fr]">
-        <aside className="border-b border-[#EEF2F6] bg-[#FAFBFC] p-6 lg:border-b-0 lg:border-r">
+    <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
+      <div className="flex flex-col lg:flex-row">
+        <aside className="w-full shrink-0 border-b border-[#EEF2F6] p-6 lg:w-[272px] lg:border-b-0 lg:border-r">
           <p className="mb-4 text-[14px] font-semibold text-[#1D1D1D]">
             Choose content to add
           </p>
-          <div className="space-y-3">
+          <div className="flex flex-wrap gap-5">
             {activityTypes.map((item) => {
               const Icon = item.icon;
               const active = activityType === item.id;
+
               return (
                 <button
                   key={item.id}
@@ -44,17 +45,22 @@ export function CourseActivityShell({
                   disabled={disableTypeSwitch && !active}
                   onClick={() => onActivityTypeChange(item.id)}
                   className={cn(
-                    "flex w-full flex-col items-center gap-2 rounded-[12px] border-2 px-4 py-5 transition",
+                    "flex h-[88px] w-[88px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-lg px-2 py-3 transition",
                     active
-                      ? "border-[#4C7D5B] bg-[#E8F3EC]"
-                      : "border-[#D7DFEA] bg-white hover:border-[#C5D6CB] hover:bg-[#F7F9FB]",
+                      ? "border border-[#4C7D5B] bg-[#E8F3EC]"
+                      : "border-0 bg-[#EFF2F5]",
                     disableTypeSwitch &&
                       !active &&
-                      "cursor-not-allowed opacity-50 hover:border-[#D7DFEA] hover:bg-white",
+                      "cursor-not-allowed opacity-50",
                   )}
                 >
-                  <Icon className="h-6 w-6 text-[#4C7D5B]" />
-                  <span className="text-[14px] font-medium text-[#1D1D1D]">
+                  <Icon
+                    className={cn(
+                      "h-5 w-5",
+                      active ? "text-[#4C7D5B]" : "text-[#64748B]",
+                    )}
+                  />
+                  <span className="text-center text-[12px] font-medium leading-tight text-[#1D1D1D]">
                     {item.label}
                   </span>
                 </button>
@@ -63,7 +69,7 @@ export function CourseActivityShell({
           </div>
         </aside>
 
-        <div className="space-y-6 p-6 lg:p-8">{children}</div>
+        <div className="min-w-0 flex-1 space-y-5 p-6 lg:p-8">{children}</div>
       </div>
     </div>
   );

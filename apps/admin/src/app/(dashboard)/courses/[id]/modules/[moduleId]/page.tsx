@@ -1,4 +1,5 @@
-import { CourseModuleEditPage } from "@/views/CourseModuleEditPage";
+import { adminPath } from "@ssu/config/portal-paths";
+import { redirect } from "next/navigation";
 
 interface CourseModuleRouteProps {
   params: Promise<{ id: string; moduleId: string }>;
@@ -8,5 +9,9 @@ export default async function CourseModuleRoute({
   params,
 }: CourseModuleRouteProps) {
   const { id, moduleId } = await params;
-  return <CourseModuleEditPage courseId={id} moduleId={moduleId} />;
+  redirect(
+    adminPath(
+      `/courses/${id}/activities/new?moduleId=${moduleId}&type=live_session`,
+    ),
+  );
 }

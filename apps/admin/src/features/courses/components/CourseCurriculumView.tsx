@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import type {
@@ -41,12 +41,13 @@ export function CourseCurriculumView({
 }: CourseCurriculumViewProps) {
   const router = useRouter();
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
+  const hasInitializedExpand = useRef(false);
 
   useEffect(() => {
-    if (modules.length > 0 && !expandedModuleId) {
-      setExpandedModuleId(modules[0].id);
-    }
-  }, [modules, expandedModuleId]);
+    if (modules.length === 0 || hasInitializedExpand.current) return;
+    setExpandedModuleId(modules[0].id);
+    hasInitializedExpand.current = true;
+  }, [modules]);
   const [moduleModalOpen, setModuleModalOpen] = useState(false);
   const [deleteActivityOpen, setDeleteActivityOpen] = useState(false);
   const [deleteDoneOpen, setDeleteDoneOpen] = useState(false);
@@ -61,7 +62,7 @@ export function CourseCurriculumView({
   };
 
   const openEditModule = (module: ProgramClassroomModule) => {
-    router.push(adminPath(`/courses/${program.id}/modules/${module.id}`));
+    goToActivity(module, "live_session");
   };
 
   const saveModule = async (title: string) => {
