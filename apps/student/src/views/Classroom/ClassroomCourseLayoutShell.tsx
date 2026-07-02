@@ -20,7 +20,7 @@ import type {
   ClassroomCourseDetail,
   ClassroomWeek,
   ClassroomLesson,
-} from "@/lib/classroom-data";
+} from "@/lib/classroom/types";
 
 interface ClassroomCourseLayoutShellProps {
   course: ClassroomCourseDetail;
@@ -193,10 +193,7 @@ function ClassroomCourseLayoutShellInner({
             <div className="mt-4">
               <ClassroomSessionMedia
                 mode={mediaMode}
-                liveProvider={liveVideo.provider}
                 meetUrl={liveVideo.meetUrl}
-                jitsiRoomName={liveVideo.jitsiRoomName}
-                jitsiDomain={liveVideo.jitsiDomain}
                 displayName={displayName}
                 recordingEmbedUrl={recordingEmbedUrl}
               />

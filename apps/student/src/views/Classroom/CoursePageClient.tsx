@@ -3,7 +3,7 @@
 import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
 import { mapClassroomResponse } from "@/lib/classroom/mappers";
 import { Spinner } from "@ssu/ui";
-import type { ClassroomCourseDetail } from "@/lib/classroom-data";
+import type { ClassroomCourseDetail } from "@/lib/classroom/types";
 
 interface Props {
   render: (course: ClassroomCourseDetail) => React.ReactNode;

@@ -6,5 +6,6 @@ export function getStudentPageTitle(pathname: string): string {
   if (pathname.startsWith("/assessments")) return "Assessment";
   if (pathname.startsWith("/support")) return "Support";
   if (pathname.startsWith("/profile")) return "Profile";
+  if (pathname.startsWith("/certificate")) return "Certificate";
   return "Home";
 }

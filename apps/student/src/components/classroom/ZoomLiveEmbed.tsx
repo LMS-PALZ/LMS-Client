@@ -1,45 +1,25 @@
 "use client";
 
-import { cn } from "@ssu/utils";
-import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
+import dynamic from "next/dynamic";
+import type { ZoomLiveEmbedClientProps } from "./ZoomLiveEmbedClient";
 
-export interface ZoomLiveEmbedProps {
-  meetUrl: string;
-  displayName?: string;
-  className?: string;
-}
-
-export function ZoomLiveEmbed({ meetUrl, className }: ZoomLiveEmbedProps) {
-  const target = parseMeetingTarget(meetUrl);
-
-  if (!target || target.kind !== "zoom" || !target.embedUrl) {
-    return (
-      <div
-        className={cn(
-          "flex min-h-[360px] items-center justify-center rounded-[18px] bg-[#202124] px-6 text-center text-[14px] text-[#e8eaed]",
-          className,
-        )}
-      >
-        Meeting link not available.
+const ZoomLiveEmbedClient = dynamic(
+  () =>
+    import("./ZoomLiveEmbedClient").then(
+      (module) => module.ZoomLiveEmbedClient,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[560px] items-center justify-center rounded-[18px] bg-[#202124]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
       </div>
-    );
-  }
+    ),
+  },
+);
 
-  return (
-    <div
-      className={cn(
-        "relative aspect-video w-full overflow-hidden rounded-[18px] bg-black",
-        className,
-      )}
-    >
-      <iframe
-        title="Live class"
-        src={target.embedUrl}
-        className="absolute inset-0 h-full w-full border-0"
-        allow="camera; microphone; autoplay; fullscreen; display-capture; clipboard-read; clipboard-write"
-        referrerPolicy="strict-origin-when-cross-origin"
-        allowFullScreen
-      />
-    </div>
-  );
+export type ZoomLiveEmbedProps = ZoomLiveEmbedClientProps;
+
+export function ZoomLiveEmbed(props: ZoomLiveEmbedProps) {
+  return <ZoomLiveEmbedClient {...props} />;
 }

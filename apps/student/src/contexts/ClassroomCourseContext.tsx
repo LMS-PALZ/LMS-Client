@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 import type {
   ClassroomCourseDetail,
   ClassroomWeek,
-} from "@/lib/classroom-data";
+} from "@/lib/classroom/types";
 
 export interface ClassroomCourseContextValue {
   course: ClassroomCourseDetail;
