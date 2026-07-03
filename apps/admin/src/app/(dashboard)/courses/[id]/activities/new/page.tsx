@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Spinner } from "@ssu/ui";
+import { AdminActivityFormSkeleton } from "@/components/skeletons";
 import { CourseActivityPage } from "@/views/CourseActivityPage";
 
 interface CourseActivityRouteProps {
@@ -12,13 +12,7 @@ export default async function CourseActivityRoute({
   const { id } = await params;
 
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[420px] items-center justify-center">
-          <Spinner />
-        </div>
-      }
-    >
+    <Suspense fallback={<AdminActivityFormSkeleton />}>
       <CourseActivityPage courseId={id} />
     </Suspense>
   );

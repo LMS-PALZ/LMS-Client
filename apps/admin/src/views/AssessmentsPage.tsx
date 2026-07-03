@@ -3,7 +3,7 @@
 import { AssignmentTable } from "@/components/AsignmentTable";
 import { useStudentList } from "@ssu/queries";
 import { useState } from "react";
-import { Button } from "@ssu/ui";
+import { Button, DataTableSkeleton } from "@ssu/ui";
 import { useRouter } from "next/navigation";
 
 export function AssessmentsPage() {
@@ -13,7 +13,14 @@ export function AssessmentsPage() {
   const [role, setRole] = useState("");
   const [course, setCourse] = useState("");
 
-  const { data } = useStudentList(page, 10, search, status, role, course);
+  const { data, isLoading } = useStudentList(
+    page,
+    10,
+    search,
+    status,
+    role,
+    course,
+  );
 
   const router = useRouter();
 
@@ -28,19 +35,27 @@ export function AssessmentsPage() {
           + create assignment
         </Button>
       </div>
-      <AssignmentTable
-        students={data?.items ?? []}
-        pagination={data?.pagination}
-        search={search}
-        setSearch={setSearch}
-        status={status}
-        setStatus={setStatus}
-        role={role}
-        setRole={setRole}
-        course={course}
-        setCourse={setCourse}
-        setPage={setPage}
-      />
+      {isLoading && !data ? (
+        <DataTableSkeleton
+          rows={8}
+          columns={6}
+          className="border-0 bg-transparent p-0 shadow-none"
+        />
+      ) : (
+        <AssignmentTable
+          students={data?.items ?? []}
+          pagination={data?.pagination}
+          search={search}
+          setSearch={setSearch}
+          status={status}
+          setStatus={setStatus}
+          role={role}
+          setRole={setRole}
+          course={course}
+          setCourse={setCourse}
+          setPage={setPage}
+        />
+      )}
     </section>
   );
 }

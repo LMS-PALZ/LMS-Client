@@ -3,6 +3,7 @@
 import { Users, UserCheck, Flag } from "lucide-react";
 import { StatCard } from "@ssu/ui";
 import { useStudentList } from "@ssu/queries";
+import { AdminStatsCardsSkeleton } from "@/components/skeletons";
 
 const title = "Total enrolled";
 const enrollstats = "Across 5 program";
@@ -11,7 +12,12 @@ const flags = "Flagged Students";
 const missclss = "Missed live classes";
 
 export function Card() {
-  const { data: statsData } = useStudentList();
+  const { data: statsData, isLoading } = useStudentList();
+
+  if (isLoading && !statsData) {
+    return <AdminStatsCardsSkeleton />;
+  }
+
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <StatCard

@@ -10,7 +10,7 @@ import {
   useTutorStaff,
   useUpdateProgramStatusMutation,
 } from "@ssu/queries";
-import { AlertBanner, Spinner } from "@ssu/ui";
+import { AlertBanner } from "@ssu/ui";
 import {
   CourseCohortsTab,
   CourseDetailHeader,
@@ -18,6 +18,7 @@ import {
   CourseStudentsTab,
   CourseModulesTab,
 } from "@/features/courses/components";
+import { AdminCourseDetailSkeleton } from "@/components/skeletons";
 import type { CourseDetailTab } from "@/features/courses/types";
 import {
   mapProgramToCourse,
@@ -94,11 +95,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
   };
 
   if (isProgramLoading && !program) {
-    return (
-      <div className="flex min-h-[420px] items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <AdminCourseDetailSkeleton />;
   }
 
   if (isProgramError || !program || !course) {

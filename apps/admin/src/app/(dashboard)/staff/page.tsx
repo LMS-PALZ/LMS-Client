@@ -8,7 +8,7 @@ import { StaffList } from "@ssu/queries";
 import { useAdminModal } from "@/contexts/AdminModalProvider";
 import { InviteStaff } from "@/views/StaffManagement/InviteStaff";
 import { StatusDialog } from "@/components/StatusDialog";
-import { Button } from "@ssu/ui";
+import { Button, DataTableSkeleton } from "@ssu/ui";
 
 type StaffTab = "admin" | "tutor";
 
@@ -19,7 +19,14 @@ export default function StaffPage() {
   const [status, setStatus] = useState("");
   const [course, setCourse] = useState("");
   const [activeTab, setActiveTab] = useState<StaffTab>("admin");
-  const { data } = StaffList(page, 10, search, status, activeTab, course);
+  const { data, isLoading } = StaffList(
+    page,
+    10,
+    search,
+    status,
+    activeTab,
+    course,
+  );
 
   const openInviteModal = () => {
     openModal(
@@ -86,7 +93,13 @@ export default function StaffPage() {
         </div>
       </section>
 
-      {activeTab === "admin" ? (
+      {isLoading && !data ? (
+        <DataTableSkeleton
+          rows={8}
+          columns={6}
+          className="border-0 bg-transparent p-0 shadow-none"
+        />
+      ) : activeTab === "admin" ? (
         <AdminTable
           admins={data?.items ?? []}
           pagination={data?.pagination}

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { adminPath } from "@ssu/config/portal-paths";
 import { useTutorStaff } from "@ssu/queries";
-import { Spinner } from "@ssu/ui";
+import { AdminInstructorListSkeleton } from "@/components/skeletons";
 import { mapStaffToInstructor } from "../lib/program-mappers";
 import type { Instructor } from "../types";
 import { CourseModal } from "./CourseModal";
@@ -73,9 +73,7 @@ export function AddInstructorModal({
       }
     >
       {isLoading ? (
-        <div className="flex min-h-[260px] items-center justify-center">
-          <Spinner />
-        </div>
+        <AdminInstructorListSkeleton />
       ) : isError || instructors.length === 0 ? (
         <div className="flex min-h-[260px] flex-col items-center justify-center text-center">
           <p className="text-[16px] font-semibold text-[#1D1D1D]">

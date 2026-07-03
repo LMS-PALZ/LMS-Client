@@ -4,12 +4,13 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminPrograms } from "@ssu/queries";
-import { AlertBanner, Button, Spinner } from "@ssu/ui";
+import { AlertBanner, Button } from "@ssu/ui";
 import {
   CoursesEmptyState,
   CoursesList,
   CoursesToolbar,
 } from "@/features/courses/components";
+import { AdminCoursesPageSkeleton } from "@/components/skeletons";
 import { mapProgramToCourse } from "@/features/courses/lib/program-mappers";
 import type { Course } from "@/features/courses/types";
 
@@ -60,6 +61,10 @@ export function CoursesPage() {
     router.push(adminPath("/courses/builder"));
   };
 
+  if (isLoading && !data) {
+    return <AdminCoursesPageSkeleton />;
+  }
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -87,11 +92,7 @@ export function CoursesPage() {
         onSearchChange={setSearch}
       />
 
-      {isLoading ? (
-        <div className="flex min-h-[420px] items-center justify-center">
-          <Spinner />
-        </div>
-      ) : courses.length === 0 ? (
+      {courses.length === 0 ? (
         <CoursesEmptyState onAddCourse={goToBuilder} />
       ) : filteredCourses.length === 0 ? (
         <div className="flex min-h-[320px] items-center justify-center rounded-[18px] bg-[#F7F9FB] px-6 text-center text-[14px] text-[#94A3B8]">

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useProgramApplicants } from "@ssu/queries";
-import { Spinner } from "@ssu/ui";
+import { DataTableSkeleton } from "@ssu/ui";
 import {
   buildApplicantYearOptions,
   matchesApplicantSearch,
@@ -51,11 +51,13 @@ export function CourseStudentsTab({
   const total = pagination?.total ?? filteredApplicants.length;
   const totalPages = pagination?.totalPages ?? 1;
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
-      <div className="flex min-h-[280px] items-center justify-center">
-        <Spinner />
-      </div>
+      <DataTableSkeleton
+        rows={6}
+        columns={5}
+        className="border-0 bg-transparent p-0 shadow-none"
+      />
     );
   }
 

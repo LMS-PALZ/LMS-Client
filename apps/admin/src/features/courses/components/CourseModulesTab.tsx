@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProgramClassroomModule } from "@ssu/types";
-import { Spinner } from "@ssu/ui";
+import { AdminModuleListSkeleton } from "@/components/skeletons";
 import { useExpandedModule } from "../hooks/use-expanded-module";
 import {
   countTotalLessons,
@@ -23,11 +23,7 @@ export function CourseModulesTab({
   const { expandedModuleId, toggleModule } = useExpandedModule(modules);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[280px] items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <AdminModuleListSkeleton />;
   }
 
   if (error) {
