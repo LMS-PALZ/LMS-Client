@@ -10,8 +10,9 @@ import {
   mutationToast,
 } from "@ssu/queries";
 import type { ClassroomLessonType } from "@ssu/types";
-import { AlertBanner, Button, Spinner } from "@ssu/ui";
+import { AlertBanner, Button } from "@ssu/ui";
 import { CourseActivityShell } from "@/features/courses/components/CourseActivityShell";
+import { AdminActivityFormSkeleton } from "@/components/skeletons";
 import {
   LiveSessionActivityForm,
   ReadingActivityForm,
@@ -136,11 +137,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
   };
 
   if (isProgramLoading || isModulesLoading) {
-    return (
-      <div className="flex min-h-[420px] items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <AdminActivityFormSkeleton />;
   }
 
   if (!program || !targetModule) {

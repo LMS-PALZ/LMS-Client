@@ -21,5 +21,6 @@ export * from "./student-assessments";
 export * from "./student-dashboard";
 export * from "./phone";
 export * from "./reference-data";
+export * from "./admin-calendar";
 export * from "./admin-transactions";
 export * from "./auth-errors";

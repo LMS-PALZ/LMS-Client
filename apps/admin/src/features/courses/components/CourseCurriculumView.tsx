@@ -8,7 +8,7 @@ import type {
   ClassroomLessonType,
   ProgramClassroomModule,
 } from "@ssu/types";
-import { Spinner } from "@ssu/ui";
+import { AdminModuleListSkeleton } from "@/components/skeletons";
 import { useExpandedModule } from "../hooks/use-expanded-module";
 import { createId } from "../lib/course-utils";
 import type { PendingLessonDelete } from "../types/activity";
@@ -117,11 +117,7 @@ export function CourseCurriculumView({
   };
 
   if (isLoadingModules) {
-    return (
-      <div className="flex min-h-[320px] items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <AdminModuleListSkeleton />;
   }
 
   if (modulesError) {
