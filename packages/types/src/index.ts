@@ -188,6 +188,21 @@ export interface StudentStat {
   description: string;
 }
 
+export interface StaffAssignment {
+  _id: string;
+  title: string;
+  programTitle: string;
+  progressPercent: number;
+  module: string;
+  weight: number;
+  dueDate: string;
+  submissions: {
+    submitted: string;
+    total: string;
+  };
+  status: Status;
+}
+
 export interface Trainers {
   id: string;
   name: string;

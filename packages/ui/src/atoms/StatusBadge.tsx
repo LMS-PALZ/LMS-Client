@@ -18,6 +18,10 @@ export function StatusBadge({ status }: Props) {
 
     suspended: "bg-[#FFDFC5] text-[#F49221]",
 
+    draft: "bg-[#FFDFC5] text-[#F49221]",
+
+    published: "bg-[#DBF1DC] text-[#1F6E2A]",
+
     "access-revoked": "bg-[#E9EEF5] text-[#5F6B7A]",
   };
 
@@ -27,6 +31,8 @@ export function StatusBadge({ status }: Props) {
     active: "Active",
     invited: "Invited",
     suspended: "Suspended",
+    draft: "Draft",
+    published: "Published",
     "access-revoked": "Access revoked",
   };
 

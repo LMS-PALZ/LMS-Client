@@ -2,9 +2,7 @@
 
 import { cn } from "@ssu/utils";
 
-import type { LucideIcon } from "lucide-react";
-
-import { LayoutPanelLeft, CircleHelp } from "lucide-react";
+import { LayoutPanelLeft, CircleHelp, LucideIcon } from "lucide-react";
 
 import type { ComponentType, ReactNode } from "react";
 

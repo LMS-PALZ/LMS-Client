@@ -1,21 +1,22 @@
 "use client";
 
-import { AssignmentTable } from "@/components/AsignmentTable";
-import { useStudentList } from "@ssu/queries";
+import { AssignmentTable } from "../molecules/AsignmentTable";
+import { useAssessmentsByProgram } from "@ssu/queries";
 import { useState } from "react";
 import { Button } from "@ssu/ui";
 import { useRouter } from "next/navigation";
 
 export function AssessmentsPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [role, setRole] = useState("");
-  const [course, setCourse] = useState("");
 
-  const { data } = useStudentList(page, 10, search, status, role, course);
+  const programId = localStorage.getItem("programId") ?? "";
 
-  const router = useRouter();
+  console.log("programId", programId);
+
+  const { data } = useAssessmentsByProgram(programId, page, 8, status, search);
 
   return (
     <section className="flex flex-col gap-8 rounded-[18px] bg-[#FFFFFF] p-6">
@@ -25,20 +26,17 @@ export function AssessmentsPage() {
           className="rounded-full px-6 bg-[#4C7D5B] text-[#F8F9FA]"
           onClick={() => router.push("/createasignment")}
         >
-          + create assignment
+          + Create Assignment
         </Button>
       </div>
+
       <AssignmentTable
-        students={data?.items ?? []}
+        students={data?.assessments ?? []}
         pagination={data?.pagination}
         search={search}
         setSearch={setSearch}
         status={status}
         setStatus={setStatus}
-        role={role}
-        setRole={setRole}
-        course={course}
-        setCourse={setCourse}
         setPage={setPage}
       />
     </section>

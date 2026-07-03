@@ -9,15 +9,18 @@ import {
   type NavigationSidebarItem,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
-import { AdminModalProvider } from "@/contexts/AdminModalProvider ";
+import { AdminModalProvider } from "@/contexts/AdminModalProvider";
 import {
-  BookOpen,
-  LayoutDashboard,
-  GraduationCap,
+  CalendarDays,
   ClipboardList,
-  User,
+  Users,
   Settings,
   HelpCircle,
+  NotebookText,
+  FilePenLine,
+  BriefcaseBusiness,
+  GraduationCap,
+  House,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,21 +28,21 @@ import type { ReactNode } from "react";
 import { getAdminPageTitle } from "@/lib/adminRoutes";
 
 const mainItems: NavigationSidebarItem[] = [
-  { href: adminPath(), label: "Home", icon: LayoutDashboard },
-  { href: adminPath("/students"), label: "Students", icon: BookOpen },
-  { href: adminPath("/calender"), label: "Calender", icon: BookOpen },
+  { href: adminPath(), label: "Home", icon: House },
+  { href: adminPath("/students"), label: "Students", icon: Users },
+  { href: adminPath("/calender"), label: "Calender", icon: CalendarDays },
 ];
 
 const teachingItems = [
-  { href: "/programs", label: "Programs", icon: GraduationCap },
+  { href: "/programs", label: "Programs", icon: NotebookText },
   { href: "/classroom", label: "Classroom", icon: ClipboardList },
-  { href: "/assessment", label: "Assessment", icon: ClipboardList },
+  { href: "/assessment", label: "Assessment", icon: FilePenLine },
 ];
 
 const toolsItems = [
-  { href: "/staff", label: "Staff", icon: GraduationCap },
+  { href: "/staff", label: "Staff", icon: BriefcaseBusiness },
   { href: "/auditlog", label: "Audit log", icon: ClipboardList },
-  { href: "/certificates", label: "Certificates", icon: ClipboardList },
+  { href: "/certificates", label: "Certificates", icon: GraduationCap },
 ];
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
@@ -81,7 +84,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <HeaderBar
             pageTitle={getAdminPageTitle(pathname)}
             menuItems={[
-              { label: "Account", href: "/account", icon: User },
+              { label: "Account", href: "/account", icon: Users },
               { label: "Settings", href: "/settings", icon: Settings },
               { label: "Support", href: "/support", icon: HelpCircle },
             ]}

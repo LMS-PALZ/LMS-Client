@@ -1,4 +1,4 @@
-import { AssessmentsPage } from "@/views/AssessmentsPage";
+import { AssessmentsPage } from "@ssu/ui";
 
 export default function Page() {
   return <AssessmentsPage />;

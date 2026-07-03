@@ -32,3 +32,8 @@ export * from "./use-invitestaff-mutation";
 export * from "./use-acceptinvite-mutation";
 export * from "./use-updatestaffstatus-mutation";
 export * from "./use-assignrole-mutation";
+export * from "./use-createassignment-mutation";
+export * from "./use-classroommodules";
+export * from "./use-updatestudentstatus-mutation";
+export * from "./use-staffassignment";
+export * from "./use-staffassignmentdetail";

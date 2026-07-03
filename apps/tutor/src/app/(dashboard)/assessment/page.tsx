@@ -1,5 +1,5 @@
-import { AsignmentManagement } from "@/components/AsignmentManagement";
+import { AssessmentsPage } from "@ssu/ui";
 
 export default function Page() {
-  return <AsignmentManagement />;
+  return <AssessmentsPage />;
 }

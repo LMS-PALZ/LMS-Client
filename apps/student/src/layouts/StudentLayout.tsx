@@ -9,12 +9,13 @@ import {
 } from "@ssu/ui";
 import {
   CalendarDays,
-  ClipboardList,
+  NotebookText,
   GraduationCap,
   HelpCircle,
-  Home,
+  House,
+  User,
+  Award,
 } from "lucide-react";
-import { User, Award } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -23,13 +24,13 @@ import { useSignupStore } from "@ssu/store";
 import { getStudentPageTitle } from "@/lib/studentRoutes";
 
 const mainItems = [
-  { href: "/home", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: House },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ];
 
 const learningItems = [
   { href: "/classroom", label: "My Classroom", icon: GraduationCap },
-  { href: "/assessments", label: "Assessment", icon: ClipboardList },
+  { href: "/assessments", label: "Assessment", icon: NotebookText },
 ];
 
 const supportItem = {

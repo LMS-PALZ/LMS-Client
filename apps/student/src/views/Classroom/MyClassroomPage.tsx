@@ -19,7 +19,7 @@ export function MyClassroomPage() {
   const Id = localStorage.getItem("profileId") ?? "";
   const { data } = useStudentclassroom(Id);
 
-  console.log("classroom data", data?.modules?.createdAt);
+  // console.log("classroom data", data?.modules?.createdAt);
 
   const handleJoinSession = () => {
     if (!ensureProfileForAction()) return;
@@ -52,7 +52,7 @@ export function MyClassroomPage() {
     return `${day}${suffix} ${month}, ${year}`;
   }
 
-  console.log("modules", data?.classroom?.modules);
+  // console.log("modules", data?.classroom?.modules);
 
   return (
     <div className="space-y-5">

@@ -6,7 +6,7 @@ import type { Admins } from "@ssu/types";
 import { useMemo, useState } from "react";
 import { EllipsisVertical } from "lucide-react";
 import { StatusDialog } from "@/components/StatusDialog";
-import { useAdminModal } from "@/contexts/AdminModalProvider ";
+import { useAdminModal } from "@/contexts/AdminModalProvider";
 import { useUpdateStaffStatusMutation } from "@ssu/queries";
 
 const AVATAR_COLORS = [
