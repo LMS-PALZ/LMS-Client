@@ -1,12 +1,12 @@
 "use client";
 
-import { DataTableSkeleton } from "@ssu/ui";
+import { AssignmentTable } from "@/components/AsignmentTable";
 import { useStudentList } from "@ssu/queries";
 import { useState } from "react";
-import { Card } from "./Card";
-import { Table } from "./Table";
+import { Button, DataTableSkeleton } from "@ssu/ui";
+import { useRouter } from "next/navigation";
 
-export function StudentManagement() {
+export function AssessmentsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -22,12 +22,19 @@ export function StudentManagement() {
     course,
   );
 
+  const router = useRouter();
+
   return (
     <section className="flex flex-col gap-8 rounded-[18px] bg-[#FFFFFF] p-6">
-      <section className="p-2 bg-[#FAFAFA] rounded-[12px]">
-        <Card />
-      </section>
-
+      <div className="flex justify-end gap-3">
+        <Button
+          variant="primary"
+          className="rounded-full px-6 bg-[#4C7D5B] text-[#F8F9FA]"
+          onClick={() => router.push("/createAssignment")}
+        >
+          + create assignment
+        </Button>
+      </div>
       {isLoading && !data ? (
         <DataTableSkeleton
           rows={8}
@@ -35,7 +42,7 @@ export function StudentManagement() {
           className="border-0 bg-transparent p-0 shadow-none"
         />
       ) : (
-        <Table
+        <AssignmentTable
           students={data?.items ?? []}
           pagination={data?.pagination}
           search={search}

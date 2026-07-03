@@ -2,6 +2,7 @@
 
 import type { AdminTransactionDetail } from "@ssu/types";
 import * as Dialog from "@radix-ui/react-dialog";
+import { Skeleton } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
@@ -96,8 +97,33 @@ export function TransactionDetailsModal({
 
           <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
             {isLoading ? (
-              <div className="flex min-h-[240px] items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4E2D8] border-t-[#4E845F]" />
+              <div
+                className="space-y-5"
+                role="status"
+                aria-label="Loading transaction"
+              >
+                <div className="text-center" aria-hidden>
+                  <Skeleton className="mx-auto h-10 w-40 rounded-lg" />
+                  <Skeleton className="mx-auto mt-3 h-6 w-24 rounded-full" />
+                </div>
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="space-y-3 rounded-[16px] bg-[#F8FAFC] p-4"
+                    aria-hidden
+                  >
+                    <Skeleton className="h-4 w-32 rounded-md" />
+                    {Array.from({ length: 3 }).map((__, rowIndex) => (
+                      <div
+                        key={rowIndex}
+                        className="flex justify-between gap-4"
+                      >
+                        <Skeleton className="h-4 w-24 rounded-md" />
+                        <Skeleton className="h-4 w-36 rounded-md" />
+                      </div>
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : errorMessage ? (
               <p className="py-12 text-center text-[14px] text-[#6B7280]">

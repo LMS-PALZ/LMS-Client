@@ -7,6 +7,8 @@ import { Receipt } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { TransactionDetailsModal } from "@/components/transactions/TransactionDetailsModal";
 import { TransactionsTable } from "@/components/transactions/TransactionsTable";
+import { AdminTransactionsPageSkeleton } from "@/components/skeletons";
+import { DataTableSkeleton } from "@ssu/ui";
 
 function formatCurrency(amount: number, currency = "NGN") {
   return new Intl.NumberFormat("en-NG", {
@@ -76,6 +78,10 @@ export function TransactionsPage() {
     if (!open) setSelectedId(null);
   };
 
+  if (isLoading && !data) {
+    return <AdminTransactionsPageSkeleton />;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader title="Transactions" />
@@ -111,9 +117,11 @@ export function TransactionsPage() {
         </h2>
 
         {isLoading ? (
-          <div className="flex min-h-[320px] items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4E2D8] border-t-[#4E845F]" />
-          </div>
+          <DataTableSkeleton
+            rows={8}
+            columns={6}
+            className="border-0 bg-transparent p-0 shadow-none"
+          />
         ) : isError ? (
           <EmptyState
             icon={Receipt}

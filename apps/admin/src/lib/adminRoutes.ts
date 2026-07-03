@@ -1,7 +1,8 @@
 export function getAdminPageTitle(pathname: string): string {
   if (pathname === "/home" || pathname === "/") return "Home";
   if (pathname.startsWith("/students")) return "My Students";
-  if (pathname === "/calendar") return "Calendar";
+  if (pathname === "/calender" || pathname.startsWith("/calendar"))
+    return "Calendar";
   if (pathname.startsWith("/courses")) return "Courses";
   if (pathname.startsWith("/programs")) return "Programs";
   if (pathname.startsWith("/classroom/")) return "My Classroom";

@@ -12,12 +12,13 @@ import {
   mutationToast,
 } from "@ssu/queries";
 import type { ProgramClassroomModule } from "@ssu/types";
-import { AlertBanner, Button, Spinner } from "@ssu/ui";
+import { AlertBanner, Button } from "@ssu/ui";
 import {
   CourseBuilderShell,
   CourseCurriculumView,
   CourseSuccessModal,
 } from "@/features/courses/components";
+import { AdminCourseDetailSkeleton } from "@/components/skeletons";
 import { buildUpsertClassroomPayload } from "@/features/courses/lib/classroom-mappers";
 import type { CourseStatus } from "@/features/courses/types";
 
@@ -86,11 +87,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   };
 
   if (isProgramLoading && !program) {
-    return (
-      <div className="flex min-h-[420px] items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <AdminCourseDetailSkeleton />;
   }
 
   if (isProgramError || !program) {

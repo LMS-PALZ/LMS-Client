@@ -2,13 +2,18 @@
 
 import { useStudentDetails } from "@ssu/queries";
 import { StudentDetails } from "@/components/students-details/studentdetail";
+import { AdminStudentDetailSkeleton } from "@/components/skeletons";
 
 interface Props {
   id: string;
 }
 
 export function StudentDetailsClient({ id }: Props) {
-  const { data } = useStudentDetails(id);
+  const { data, isLoading } = useStudentDetails(id);
+
+  if (isLoading && !data) {
+    return <AdminStudentDetailSkeleton />;
+  }
 
   return (
     <StudentDetails

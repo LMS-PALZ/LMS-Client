@@ -89,7 +89,7 @@ export function getNavSectionsForRole(role: UserRole | string | undefined) {
       icon: BookOpen,
       tutorHidden: true,
     },
-    { href: adminPath("/calender"), label: "Calender", icon: BookOpen },
+    { href: adminPath("/calender"), label: "Calendar", icon: BookOpen },
   ];
 
   const teachingItems: NavItemConfig[] = [
