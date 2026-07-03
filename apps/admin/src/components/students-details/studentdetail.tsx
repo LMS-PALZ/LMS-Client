@@ -28,8 +28,6 @@ export function StudentDetails({
   attendance,
   userId,
 }: StudentDetailsProps) {
-  console.log("userId", userId);
-  // const Id = userId;
   const updateStudentStatus = useUpdateStudentStatusMutation();
 
   const handleRevokeAccess = async () => {

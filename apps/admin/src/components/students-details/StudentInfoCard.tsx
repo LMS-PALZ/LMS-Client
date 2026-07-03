@@ -25,8 +25,6 @@ function formatDob(day: string, month: string, year: number): string {
 }
 
 export function StudentInfoCard({ info }: StudentInfoCardProps) {
-  // console.log("info", info);
-
   return (
     <div className="rounded-[24px] border border-[#E6EBF0] bg-[#F8FAF8] p-8">
       <div className="grid gap-8 md:grid-cols-3">
@@ -80,11 +78,6 @@ export function StudentInfoCard({ info }: StudentInfoCardProps) {
               : "—"}
           </p>
         </div>
-        {/* <div>
-          <p className="text-md text-[13px]">Phone Number</p>
-
-          <p className="mt-2 text-[13px] font-medium text-[#7B8794]">{info?.phoneNumber}</p>
-        </div> */}
       </div>
     </div>
   );

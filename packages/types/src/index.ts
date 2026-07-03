@@ -178,7 +178,7 @@ export interface Student {
   attendance: {
     display: string;
   };
-  statusLabel: Status;
+  status: Status;
 }
 
 export interface StudentStat {

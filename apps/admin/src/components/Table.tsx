@@ -143,7 +143,7 @@ export function Table({
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.statusLabel} />,
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       id: "actions",
