@@ -1,15 +1,19 @@
-# Admin site (adminstg) — Netlify UI:
-#   Base directory:      (empty = repo root)
-#   Package directory:   (empty)
-#   Build command:       (empty)
-#   Publish directory:   (empty)
-#   Production branch:   dev-admin
+# Admin site — deploy from branch `dev`.
 #
-# Student site uses apps/student/netlify.toml (base directory: apps/student).
+# Admin uses the REPO ROOT config (this file). Do not point the admin Netlify
+# site at apps/admin as base or package directory.
+#
+# Netlify UI (admin site):
+#   Production branch:   dev
+#   Base directory:      (empty = repo root)
+#   Package directory:   (MUST be empty)
+#   Build command:       (empty)
+#   Publish directory:   (empty — Next.js plugin handles output)
+#   Functions directory: (empty)
 
 [build]
   command = "npm ci && npm run build -w @ssu/admin"
-  publish = "apps/admin/.next"
+  ignore = "git diff --quiet $CACHED_COMMIT $COMMIT_REF -- apps/admin packages/ package.json package-lock.json turbo.json"
 
 [build.environment]
   NODE_VERSION = "24.14.0"

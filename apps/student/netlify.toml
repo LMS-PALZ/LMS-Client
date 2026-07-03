@@ -1,15 +1,23 @@
-# Student portal (branch: dev)
+# Student portal — deploy from branch `dev`.
 #
-# Netlify UI:
+# IMPORTANT — student and admin use DIFFERENT Netlify UI settings.
+# If student uses repo root + package directory, Netlify also reads
+# /netlify.toml (admin) and the student URL will show the admin app.
+#
+# Netlify UI (student site) — REQUIRED:
+#   Production branch:   dev
 #   Base directory:      apps/student
-#   Package directory:   (not set)
+#   Package directory:   (MUST be empty — do not set apps/student)
 #   Build command:       (empty)
-#   Publish directory:   (empty)
+#   Publish directory:   (empty — never apps/admin/.next)
 #   Functions directory: (empty)
+#
+# [build].base = "/" runs npm ci from the monorepo root (workspaces).
 
 [build]
   base = "/"
   command = "npm ci && npm run build -w @ssu/student"
+  ignore = "git diff --quiet $CACHED_COMMIT $COMMIT_REF -- apps/student packages/ package.json package-lock.json turbo.json"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
