@@ -37,3 +37,7 @@ export * from "./use-classroommodules";
 export * from "./use-updatestudentstatus-mutation";
 export * from "./use-staffassignment";
 export * from "./use-staffassignmentdetail";
+export * from "./use-studentassignment";
+export * from "./use-studentassignmentdetail";
+export * from "./use-studentassignment-mutation";
+export * from "./use-undosubmission-mutation";

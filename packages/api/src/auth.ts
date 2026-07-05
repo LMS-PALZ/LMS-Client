@@ -940,6 +940,58 @@ export async function getAssessmentById(assessmentId: string) {
   }
 }
 
+export async function getStudentassignments(programId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/program/${programId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getStudentAssessmentById(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/${assessmentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch assessment.",
+    };
+  }
+}
+
 export const SESSION_STORAGE_KEY = "ssu_session";
 
 const AUTH_TOKEN_STORAGE_KEY = "token";
@@ -952,6 +1004,70 @@ export function readSession(): AuthUser | null {
     return JSON.parse(raw) as AuthUser;
   } catch {
     return null;
+  }
+}
+
+export async function submitAssessment(
+  assessmentId: string,
+  data: {
+    submissionType: "file" | "link";
+    file?: File;
+    submissionLink?: string;
+    comment?: string;
+  },
+) {
+  try {
+    const token = getStoredAuthToken();
+    const formData = new FormData();
+
+    formData.append("submissionType", data.submissionType);
+    if (data.file) formData.append("file", data.file);
+    if (data.submissionLink)
+      formData.append("submissionLink", data.submissionLink);
+    if (data.comment) formData.append("comment", data.comment);
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/students/assessments/submit/${assessmentId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to submit assessment.",
+    };
+  }
+}
+
+export async function undoAssessmentSubmission(submissionId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.delete(
+      `${API_BASE_URL}/api/v1/students/assessments/undo/${submissionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return { ok: true as const, message: res.data.message };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to undo submission.",
+    };
   }
 }
 

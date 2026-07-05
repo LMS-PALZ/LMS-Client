@@ -19,8 +19,6 @@ export function MyClassroomPage() {
   const Id = localStorage.getItem("profileId") ?? "";
   const { data } = useStudentclassroom(Id);
 
-  // console.log("classroom data", data?.modules?.createdAt);
-
   const handleJoinSession = () => {
     if (!ensureProfileForAction()) return;
     const course = getClassroomCourseById(liveSession.courseId);

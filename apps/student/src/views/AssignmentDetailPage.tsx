@@ -13,7 +13,7 @@ import {
   isAssignmentWorkLocked,
   resolveAssignmentDetailStatus,
 } from "@/lib/assignment-display";
-import { useAssignment } from "@ssu/queries";
+import { useStudentAssessmentById } from "@ssu/queries";
 import { useAssessmentSubmissionStore } from "@ssu/store";
 import { AlertBanner, DetailPageSkeleton, GoBack } from "@ssu/ui";
 import { useParams } from "next/navigation";
@@ -22,7 +22,10 @@ import { useEffect, useState } from "react";
 export function AssignmentDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : "";
-  const q = useAssignment(id);
+
+  const studentAssessment = useStudentAssessmentById(id);
+
+  console.log("studentAssessment", studentAssessment.data);
 
   const isSubmitted = useAssessmentSubmissionStore(
     (s) => s.byAssignment[id]?.isSubmitted ?? false,
@@ -35,7 +38,7 @@ export function AssignmentDetailPage() {
     }
   }, [isSubmitted]);
 
-  if (q.isLoading) {
+  if (studentAssessment.isLoading) {
     return (
       <div className="space-y-4">
         <GoBack fallbackHref="/assessments" />
@@ -44,7 +47,7 @@ export function AssignmentDetailPage() {
     );
   }
 
-  if (q.isError || !q.data) {
+  if (studentAssessment.isError || !studentAssessment.data) {
     return (
       <div className="space-y-4">
         <GoBack fallbackHref="/assessments" />
@@ -53,8 +56,8 @@ export function AssignmentDetailPage() {
     );
   }
 
-  const assignment = q.data;
-  const content = getAssessmentDetailContent(assignment.id);
+  const assignment = studentAssessment.data;
+  const content = getAssessmentDetailContent(assignment.instructions);
   const status = resolveAssignmentDetailStatus(assignment, isSubmitted);
   const workLocked = isAssignmentWorkLocked(assignment, isSubmitted);
   const showSubmitSuccess =
@@ -74,7 +77,7 @@ export function AssignmentDetailPage() {
           title={assignment.title}
           statusLabel={status.label}
           statusVariant={status.variant}
-          dueDate={formatAssignmentDueDateLong(assignment.dueAt)}
+          dueDate={formatAssignmentDueDateLong(assignment.dueDate)}
           weightPercent={assignment.weightPercent ?? 25}
           scoreDisplay={assignment.scoreDisplay ?? "N/A"}
         />

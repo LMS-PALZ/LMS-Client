@@ -5,7 +5,7 @@ import {
   AssessmentProgressInsight,
 } from "@/components/assessments";
 import { assignmentCardProps } from "@/lib/assignment-display";
-import { useStudentAssignments, useStudentProgress } from "@ssu/queries";
+import { useStudentProgress, useStudentassignments } from "@ssu/queries";
 import {
   AlertBanner,
   AssignmentSummaryCard,
@@ -25,7 +25,8 @@ export function AssessmentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const assignments = useStudentAssignments();
+  const programId = localStorage.getItem("profileId") ?? "";
+  const assignments = useStudentassignments(programId);
   const progress = useStudentProgress();
 
   const filtered = useMemo(() => {
@@ -96,7 +97,9 @@ export function AssessmentsPage() {
                 <AssignmentSummaryCard
                   key={a.id}
                   {...assignmentCardProps(a).card}
-                  onClick={() => router.push(`/assessments/${a.id}`)}
+                  onClick={() =>
+                    router.push(`/assessments/${assignments?.data?.[0]?.id}`)
+                  }
                 />
               ))}
             </div>
