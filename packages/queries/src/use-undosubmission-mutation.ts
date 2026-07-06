@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { undoAssessmentSubmission } from "@ssu/api";
 
-export function useUndoSubmissionMutation(assessmentId: string) {
+export function useUndoSubmissionMutation(submittionId: string) {
   const qc = useQueryClient();
 
   return useMutation({
@@ -11,7 +11,7 @@ export function useUndoSubmissionMutation(assessmentId: string) {
       return res;
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["assessment", assessmentId] });
+      void qc.invalidateQueries({ queryKey: ["assessment", submittionId] });
     },
   });
 }

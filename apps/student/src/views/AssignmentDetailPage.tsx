@@ -25,8 +25,6 @@ export function AssignmentDetailPage() {
 
   const studentAssessment = useStudentAssessmentById(id);
 
-  console.log("studentAssessment", studentAssessment.data);
-
   const isSubmitted = useAssessmentSubmissionStore(
     (s) => s.byAssignment[id]?.isSubmitted ?? false,
   );
@@ -92,7 +90,7 @@ export function AssignmentDetailPage() {
       </div>
 
       <AssessmentMyWork
-        assignmentId={assignment.id}
+        assignmentId={assignment._id}
         submissionRequirements={content.submissionRequirements}
         readOnly={workLocked}
       />

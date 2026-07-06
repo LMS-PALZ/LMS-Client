@@ -57,7 +57,6 @@ export function AssessmentMyWork({
 
   const [tab, setTab] = useState<AttachmentTab>("device");
   const [urlDraft, setUrlDraft] = useState("https://");
-  // const [isSubmitting, setIsSubmitting] = useState(false);
   const cancelUploadRef = useRef<(() => void) | null>(null);
   const uploadedFilesRef = useRef<Record<string, File | null>>({});
 
@@ -161,8 +160,15 @@ export function AssessmentMyWork({
         submissionLink: urlAttachment?.url,
         comment: submission.comments || undefined,
       });
+      // console.log("submit res:", res);
 
-      const submissionId = res?.id ?? res?.submissionId;
+      const submissionId = res?._id;
+      console.log(
+        "Submission successful for assignmentId:",
+        assignmentId,
+        "submissionId:",
+        submissionId,
+      );
       submitAssignment(assignmentId, submissionId);
       notify.success("Assignment submitted successfully!");
     } catch (error: any) {
@@ -171,15 +177,21 @@ export function AssessmentMyWork({
   };
 
   const handleUndo = async () => {
-    const submissionId = submission.submissionId;
+    const Id = submission.submissionId;
+    console.log(
+      "Undo submission for assignmentId:",
+      assignmentId,
+      "submissionId:",
+      Id,
+    );
 
-    if (!submissionId) {
+    if (!Id) {
       notify.error("Cannot undo", "Submission ID not found.");
       return;
     }
 
     try {
-      await undoMutation.mutateAsync(submissionId);
+      await undoMutation.mutateAsync(Id);
       undoSubmission(assignmentId);
       notify.info("Submission undone", "You can edit and resubmit your work.");
     } catch (error: any) {

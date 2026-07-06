@@ -97,9 +97,7 @@ export function AssessmentsPage() {
                 <AssignmentSummaryCard
                   key={a.id}
                   {...assignmentCardProps(a).card}
-                  onClick={() =>
-                    router.push(`/assessments/${assignments?.data?.[0]?.id}`)
-                  }
+                  onClick={() => router.push(`/assessments/${a.id}`)}
                 />
               ))}
             </div>
