@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  useStudentAssignments,
+  useStudentassignments,
   useSession,
   useStudentProgress,
   useUpcomingSessions,
@@ -44,7 +44,8 @@ export function HomePage() {
   const { data: user } = useSession();
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
-  const assignments = useStudentAssignments();
+  const programId = localStorage.getItem("profileId") ?? "";
+  const assignments = useStudentassignments(programId);
 
   const { data } = Profiledetail();
   localStorage.setItem("profileId", data?.program?.id || "");

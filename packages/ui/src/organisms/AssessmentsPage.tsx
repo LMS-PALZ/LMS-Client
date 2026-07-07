@@ -3,8 +3,9 @@
 import { AssignmentTable } from "../molecules/AsignmentTable";
 import { useAssessmentsByProgram } from "@ssu/queries";
 import { useState } from "react";
-import { Button } from "@ssu/ui";
+import { Button, DashboardEmptyState } from "@ssu/ui";
 import { useRouter } from "next/navigation";
+import { ClipboardList } from "lucide-react";
 
 export function AssessmentsPage() {
   const router = useRouter();
@@ -29,16 +30,23 @@ export function AssessmentsPage() {
           + Create Assignment
         </Button>
       </div>
-
-      <AssignmentTable
-        students={data?.assessments ?? []}
-        pagination={data?.pagination}
-        search={search}
-        setSearch={setSearch}
-        status={status}
-        setStatus={setStatus}
-        setPage={setPage}
-      />
+      {programId === "" ? (
+        <DashboardEmptyState
+          icon={ClipboardList}
+          title="You haven’t create an assessment  yet"
+          description="When you do, they’ll show up here"
+        />
+      ) : (
+        <AssignmentTable
+          students={data?.assessments ?? []}
+          pagination={data?.pagination}
+          search={search}
+          setSearch={setSearch}
+          status={status}
+          setStatus={setStatus}
+          setPage={setPage}
+        />
+      )}
     </section>
   );
 }
