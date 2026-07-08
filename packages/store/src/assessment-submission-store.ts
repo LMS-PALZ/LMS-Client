@@ -16,6 +16,7 @@ export interface AssignmentSubmissionState {
   attachments: SubmissionAttachment[];
   submittedAt: string | null;
   isSubmitted: boolean;
+  submissionId?: string;
 }
 
 interface AssessmentSubmissionStore {
@@ -30,7 +31,7 @@ interface AssessmentSubmissionStore {
   ) => void;
   removeAttachment: (assignmentId: string, attachmentId: string) => void;
   setUploadProgress: (assignmentId: string, progress: number | null) => void;
-  submitAssignment: (assignmentId: string) => void;
+  submitAssignment: (assignmentId: string, submissionId?: string) => void;
   undoSubmission: (assignmentId: string) => void;
   resetAssignment: (assignmentId: string) => void;
 }
@@ -41,6 +42,7 @@ export const EMPTY_SUBMISSION: AssignmentSubmissionState = {
   attachments: [],
   submittedAt: null,
   isSubmitted: false,
+  submissionId: undefined,
 };
 
 function submissionFor(
@@ -111,7 +113,7 @@ export const useAssessmentSubmissionStore = create<AssessmentSubmissionStore>()(
           },
         })),
 
-      submitAssignment: (assignmentId) =>
+      submitAssignment: (assignmentId: string, submissionId?: string) =>
         set((state) => {
           const current = submissionFor(state.byAssignment, assignmentId);
           return {
@@ -121,6 +123,7 @@ export const useAssessmentSubmissionStore = create<AssessmentSubmissionStore>()(
                 ...current,
                 isSubmitted: true,
                 submittedAt: new Date().toISOString(),
+                submissionId: submissionId ?? current.submissionId,
               },
             },
           };
@@ -136,6 +139,7 @@ export const useAssessmentSubmissionStore = create<AssessmentSubmissionStore>()(
                 ...current,
                 isSubmitted: false,
                 submittedAt: null,
+                submissionId: undefined,
               },
             },
           };

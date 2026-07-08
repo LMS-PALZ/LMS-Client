@@ -26,44 +26,57 @@ function formatDob(day: string, month: string, year: number): string {
 
 export function StudentInfoCard({ info }: StudentInfoCardProps) {
   return (
-    <div className="rounded-[24px] border border-[#E6EBF0] bg-white p-8">
+    <div className="rounded-[24px] border border-[#E6EBF0] bg-[#F8FAF8] p-8">
       <div className="grid gap-8 md:grid-cols-3">
         <div>
-          <p className="text-[#7B8794]">Email address</p>
+          <p className="text-md text-[13px]">address</p>
 
-          <p className="mt-2 text-[14px] font-medium">{info?.email}</p>
+          <p className="mt-2 text-[13px] font-medium text-[#7B8794]">
+            {info?.address}
+          </p>
         </div>
 
         <div>
-          <p className="text-[#7B8794]">Phone number</p>
+          <p className="text-md text-[13px]">Date of birth</p>
 
-          <p className="mt-2 text-[14px] font-medium">{info?.phoneNumber}</p>
-        </div>
-
-        <div>
-          <p className="text-[#7B8794]">Date of birth</p>
-
-          <p className="mt-2 text-[14px] font-medium">
+          <p className="mt-2 text-[13px] font-medium text-[#7B8794]">
             {formatDob(info?.dob?.day, info?.dob?.month, info?.dob?.year)}
           </p>
         </div>
 
         <div>
-          <p className="text-[#7B8794]">House address</p>
+          <p className="text-md text-[13px]">Email address</p>
 
-          <p className="mt-2 text-[14px] font-medium">{info?.address}</p>
+          <p className="mt-2 text-[13px] font-medium text-[#7B8794]">
+            {info?.email}
+          </p>
         </div>
 
         <div>
-          <p className="text-[#7B8794]">Cohort</p>
+          <p className="text-md text-[13px]">Phone number</p>
 
-          <p className="mt-2 text-[14px] font-medium">{info?.cohortName}</p>
+          <p className="mt-2 text-[13px] font-medium text-[#7B8794]">
+            {info?.phoneNumber}
+          </p>
         </div>
 
         <div>
-          <p className="text-[#7B8794]">Enrollment date</p>
+          <p className="text-md text-[13px]">Cohort</p>
 
-          <p className="mt-2 text-[14px] font-medium">12, june 2026</p>
+          <p className="mt-2 text-[13px] font-medium text-[#7B8794]">
+            {info?.cohortName}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-md text-[13px]">Date registered</p>
+
+          <p className="mt-2 text-[13px] font-medium text-[#7B8794]">
+            {" "}
+            {info?.enrollmentDate
+              ? new Date(info.enrollmentDate).toLocaleDateString("en-GB")
+              : "—"}
+          </p>
         </div>
       </div>
     </div>

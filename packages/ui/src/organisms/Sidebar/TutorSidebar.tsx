@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@ssu/utils";
-import { PanelLeft, PanelLeftClose } from "lucide-react";
+import { PanelLeftClose } from "lucide-react";
 import type { ComponentType } from "react";
 import { useSidebarCollapsed } from "../../layouts/DashboardLayout";
 import { BrandLogo } from "../BrandLogo";
@@ -81,27 +81,42 @@ export function TutorSidebar({
   const Link = LinkComponent;
 
   return (
-    <div className="flex h-full flex-col text-neutral-700">
-      <div className="flex h-16 shrink-0 items-center border-b border-neutral-200 px-3">
-        <div className="flex w-full min-w-0 items-center justify-between gap-2">
+    <div
+      className={cn(
+        "flex h-full flex-col bg-[#F8FAF8] rounded-tr-[15px] text-neutral-700 transition-[width] duration-300 ease-in-out",
+        collapsed ? "w-20" : "w-60",
+      )}
+    >
+      <div
+        className={cn(
+          "flex h-16 shrink-0 items-center border-b border-neutral-200 px-3",
+          "transition-all duration-300",
+        )}
+      >
+        <div className="flex w-full items-center justify-between">
           <BrandLogo
             collapsed={collapsed}
             logoSrc={logoSrc}
-            className={cn(collapsed && "flex-1")}
+            collapsedLogoSrc="/secondlogo.png"
+            className="transition-all duration-300"
           />
-          {onToggleCollapse && (
+
+          {!collapsed && onToggleCollapse && (
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100"
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-neutral-100"
             >
-              {collapsed ? (
-                <PanelLeft className="h-4 w-4" />
-              ) : (
-                <PanelLeftClose className="h-4 w-4" />
-              )}
+              <PanelLeftClose className="h-4 w-4" />
             </button>
+          )}
+
+          {collapsed && onToggleCollapse && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="absolute inset-0 opacity-0"
+            />
           )}
         </div>
       </div>

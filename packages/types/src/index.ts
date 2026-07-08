@@ -212,7 +212,7 @@ export interface Student {
   attendance: {
     display: string;
   };
-  statusLabel: Status;
+  status: Status;
 }
 
 export interface StudentStat {
@@ -220,6 +220,21 @@ export interface StudentStat {
   title: string;
   value: number;
   description: string;
+}
+
+export interface StaffAssignment {
+  _id: string;
+  title: string;
+  programTitle: string;
+  progressPercent: number;
+  module: string;
+  weight: number;
+  dueDate: string;
+  submissions: {
+    submitted: string;
+    total: string;
+  };
+  status: Status;
 }
 
 export interface Trainers {

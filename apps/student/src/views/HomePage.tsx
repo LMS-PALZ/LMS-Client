@@ -1,11 +1,12 @@
 "use client";
 
 import {
-  useStudentAssignments,
+  useStudentassignments,
   useSession,
   useStudentProgress,
   useUpcomingSessions,
   useEnrolledProgram,
+  Profiledetail,
 } from "@ssu/queries";
 import {
   AlertBanner,
@@ -47,7 +48,11 @@ export function HomePage() {
   const { data: profileData, program } = useEnrolledProgram();
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
-  const assignments = useStudentAssignments();
+  const programId = localStorage.getItem("profileId") ?? "";
+  const assignments = useStudentassignments(programId);
+
+  const { data } = Profiledetail();
+  localStorage.setItem("profileId", data?.program?.id || "");
   const setprofile = useProfileStore((state) => state.setUser);
 
   useEffect(() => {

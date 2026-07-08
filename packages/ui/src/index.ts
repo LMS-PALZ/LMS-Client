@@ -50,6 +50,9 @@ export * from "./molecules/SectionHeader";
 export * from "./molecules/HeaderBar";
 export * from "./molecules/GoBack";
 export * from "./molecules/ CustomSelect";
+export * from "./molecules/AsignmentTable";
+export * from "./molecules/SubmittedTable";
+export * from "./molecules/StaffAssessmentDetails";
 
 export * from "./organisms/DataTable";
 export * from "./organisms/BrandLogo";
@@ -68,6 +71,7 @@ export * from "./organisms/SetPasswordForm";
 export * from "./organisms/AcceptInviteForm";
 export * from "./organisms/SidebarContext";
 export * from "./organisms/CreateAssignment";
+export * from "./organisms/AssessmentsPage";
 export * from "./organisms/NavigationSidebar/MobileSidebar";
 
 export * from "./layouts/AuthLayout";

@@ -1,13 +1,18 @@
 "use client";
 
+import {} from "@ssu/queries";
 import { EMPTY_SUBMISSION, useAssessmentSubmissionStore } from "@ssu/store";
-import { notify } from "@ssu/ui";
 import { cn, formatFileSize } from "@ssu/utils";
 import { CloudUpload, FileText, Link2, Paperclip, Plus, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import type { AssessmentDetailContent } from "@/lib/assessments";
 import { AssessmentCommentsEditor } from "./AssessmentCommentsEditor";
+import {
+  useSubmitAssessmentMutation,
+  useUndoSubmissionMutation,
+} from "@ssu/queries";
+import { notify } from "@ssu/ui";
 
 type AttachmentTab = "device" | "url";
 
@@ -47,9 +52,13 @@ export function AssessmentMyWork({
   submissionRequirements: AssessmentDetailContent["submissionRequirements"];
   readOnly?: boolean;
 }) {
+  const submitMutation = useSubmitAssessmentMutation(assignmentId);
+  const undoMutation = useUndoSubmissionMutation(assignmentId);
+
   const [tab, setTab] = useState<AttachmentTab>("device");
   const [urlDraft, setUrlDraft] = useState("https://");
   const cancelUploadRef = useRef<(() => void) | null>(null);
+  const uploadedFilesRef = useRef<Record<string, File | null>>({});
 
   const submission = useAssessmentSubmissionStore(
     (s) => s.byAssignment[assignmentId] ?? EMPTY_SUBMISSION,
@@ -81,6 +90,7 @@ export function AssessmentMyWork({
         return;
       }
 
+      uploadedFilesRef.current[assignmentId] = file;
       cancelUploadRef.current?.();
       cancelUploadRef.current = simulateUpload(assignmentId, () => {
         addAttachment(assignmentId, {
@@ -99,7 +109,7 @@ export function AssessmentMyWork({
     onDrop,
     maxSize: MAX_FILE_BYTES,
     multiple: false,
-    disabled: readOnly || isUploading,
+    disabled: readOnly || isUploading || submitMutation.isPending,
     noClick: true,
     noKeyboard: true,
   });
@@ -127,24 +137,66 @@ export function AssessmentMyWork({
     }
   };
 
-  const handleSubmit = () => {
-    if (submission.attachments.length === 0 && !submission.comments.trim()) {
+  const handleSubmit = async () => {
+    const fileAttachment = submission.attachments.find(
+      (a) => a.kind === "file",
+    );
+    const urlAttachment = submission.attachments.find((a) => a.kind === "url");
+
+    if (!fileAttachment && !urlAttachment) {
       notify.error(
         "Add your work first",
-        "Upload a file, add a link, or leave a comment before submitting.",
+        "Upload a file or add a link before submitting.",
       );
       return;
     }
-    submitAssignment(assignmentId);
-    notify.success("You have successfully submitted your assignment");
+
+    try {
+      const res = await submitMutation.mutateAsync({
+        submissionType: fileAttachment ? "file" : "link",
+        file: fileAttachment
+          ? (uploadedFilesRef.current[assignmentId] ?? undefined)
+          : undefined,
+        submissionLink: urlAttachment?.url,
+        comment: submission.comments || undefined,
+      });
+      // console.log("submit res:", res);
+
+      const submissionId = res?._id;
+      console.log(
+        "Submission successful for assignmentId:",
+        assignmentId,
+        "submissionId:",
+        submissionId,
+      );
+      submitAssignment(assignmentId, submissionId);
+      notify.success("Assignment submitted successfully!");
+    } catch (error: any) {
+      notify.error("Submission failed", error?.message);
+    }
   };
 
-  const handleUndo = () => {
-    undoSubmission(assignmentId);
-    notify.info(
-      "Submission undone",
-      "You can edit and submit your work again.",
+  const handleUndo = async () => {
+    const Id = submission.submissionId;
+    console.log(
+      "Undo submission for assignmentId:",
+      assignmentId,
+      "submissionId:",
+      Id,
     );
+
+    if (!Id) {
+      notify.error("Cannot undo", "Submission ID not found.");
+      return;
+    }
+
+    try {
+      await undoMutation.mutateAsync(Id);
+      undoSubmission(assignmentId);
+      notify.info("Submission undone", "You can edit and resubmit your work.");
+    } catch (error: any) {
+      notify.error("Failed to undo", error?.message);
+    }
   };
 
   const formatSubmittedDate = (iso: string) => {
@@ -372,9 +424,10 @@ export function AssessmentMyWork({
           <button
             type="button"
             onClick={handleSubmit}
-            className="rounded-full bg-[#2D6A4F] px-8 py-2.5 text-[14px] font-semibold text-white shadow-sm transition hover:bg-[#245a43]"
+            disabled={submitMutation.isPending}
+            className="rounded-full bg-[#2D6A4F] px-8 py-2.5 text-[14px] font-semibold text-white shadow-sm transition hover:bg-[#245a43] disabled:opacity-50"
           >
-            Submit
+            {submitMutation.isPending ? "Submitting..." : "Submit"}
           </button>
         </div>
       )}

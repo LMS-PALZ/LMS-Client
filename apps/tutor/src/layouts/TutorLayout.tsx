@@ -10,13 +10,15 @@ import {
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
 import {
-  BookOpen,
-  LayoutDashboard,
+  CalendarDays,
+  House,
   GraduationCap,
   ClipboardList,
-  User,
+  Users,
   Settings,
+  User,
   HelpCircle,
+  FilePenLine,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,15 +26,15 @@ import type { ReactNode } from "react";
 import { getTutorPageTitle } from "@/lib/tutorRoutes";
 
 const mainItems: NavigationSidebarItem[] = [
-  { href: tutorPath(), label: "Home", icon: LayoutDashboard },
-  { href: tutorPath("/students"), label: "Students", icon: BookOpen },
-  { href: tutorPath("/calender"), label: "Calender", icon: BookOpen },
+  { href: tutorPath(), label: "Home", icon: House },
+  { href: tutorPath("/students"), label: "Students", icon: Users },
+  { href: tutorPath("/calender"), label: "Calender", icon: CalendarDays },
 ];
 
 const teachingItems = [
   { href: "/programs", label: "Programs", icon: GraduationCap },
   { href: "/classroom", label: "Classroom", icon: ClipboardList },
-  { href: "/assessment", label: "Assessment", icon: ClipboardList },
+  { href: "/assessment", label: "Assessment", icon: FilePenLine },
 ];
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {

@@ -21,6 +21,7 @@ export function StudentDetailsClient({ id }: Props) {
       info={data}
       completion={data}
       cumulativeScore={data}
+      userId={id}
       attendance={data?.sessionAttendance ?? []}
       onRevokeAccess={() => console.log("revoke", id)}
     />

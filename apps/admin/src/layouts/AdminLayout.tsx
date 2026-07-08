@@ -10,7 +10,7 @@ import {
 import { useSession } from "@ssu/queries";
 import { AdminModalProvider } from "@/contexts/AdminModalProvider";
 import { recordAuditEvent } from "@/lib/audit-log";
-import { User, Settings, HelpCircle } from "lucide-react";
+import { Settings, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -68,7 +68,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             pageTitle={getAdminPageTitle(pathname)}
             onBeforeLogout={handleBeforeLogout}
             menuItems={[
-              { label: "Account", href: "/account", icon: User },
+              { label: "Account", href: "/account", icon: Users },
               { label: "Settings", href: "/settings", icon: Settings },
               { label: "Support", href: "/support", icon: HelpCircle },
             ]}

@@ -642,6 +642,42 @@ export async function getStudentList(
   }
 }
 
+export async function getAssessmentsByProgram(
+  programId: string,
+  page = 1,
+  limit = 8,
+  status = "",
+  search = "",
+) {
+  try {
+    const token = getStoredAuthToken();
+
+    const params: Record<string, any> = { page, limit };
+    if (status) params.status = status;
+    if (search) params.search = search;
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/staff/assessments/program/${programId}`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch assessments.",
+    };
+  }
+}
 export async function getStaffAnalysis() {
   try {
     const token = getStoredAuthToken();
@@ -741,6 +777,29 @@ export async function updateStaffStatus(
   };
 }
 
+export async function updateStudentStatus(
+  userId: string,
+  status: "active" | "suspended",
+) {
+  const token = getStoredAuthToken();
+
+  const res = await axios.patch(
+    `${API_BASE_URL}/api/v1/admins/students/${userId}/status`,
+    { status },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return {
+    ok: true,
+    data: res.data.data,
+    message: res.data.message,
+  };
+}
+
 export async function assignRole({
   programId,
   tutorIds,
@@ -769,6 +828,166 @@ export async function assignRole({
   };
 }
 
+export async function createAssessment(data: {
+  program: string;
+  title: string;
+  module?: string;
+  instructions?: string;
+  dueDate?: string;
+  weight?: number;
+  referenceMaterialsMeta?: Array<{ name: string; type: string; url?: string }>;
+  files?: File[];
+  isDraft?: boolean;
+}) {
+  try {
+    const token = getStoredAuthToken();
+    const formData = new FormData();
+
+    formData.append("program", data.program);
+    formData.append("title", data.title);
+    if (data.module) formData.append("module", data.module);
+    formData.append("status", data.isDraft ? "draft" : "published");
+    if (data.instructions) formData.append("instructions", data.instructions);
+    if (data.dueDate) formData.append("dueDate", data.dueDate);
+    if (data.weight !== undefined)
+      formData.append("weight", String(data.weight));
+    if (data.referenceMaterialsMeta) {
+      formData.append(
+        "referenceMaterialsMeta",
+        JSON.stringify(data.referenceMaterialsMeta),
+      );
+    }
+    if (data.files?.length) {
+      data.files.forEach((file) => formData.append("referenceMaterials", file));
+    }
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/staff/assessments/create`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to create assessment.",
+    };
+  }
+}
+
+export async function getClassroomModules(programId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/tutors/programs/${programId}/classroom/modules`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch modules.",
+    };
+  }
+}
+
+export async function getAssessmentById(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch assessment.",
+    };
+  }
+}
+
+export async function getStudentassignments(programId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/program/${programId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getStudentAssessmentById(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/${assessmentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch assessment.",
+    };
+  }
+}
+
 export const SESSION_STORAGE_KEY = "ssu_session";
 
 const AUTH_TOKEN_STORAGE_KEY = "token";
@@ -781,6 +1000,70 @@ export function readSession(): AuthUser | null {
     return JSON.parse(raw) as AuthUser;
   } catch {
     return null;
+  }
+}
+
+export async function submitAssessment(
+  assessmentId: string,
+  data: {
+    submissionType: "file" | "link";
+    file?: File;
+    submissionLink?: string;
+    comment?: string;
+  },
+) {
+  try {
+    const token = getStoredAuthToken();
+    const formData = new FormData();
+
+    formData.append("submissionType", data.submissionType);
+    if (data.file) formData.append("file", data.file);
+    if (data.submissionLink)
+      formData.append("submissionLink", data.submissionLink);
+    if (data.comment) formData.append("comment", data.comment);
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/students/assessments/submit/${assessmentId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to submit assessment.",
+    };
+  }
+}
+
+export async function undoAssessmentSubmission(submissionId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.delete(
+      `${API_BASE_URL}/api/v1/students/assessments/undo/${submissionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return { ok: true as const, message: res.data.message };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to undo submission.",
+    };
   }
 }
 
