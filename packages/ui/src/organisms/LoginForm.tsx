@@ -50,11 +50,9 @@ export function LoginForm({
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
   const portal =
-    role === "admin"
+    role === "admin" || role === "tutor" || role === "trainer"
       ? "admin"
-      : role === "tutor" || role === "trainer"
-        ? "tutor"
-        : "student";
+      : "student";
   const loginMutation = useLoginMutation(portal);
   const isAuthenticated =
     portal === "student" ? isStudentAuthenticated() : Boolean(session);

@@ -12,9 +12,3 @@ export function adminPath(path: string = ""): string {
   if (isUnifiedDeploy()) return `/admin${segment}`;
   return segment === "" ? "/" : segment;
 }
-
-export function tutorPath(path: string = ""): string {
-  const segment = normalize(path);
-  if (isUnifiedDeploy()) return `/tutor${segment}`;
-  return segment === "" ? "/" : segment;
-}

@@ -1,6 +1,6 @@
 import { listAdminProgramClassrooms } from "@ssu/api";
 import { useQuery } from "@tanstack/react-query";
-import { buildAdminCalendarEvents } from "@/lib/calendar/mappers";
+import { buildAdminCalendarEvents } from "./admin-calendar/mappers";
 
 export const adminCalendarKeys = {
   all: ["admin-calendar"] as const,

@@ -46,6 +46,7 @@ export * from "./use-admin-programs";
 export * from "./use-program-applicants";
 export * from "./use-program-classroom";
 export * from "./use-tutor-staff";
+export * from "./admin-calendar";
 export * from "./use-admin-calendar";
 export * from "./use-admin-transactions";
 export * from "./setup-session-expiry";

@@ -23,4 +23,5 @@ export * from "./phone";
 export * from "./reference-data";
 export * from "./admin-calendar";
 export * from "./admin-transactions";
+export * from "./google-classroom";
 export * from "./auth-errors";

@@ -3,14 +3,14 @@ import { adminlogin, login, writeSession } from "@ssu/api";
 import { sessionKey } from "./keys";
 import { mutationToast } from "./notify";
 
-export type LoginPortal = "student" | "admin" | "tutor";
+export type LoginPortal = "student" | "admin";
 
 export function useLoginMutation(portal: LoginPortal = "student") {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { email: string; password: string }) => {
       const res =
-        portal === "admin" || portal === "tutor"
+        portal === "admin"
           ? await adminlogin(input.email, input.password)
           : await login(input.email, input.password);
 
