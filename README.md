@@ -134,16 +134,28 @@ Use **two Netlify sites** on the **same repo and branch** (`dev`). Each site use
 
 ### Student site (e.g. ssustaging.netlify.app)
 
-| Setting                 | Value          |
-| ----------------------- | -------------- |
-| **Production branch**   | `dev`          |
-| **Base directory**      | `apps/student` |
-| **Package directory**   | _(empty)_      |
-| **Build command**       | _(empty)_      |
-| **Publish directory**   | _(empty)_      |
-| **Functions directory** | _(empty)_      |
+| Setting                 | Value                                                |
+| ----------------------- | ---------------------------------------------------- |
+| **Production branch**   | `dev`                                                |
+| **Base directory**      | `apps/student`                                       |
+| **Package directory**   | `apps/student` _(auto-filled — leave it)_            |
+| **Build command**       | _(empty)_                                            |
+| **Publish directory**   | `apps/student/` _(auto-filled — overridden by toml)_ |
+| **Functions directory** | _(auto-filled — leave it)_                           |
 
-Config file: `apps/student/netlify.toml`
+Config file: `apps/student/netlify.toml` — sets `publish = "apps/student/.next"` to override the auto-filled source folder.
+
+### Netlify auto-fills fields (cannot clear them)
+
+When you set **Base directory** to `apps/student`, Netlify auto-fills Package, Publish, and Functions. **You do not need to clear them.** Settings in `netlify.toml` override the UI.
+
+In the UI you may see: _"Overridden by netlify.toml. Published deploy built with `/`."_ — that is correct. The build runs from the repo root so `npm ci` works with workspaces.
+
+After deploy, check the log **Resolved config** section:
+
+- `publish: apps/student/.next`
+- `publishOrigin: config` (not `ui`)
+- `@netlify/plugin-nextjs` completes without errors
 
 ### Admin site (e.g. adminstg.netlify.app)
 
@@ -166,8 +178,8 @@ Config file: `netlify.toml` (repo root)
 
 ### Common deploy mistakes
 
-1. **Student base = repo root + Package = `apps/student`** — Netlify may read root admin config; use **Base = `apps/student`**, **Package = empty** instead.
-2. **Build command or Publish set in the UI** — leave empty so the correct `netlify.toml` is used.
+1. **Publish auto-fills to `apps/student/`** — that deploys source code, not the build. `apps/student/netlify.toml` must set `publish = "apps/student/.next"`.
+2. **Student base = repo root only** (no `apps/student` base) — Netlify reads root `netlify.toml` (admin build) instead of the student app.
 3. **Runtime: Next.js preset in UI** — remove it; the plugin in `netlify.toml` is enough.
 
 ## Build troubleshooting
