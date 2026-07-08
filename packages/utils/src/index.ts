@@ -19,6 +19,13 @@ export function formatDate(
   return new Intl.DateTimeFormat(undefined, options).format(d);
 }
 
+export function formatDateDDMMYYYY(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 export function truncate(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
   return `${str.slice(0, Math.max(0, maxLength - 1))}…`;

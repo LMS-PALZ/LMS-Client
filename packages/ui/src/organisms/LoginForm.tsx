@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { isStudentAuthenticated } from "@ssu/api";
 import { useLoginMutation, useSession } from "@ssu/queries";
 import { loginSchema } from "@ssu/schema";
+import type { AuthUser } from "@ssu/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -28,6 +29,7 @@ interface LoginFormProps {
   signupLink?: string;
   showSignupLink?: boolean;
   useAuthLayout?: boolean;
+  onLoginSuccess?: (user: AuthUser) => void;
 }
 
 type FormValues = z.infer<typeof loginSchema>;
@@ -43,6 +45,7 @@ export function LoginForm({
   signupLink = "/signup",
   showSignupLink = false,
   useAuthLayout = true,
+  onLoginSuccess,
 }: LoginFormProps) {
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
@@ -77,6 +80,7 @@ export function LoginForm({
     try {
       const res = await loginMutation.mutateAsync(values);
       if (res.ok) {
+        onLoginSuccess?.(res.data);
         router.replace(onSuccessRedirect);
         router.refresh();
       }

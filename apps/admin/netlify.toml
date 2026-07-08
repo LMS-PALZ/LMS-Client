@@ -1,9 +1,9 @@
-[build]
-  base = "/"
-  command = "npm install && npm run build -w @ssu/admin"
-
-[build.environment]
-  NODE_VERSION = "24.14.0"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Admin build config lives in the repo root netlify.toml (not here).
+#
+# Netlify UI (admin site):
+#   Production branch:   dev
+#   Base directory:      (empty = repo root)
+#   Package directory:   (MUST be empty)
+#
+# Do not set Package directory to apps/admin — that is for the student
+# site's pattern only (and student uses Base = apps/student instead).

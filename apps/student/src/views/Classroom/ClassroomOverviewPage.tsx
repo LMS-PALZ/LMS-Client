@@ -1,4 +1,4 @@
-import type { ClassroomCourseDetail } from "@/lib/classroom-data";
+import type { ClassroomCourseDetail } from "@/lib/classroom/types";
 
 export function ClassroomOverviewPage({
   course,

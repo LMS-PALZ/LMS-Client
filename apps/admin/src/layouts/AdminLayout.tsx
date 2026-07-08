@@ -1,49 +1,21 @@
 "use client";
 
-import { adminPath } from "@ssu/config/portal-paths";
 import {
   DashboardLayout,
   useSidebarCollapsed,
   AdminSidebar,
   HeaderBar,
-  type NavigationSidebarItem,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
+import { useSession } from "@ssu/queries";
 import { AdminModalProvider } from "@/contexts/AdminModalProvider";
-import {
-  CalendarDays,
-  ClipboardList,
-  Users,
-  Settings,
-  HelpCircle,
-  NotebookText,
-  FilePenLine,
-  BriefcaseBusiness,
-  GraduationCap,
-  House,
-} from "lucide-react";
+import { recordAuditEvent } from "@/lib/audit-log";
+import { Settings, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { getAdminPageTitle } from "@/lib/adminRoutes";
-
-const mainItems: NavigationSidebarItem[] = [
-  { href: adminPath(), label: "Home", icon: House },
-  { href: adminPath("/students"), label: "Students", icon: Users },
-  { href: adminPath("/calender"), label: "Calender", icon: CalendarDays },
-];
-
-const teachingItems = [
-  { href: "/programs", label: "Programs", icon: NotebookText },
-  { href: "/classroom", label: "Classroom", icon: ClipboardList },
-  { href: "/assessment", label: "Assessment", icon: FilePenLine },
-];
-
-const toolsItems = [
-  { href: "/staff", label: "Staff", icon: BriefcaseBusiness },
-  { href: "/auditlog", label: "Audit log", icon: ClipboardList },
-  { href: "/certificates", label: "Certificates", icon: GraduationCap },
-];
+import { getNavSectionsForRole } from "@/lib/admin-roles";
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   return (
@@ -56,6 +28,10 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
 function AdminSidebarWrapper() {
   const pathname = usePathname();
   const { toggle } = useSidebarCollapsed();
+  const { data: user } = useSession();
+  const { mainItems, teachingItems, toolsItems } = getNavSectionsForRole(
+    user?.role,
+  );
 
   return (
     <AdminSidebar
@@ -73,6 +49,13 @@ function AdminSidebarWrapper() {
 export function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
+  const { data: user } = useSession();
+
+  const handleBeforeLogout = async () => {
+    if (user) {
+      await recordAuditEvent("sign_out", user);
+    }
+  };
 
   return (
     <AdminModalProvider>
@@ -83,6 +66,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         header={
           <HeaderBar
             pageTitle={getAdminPageTitle(pathname)}
+            onBeforeLogout={handleBeforeLogout}
             menuItems={[
               { label: "Account", href: "/account", icon: Users },
               { label: "Settings", href: "/settings", icon: Settings },

@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import type { ClassroomResource } from "@/lib/classroom-data";
+import type { ClassroomResource } from "@/lib/classroom/types";
 
 export function ClassroomResourceRow({
   resource,
@@ -8,7 +8,7 @@ export function ClassroomResourceRow({
 }) {
   return (
     <a
-      href={resource.fileUrl}
+      href={resource.fileUrl ?? resource.url ?? "#"}
       target="_blank"
       rel="noopener noreferrer"
       className="block rounded-[15px] border border-[#E8EDF5] bg-white p-5 transition hover:border-[#D4E2D8] hover:bg-[#FAFBFD]"

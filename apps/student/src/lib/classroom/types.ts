@@ -1,15 +1,17 @@
 export type SessionPhase = "live" | "upcoming" | "ended";
 
-export type LiveVideoProvider = "google-meet" | "jitsi";
+export type LiveVideoProvider = "zoom";
 
 export type ClassroomLessonType = "live" | "recorded" | "reading";
 
 export interface ClassroomResource {
   id: string;
   title: string;
-  type: string;
+  type?: string;
   url?: string | null;
   content?: string | null;
+  fileUrl?: string;
+  meta?: string;
 }
 
 export interface ClassroomRecording {
@@ -48,7 +50,6 @@ export interface ClassroomCourseDetail {
   scheduledAt?: string;
   meetUrl: string;
   liveVideoProvider?: LiveVideoProvider;
-  jitsiRoomName?: string;
   description: string;
   overview: string;
   recordingSummary: string;
@@ -57,46 +58,4 @@ export interface ClassroomCourseDetail {
   resources: ClassroomResource[];
   href: string;
   recordings?: ClassroomRecording[];
-}
-
-export interface ClassroomCourseItem {
-  id: string;
-  title: string;
-  courseLabel: string;
-  syllabusCount: number;
-  sessionPhase: SessionPhase;
-  sessionId?: string;
-  href: string;
-}
-
-export interface ClassroomProgram {
-  id: string;
-  title: string;
-  description: string;
-  contentCount: string;
-  duration: string;
-  startDate: string;
-  endDate: string;
-}
-
-export interface ClassroomLiveSession {
-  sessionId: string;
-  courseId: string;
-  title: string;
-  time: string;
-  date: string;
-  phase: SessionPhase;
-  meetUrl: string;
-  liveVideoProvider?: LiveVideoProvider;
-  jitsiRoomName?: string;
-}
-
-export interface ClassroomDataFile {
-  program: ClassroomProgram;
-  liveSession: ClassroomLiveSession;
-  defaultMeetUrl: string;
-  defaultRecordingEmbedUrl: string;
-  defaultResourcePdf: string;
-  courses: Omit<ClassroomCourseDetail, "href">[];
-  weeksByCourse: Record<string, ClassroomWeek[]>;
 }

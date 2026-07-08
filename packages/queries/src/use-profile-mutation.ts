@@ -26,6 +26,7 @@ export function useCreateProfileMutation() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: studentProfileKey });
+      void queryClient.invalidateQueries({ queryKey: ["profiledetails"] });
       mutationToast.success("Profile saved successfully");
     },
     onError: (error) => {

@@ -1,13 +1,51 @@
 "use client";
 
-import { useSession, useLogout } from "@ssu/queries";
-import { Bell, Menu, LogOut, Check, X } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useSession, useLogout, useNotifications } from "@ssu/queries";
+import {
+  Bell,
+  Menu,
+  LogOut,
+  Check,
+  X,
+  CalendarClock,
+  Radio,
+} from "lucide-react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@ssu/ui";
-import { mockNotifications } from "@ssu/api";
 import type { NotificationItem } from "@ssu/types";
 import type { LucideIcon } from "lucide-react";
+
+const NOTIFICATION_READS_KEY = "ssu_notification_reads";
+
+function loadReadNotificationIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(NOTIFICATION_READS_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? new Set(parsed.filter((id) => typeof id === "string"))
+      : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveReadNotificationIds(ids: Set<string>) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(NOTIFICATION_READS_KEY, JSON.stringify([...ids]));
+}
+
+function NotificationIcon({ kind }: { kind?: string }) {
+  if (kind === "class-live") {
+    return <Radio className="mt-1 h-4 w-4 shrink-0 text-[#EF4444]" />;
+  }
+  if (kind === "class-upcoming") {
+    return <CalendarClock className="mt-1 h-4 w-4 shrink-0 text-[#2563EB]" />;
+  }
+  return <span className="mt-1 text-lg">⭐</span>;
+}
 
 function timeAgo(dateStr: string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -29,6 +67,7 @@ export interface HeaderBarProps {
   firstName?: string;
   lastName?: string;
   email?: string;
+  onBeforeLogout?: () => void | Promise<void>;
 }
 
 export function HeaderBar({
@@ -37,8 +76,10 @@ export function HeaderBar({
   firstName,
   lastName,
   email,
+  onBeforeLogout,
 }: HeaderBarProps) {
   const { data: user } = useSession();
+  const { data: fetchedNotifications = [] } = useNotifications();
   const { toggleMobileSidebar } = useSidebar();
   const router = useRouter();
   const logout = useLogout();
@@ -53,11 +94,23 @@ export function HeaderBar({
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-  const [notifications, setNotifications] =
-    useState<NotificationItem[]>(mockNotifications);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setReadIds(loadReadNotificationIds());
+  }, []);
+
+  const notifications = useMemo<NotificationItem[]>(
+    () =>
+      fetchedNotifications.map((notification) => ({
+        ...notification,
+        read: readIds.has(notification.id),
+      })),
+    [fetchedNotifications, readIds],
+  );
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -77,15 +130,35 @@ export function HeaderBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const markAllRead = () =>
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const markAllRead = useCallback(() => {
+    const next = new Set(readIds);
+    notifications.forEach((notification) => next.add(notification.id));
+    setReadIds(next);
+    saveReadNotificationIds(next);
+  }, [notifications, readIds]);
 
-  const markRead = (id: string) =>
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
+  const markRead = useCallback((id: string) => {
+    setReadIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev).add(id);
+      saveReadNotificationIds(next);
+      return next;
+    });
+  }, []);
 
-  const handleLogout = () => {
+  const handleNotificationClick = useCallback(
+    (notification: NotificationItem) => {
+      markRead(notification.id);
+      setNotifOpen(false);
+      if (notification.href) {
+        router.push(notification.href);
+      }
+    },
+    [markRead, router],
+  );
+
+  const handleLogout = async () => {
+    await onBeforeLogout?.();
     logout();
     router.replace("/login");
   };
@@ -166,10 +239,10 @@ export function HeaderBar({
                         <button
                           key={notif.id}
                           type="button"
-                          onClick={() => markRead(notif.id)}
+                          onClick={() => handleNotificationClick(notif)}
                           className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-[#F7F9FB]"
                         >
-                          <span className="mt-1 text-lg">⭐</span>
+                          <NotificationIcon kind={notif.kind} />
                           <div className="flex-1">
                             <p
                               className={`text-[13px] leading-5 ${notif.read ? "text-[#6B7280]" : "font-medium text-[#1D1D1D]"}`}
@@ -296,10 +369,10 @@ export function HeaderBar({
                 <button
                   key={notif.id}
                   type="button"
-                  onClick={() => markRead(notif.id)}
+                  onClick={() => handleNotificationClick(notif)}
                   className="flex w-full items-start gap-3 px-5 py-4 text-left transition hover:bg-[#F7F9FB]"
                 >
-                  <span className="mt-1 text-lg">⭐</span>
+                  <NotificationIcon kind={notif.kind} />
                   <div className="flex-1">
                     <p
                       className={`text-[14px] leading-6 ${notif.read ? "text-[#6B7280]" : "font-medium text-[#1D1D1D]"}`}

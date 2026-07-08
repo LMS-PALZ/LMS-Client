@@ -126,22 +126,68 @@ Copy `apps/<portal>/.env.example` to `apps/<portal>/.env.local` for local dev.
 
 Use `@/config/routes` inside an app, or `@ssu/config/routes` from packages. Next.js `src/app/**` remains the real router; route constants are for links and redirects only.
 
-## Netlify (staging: student on testcnflms)
+## Netlify (student + admin on separate sites)
 
-Point the **testcnflms** site at the **student** app only:
+Use **two Netlify sites** on the **same repo and branch** (`dev` for staging). Student and admin use **different Netlify UI settings** — they are not interchangeable.
 
-| Setting               | Value                                    |
-| --------------------- | ---------------------------------------- |
-| **Package directory** | `apps/student`                           |
-| **Publish directory** | **empty** in the UI                      |
-| **Build command**     | empty (uses `apps/student/netlify.toml`) |
+### Why student and admin differ
 
-Set in Netlify (or use values from `apps/student/netlify.toml`):
+If the **student** site uses repo root as base with **Package directory = `apps/student`**, Netlify also reads the root `netlify.toml` (admin build). The student URL then deploys the **admin app** (admin login, wrong site).
 
-- `NEXT_PUBLIC_APP_ENV=staging`
-- `NEXT_PUBLIC_STAGING_URL=https://testcnflms.netlify.app`
+The student site must use **Base directory = `apps/student`** and leave **Package directory empty**.
 
-Student routes on that host: `/` (signup), `/login`, `/home`, etc. Admin and tutor get their own Netlify sites or production subdomains later.
+### Student site (e.g. ssu-students.netlify.app)
+
+| Setting                 | Value             |
+| ----------------------- | ----------------- |
+| **Production branch**   | `dev`             |
+| **Base directory**      | `apps/student`    |
+| **Package directory**   | _(MUST be empty)_ |
+| **Build command**       | _(empty)_         |
+| **Publish directory**   | _(empty)_         |
+| **Functions directory** | _(empty)_         |
+
+Config file: `apps/student/netlify.toml`
+
+Env: `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org`
+
+### Admin site (e.g. adminstg.netlify.app)
+
+| Setting                 | Value                 |
+| ----------------------- | --------------------- |
+| **Production branch**   | `dev`                 |
+| **Base directory**      | _(empty = repo root)_ |
+| **Package directory**   | _(MUST be empty)_     |
+| **Build command**       | _(empty)_             |
+| **Publish directory**   | _(empty)_             |
+| **Functions directory** | _(empty)_             |
+
+Config file: repo root `netlify.toml`
+
+Env: `NEXT_PUBLIC_API_URL=https://base-api.skillscaleup.org`
+
+### How deploys work
+
+- A push to `dev` triggers **both** Netlify sites.
+- Each site runs its own build and updates **only its URL**.
+- Shared package changes rebuild both; app-only changes can skip the other site via `ignore` in each config.
+
+### Netlify UI migration (from `dev-student` / `dev-admin`)
+
+1. **Student site:** set Production branch to `dev`, **Base directory = `apps/student`**, clear **Package directory**.
+2. **Admin site:** set Production branch to `dev`, **Base directory empty**, clear **Package directory**.
+3. Clear any **Build command** or **Publish directory** overrides in the Netlify UI on both sites.
+4. Redeploy both sites from `dev`.
+5. Confirm the student URL shows the student login (not admin).
+6. After both sites succeed, delete old `dev-student` and `dev-admin` branches.
+
+### Common deploy mistakes
+
+1. **Student Package directory = `apps/student`** — causes admin app to deploy on the student site.
+2. **Student Base = repo root** — Netlify reads root `netlify.toml` (admin) for the student site.
+3. **Admin Package directory = `apps/admin`** — admin should use repo root config only.
+4. **Publish = `apps/admin/.next` in the UI** — leave empty; the Next.js plugin handles output.
+5. **Build command in the UI** — leave empty so the correct `netlify.toml` is used.
 
 ## Build troubleshooting
 

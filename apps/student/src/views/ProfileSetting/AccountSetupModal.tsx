@@ -11,7 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { mutationToast } from "@ssu/queries";
 import { useCreateProfileMutation, useSession } from "@ssu/queries";
-import { useSignupStore } from "@ssu/store";
+import { useProfileStore, useSignupStore } from "@ssu/store";
 import { Skeleton } from "@ssu/ui";
 import { useMemo, useState } from "react";
 
@@ -53,6 +53,8 @@ export function AccountSetupModal({
   const [step, setStep] = useState(1);
   const { data: sessionUser } = useSession();
   const signupUser = useSignupStore((state) => state.user);
+  const profile = useProfileStore((state) => state.user);
+  const setProfile = useProfileStore((state) => state.setUser);
   const createProfile = useCreateProfileMutation();
 
   const firstName = useMemo(() => {
@@ -200,6 +202,10 @@ export function AccountSetupModal({
         city,
         photo: profilePhoto,
       });
+
+      if (profile) {
+        setProfile({ ...profile, profileUploaded: true });
+      }
 
       onCompleted?.();
       // onClose();

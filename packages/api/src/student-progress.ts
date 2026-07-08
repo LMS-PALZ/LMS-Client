@@ -1,8 +1,8 @@
 import type { StudentProgress } from "@ssu/types";
-import { studentHomeApi } from "./student-home";
+import { studentDashboardApi } from "./student-dashboard";
 
 export const studentProgressApi = {
   async get(): Promise<StudentProgress> {
-    return studentHomeApi.getProgress();
+    return studentDashboardApi.getProgress();
   },
 };
