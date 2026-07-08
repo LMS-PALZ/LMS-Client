@@ -124,11 +124,11 @@ Use `@/config/routes` inside an app, or `@ssu/config/routes` from packages. Next
 
 ## Netlify (student + admin on separate sites)
 
-Both sites deploy from branch **`dev`** using the **same root `netlify.toml`**. Each Netlify site differs by an **environment variable** and **Publish directory** in the UI.
+Both sites deploy from branch **`dev`** using the **same root `netlify.toml`**. Site names use prefixes: **`ssuhub*`** (student, e.g. `ssuhubstg`) and **`ssuadmin*`** (admin, e.g. `ssuadmin`).
 
-### Step 1 — Environment variable (each site)
+### Step 1 — Environment variable (optional)
 
-In **Site configuration → Environment variables**, add:
+Auto-detection uses `SITE_NAME` / `URL` (`ssuhub*` → student, `ssuadmin*` → admin). You can also set explicitly:
 
 | Site    | Variable      | Value     |
 | ------- | ------------- | --------- |

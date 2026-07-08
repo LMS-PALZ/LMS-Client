@@ -7,8 +7,8 @@ set -euo pipefail
 detect_app_from_name() {
   local value="${1:-}"
   case "$value" in
-    adminstg|*admin*) echo admin ;;
-    ssuhubstg|ssustaging|*student*) echo student ;;
+    ssuadmin*) echo admin ;;
+    ssuhub*) echo student ;;
     *) echo "" ;;
   esac
 }
