@@ -1,24 +1,21 @@
 # Student portal — branch `dev`
 #
-# Netlify UI (student site):
-#   Production branch:   dev
-#   Base directory:      (empty = repo root)
-#   Package directory:   apps/student
+# Netlify UI — REQUIRED (do not use repo root + package directory):
+#   Base directory:      apps/student
+#   Package directory:   (MUST be empty — not apps/student)
 #   Build command:       (empty)
-#   Publish directory:   (empty — Next.js plugin handles output)
+#   Publish directory:   (empty — never apps/admin/.next)
 #   Functions directory: (empty)
+#   Production branch:   dev
+#
+# If base is repo root, Netlify also reads /netlify.toml (admin) and deploys the wrong app.
 
 [build]
   base = "/"
-  command = "npm ci --include=dev && npm run build -w @ssu/student"
-  # Overrides locked Netlify UI publish (apps/student/). Required for monorepo + Next.js plugin.
-  publish = "apps/student/.next"
-  ignore = "git diff --quiet $CACHED_COMMIT $COMMIT_REF -- apps/student packages/ package.json package-lock.json turbo.json"
+  command = "npm ci && npm run build -w @ssu/student"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
-  # Ensure @netlify/plugin-nextjs is installed in CI (it is a devDependency).
-  NPM_FLAGS = "--include=dev"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

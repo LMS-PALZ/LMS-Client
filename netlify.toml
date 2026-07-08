@@ -1,8 +1,18 @@
-# Monorepo — do not add [build] settings here.
+# Admin site ONLY — Netlify UI:
+#   Base directory:      (empty = repo root)
+#   Package directory:   (empty)
+#   Build / Publish:     (empty — set below)
+#   Production branch:   dev
 #
-# Each app has its own netlify.toml. Set Package directory in the Netlify UI:
-#   Student site → apps/student
-#   Admin site   → apps/admin
-#
-# Leave Base directory empty (repo root), and clear Build / Publish / Functions
-# overrides in the Netlify UI so each app's netlify.toml is used.
+# Student site MUST use base directory apps/student (not repo root).
+# Never set student Package directory to apps/student with empty base.
+
+[build]
+  command = "npm ci && npm run build -w @ssu/admin"
+  publish = "apps/admin/.next"
+
+[build.environment]
+  NODE_VERSION = "24.14.0"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
