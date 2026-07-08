@@ -1,19 +1,19 @@
 # Student portal — branch `dev`
 #
-# Netlify UI (student site):
-#   Base directory:      /  (repo root)
-#   Package directory:   apps/student
+# Netlify UI — REQUIRED:
+#   Base directory:      apps/student   ← must NOT be / (repo root)
+#   Package directory:   apps/student   (auto-filled — leave it)
 #   Build command:       (empty)
-#   Publish directory:   (empty — set below)
+#   Publish directory:   (empty — plugin handles output)
 #   Production branch:   dev
 #
-# Do NOT put admin [build] in the repo root netlify.toml — with Base = /,
-# Netlify will read it and deploy the admin app on this site.
+# With Base = /, Netlify reads the repo root netlify.toml (empty) and you get 404.
+# With Base = apps/student, Netlify reads this file. base = "/" below runs npm ci
+# from the repo root for the monorepo workspace.
 
 [build]
   base = "/"
   command = "npm ci && npm run build -w @ssu/student"
-  publish = "apps/student/.next"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
