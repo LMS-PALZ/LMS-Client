@@ -11,6 +11,8 @@
 [build]
   base = "/"
   command = "npm ci --include=dev && npm run build -w @ssu/student"
+  # Overrides locked Netlify UI publish (apps/student/). Required for monorepo + Next.js plugin.
+  publish = "apps/student/.next"
   ignore = "git diff --quiet $CACHED_COMMIT $COMMIT_REF -- apps/student packages/ package.json package-lock.json turbo.json"
 
 [build.environment]
