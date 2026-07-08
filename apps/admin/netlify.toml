@@ -11,6 +11,7 @@
 [build]
   base = "/"
   command = "npm ci --include=dev && npm run build -w @ssu/admin"
+  publish = "apps/admin/.next"
   ignore = "git diff --quiet $CACHED_COMMIT $COMMIT_REF -- apps/admin packages/ package.json package-lock.json turbo.json"
 
 [build.environment]
