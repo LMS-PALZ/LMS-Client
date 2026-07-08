@@ -124,24 +124,24 @@ Use `@/config/routes` inside an app, or `@ssu/config/routes` from packages. Next
 
 ## Netlify (student + admin on separate sites)
 
-Use **two Netlify sites** on the **same repo and branch** (`dev`). Both sites use the **same UI pattern** — only **Package directory** differs.
+Use **two Netlify sites** on the **same repo and branch** (`dev`). Each site uses a **different UI pattern** — this matches what worked on `dev-student` / `dev-admin`.
 
 ### Important
 
-Do **not** put build settings in the repo root `netlify.toml`. Each app config lives in `apps/<portal>/netlify.toml`.
+- **Student** and **admin** must **not** share the same Netlify UI base/package settings.
+- If the student site uses repo root as base, Netlify reads root `netlify.toml` (admin build) and deploys the wrong app.
+- The `.netlify/` folder is **build output** from the Next.js plugin — do not commit it (it is gitignored).
 
-Clear **Publish directory** and **Functions directory** in the Netlify UI. The Next.js plugin handles output; `apps/student/.next` in the UI causes deploy failures.
+### Student site (e.g. ssustaging.netlify.app)
 
-### Student site (e.g. ssu-students.netlify.app)
-
-| Setting                 | Value                 |
-| ----------------------- | --------------------- |
-| **Production branch**   | `dev`                 |
-| **Base directory**      | _(empty = repo root)_ |
-| **Package directory**   | `apps/student`        |
-| **Build command**       | _(empty)_             |
-| **Publish directory**   | _(empty)_             |
-| **Functions directory** | _(empty)_             |
+| Setting                 | Value          |
+| ----------------------- | -------------- |
+| **Production branch**   | `dev`          |
+| **Base directory**      | `apps/student` |
+| **Package directory**   | _(empty)_      |
+| **Build command**       | _(empty)_      |
+| **Publish directory**   | _(empty)_      |
+| **Functions directory** | _(empty)_      |
 
 Config file: `apps/student/netlify.toml`
 
@@ -151,29 +151,24 @@ Config file: `apps/student/netlify.toml`
 | ----------------------- | --------------------- |
 | **Production branch**   | `dev`                 |
 | **Base directory**      | _(empty = repo root)_ |
-| **Package directory**   | `apps/admin`          |
+| **Package directory**   | _(empty)_             |
 | **Build command**       | _(empty)_             |
 | **Publish directory**   | _(empty)_             |
 | **Functions directory** | _(empty)_             |
 
-Config file: `apps/admin/netlify.toml`
-
-### If Netlify auto-fills fields
-
-When you set **Package directory** to `apps/student`, Netlify may auto-fill Publish / Functions. **Delete those values** — leave them blank. Only Package directory should be set.
+Config file: `netlify.toml` (repo root)
 
 ### How deploys work
 
 - A push to `dev` triggers both Netlify sites.
-- Each site builds only its app (`@ssu/student` or `@ssu/admin`).
-- Shared package changes rebuild both; app-only changes can skip the other site via `ignore` in each config.
+- Student builds `@ssu/student` via `apps/student/netlify.toml`.
+- Admin builds `@ssu/admin` via root `netlify.toml`.
 
 ### Common deploy mistakes
 
-1. **Publish = `apps/student/.next`** in the UI — leave empty; the Next.js plugin handles output.
-2. **Admin build in repo root `netlify.toml`** — removed; use `apps/admin/netlify.toml`.
-3. **Build command in the UI** — leave empty so the correct `netlify.toml` is used.
-4. **Functions = `netlify/functions`** — clear it unless you use Netlify Functions.
+1. **Student base = repo root + Package = `apps/student`** — Netlify may read root admin config; use **Base = `apps/student`**, **Package = empty** instead.
+2. **Build command or Publish set in the UI** — leave empty so the correct `netlify.toml` is used.
+3. **Runtime: Next.js preset in UI** — remove it; the plugin in `netlify.toml` is enough.
 
 ## Build troubleshooting
 
