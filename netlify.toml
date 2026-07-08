@@ -2,15 +2,15 @@
 #
 # Both sites use THIS file. They differ by environment variables + UI publish path:
 #
-# STUDENT site (ssuhubstg):
+# STUDENT site (ssuhub* — e.g. ssuhubstg):
 #   UI Base / Package:  (both empty)
 #   UI Publish:         apps/student/.next
-#   Env var:            NETLIFY_APP=student
+#   Env var (optional): NETLIFY_APP=student
 #
-# ADMIN site (adminstg):
+# ADMIN site (ssuadmin* — e.g. ssuadmin):
 #   UI Base / Package:  (both empty)
 #   UI Publish:         apps/admin/.next
-#   Env var:            NETLIFY_APP=admin
+#   Env var (optional): NETLIFY_APP=admin
 
 [build]
   command = "npm ci && bash scripts/netlify-build.sh"
