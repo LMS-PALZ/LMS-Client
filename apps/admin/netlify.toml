@@ -1,18 +1,2 @@
-# Admin portal — branch `dev`
-#
-# Netlify UI:
-#   Base directory:      (empty = repo root)
-#   Package directory:   apps/admin
-#   Build command:       (empty)
-#   Publish directory:   (empty — plugin handles output)
-#   Production branch:   dev
-
-[build]
-  base = "/"
-  command = "npm ci && npm run build -w @ssu/admin"
-
-[build.environment]
-  NODE_VERSION = "24.14.0"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Admin site config lives in the repo root netlify.toml.
+# Set NETLIFY_APP=admin and Publish=apps/admin/.next on the admin Netlify site.

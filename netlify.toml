@@ -1,7 +1,22 @@
-# Monorepo — do NOT add [build] settings here.
+# Monorepo — one branch (`dev`), two Netlify sites.
 #
-# Each Netlify site reads its own config via Package directory in the UI:
-#   Student site → Package directory: apps/student  → apps/student/netlify.toml
-#   Admin site   → Package directory: apps/admin    → apps/admin/netlify.toml
+# Both sites use THIS file. They differ by environment variables + UI publish path:
 #
-# If admin [build] lives here, the student site (Base = /) will deploy admin instead.
+# STUDENT site (ssustaging):
+#   UI Base / Package:  (both empty)
+#   UI Publish:         apps/student/.next
+#   Env var:            NETLIFY_APP=student
+#
+# ADMIN site (adminstg):
+#   UI Base / Package:  (both empty)
+#   UI Publish:         apps/admin/.next
+#   Env var:            NETLIFY_APP=admin
+
+[build]
+  command = "npm ci && bash scripts/netlify-build.sh"
+
+[build.environment]
+  NODE_VERSION = "24.14.0"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
