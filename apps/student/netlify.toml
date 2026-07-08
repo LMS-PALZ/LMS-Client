@@ -1,17 +1,14 @@
 # Student portal — branch `dev`
 #
 # Netlify UI (student site):
-#   Base directory:      apps/student
-#   Package directory:   apps/student   (auto-filled — cannot clear, that's OK)
-#   Publish directory:   apps/student/  (auto-filled — OVERRIDDEN below)
-#   Functions directory: (auto-filled — plugin handles this)
+#   Base directory:      /  (repo root)
+#   Package directory:   apps/student
+#   Build command:       (empty)
+#   Publish directory:   (empty — set below)
 #   Production branch:   dev
 #
-# Netlify auto-fills Package/Publish/Functions when Base is set. You cannot clear
-# them in the UI. This file overrides the important paths (especially publish).
-#
-# "Overridden by netlify.toml. Published deploy built with /" in the UI is correct —
-# base = "/" runs npm ci from the repo root for the monorepo workspace.
+# Do NOT put admin [build] in the repo root netlify.toml — with Base = /,
+# Netlify will read it and deploy the admin app on this site.
 
 [build]
   base = "/"

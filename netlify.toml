@@ -1,18 +1,7 @@
-# Admin site ONLY — Netlify UI:
-#   Base directory:      (empty = repo root)
-#   Package directory:   (empty)
-#   Build / Publish:     (empty — set below)
-#   Production branch:   dev
+# Monorepo — do NOT add [build] settings here.
 #
-# Student site MUST use base directory apps/student (not repo root).
-# Never set student Package directory to apps/student with empty base.
-
-[build]
-  command = "npm ci && npm run build -w @ssu/admin"
-  publish = "apps/admin/.next"
-
-[build.environment]
-  NODE_VERSION = "24.14.0"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Each Netlify site reads its own config via Package directory in the UI:
+#   Student site → Package directory: apps/student  → apps/student/netlify.toml
+#   Admin site   → Package directory: apps/admin    → apps/admin/netlify.toml
+#
+# If admin [build] lives here, the student site (Base = /) will deploy admin instead.
