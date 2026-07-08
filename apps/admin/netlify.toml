@@ -1,9 +1,21 @@
-# Admin build config lives in the repo root netlify.toml (not here).
+# Admin portal — branch `dev`
 #
 # Netlify UI (admin site):
 #   Production branch:   dev
 #   Base directory:      (empty = repo root)
-#   Package directory:   (MUST be empty)
-#
-# Do not set Package directory to apps/admin — that is for the student
-# site's pattern only (and student uses Base = apps/student instead).
+#   Package directory:   apps/admin
+#   Build command:       (empty)
+#   Publish directory:   (empty — Next.js plugin handles output)
+#   Functions directory: (empty)
+
+[build]
+  base = "/"
+  command = "npm ci && npm run build -w @ssu/admin"
+  publish = "apps/admin/.next"
+  ignore = "git diff --quiet $CACHED_COMMIT $COMMIT_REF -- apps/admin packages/ package.json package-lock.json turbo.json"
+
+[build.environment]
+  NODE_VERSION = "24.14.0"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
