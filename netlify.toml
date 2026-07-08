@@ -2,7 +2,7 @@
 #
 # Both sites use THIS file. They differ by environment variables + UI publish path:
 #
-# STUDENT site (ssustaging):
+# STUDENT site (ssuhubstg):
 #   UI Base / Package:  (both empty)
 #   UI Publish:         apps/student/.next
 #   Env var:            NETLIFY_APP=student
