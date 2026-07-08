@@ -1,16 +1,15 @@
 # Admin portal — branch `dev`
 #
-# Netlify UI (admin site):
+# Netlify UI:
 #   Base directory:      (empty = repo root)
 #   Package directory:   apps/admin
 #   Build command:       (empty)
-#   Publish directory:   (empty — set below)
+#   Publish directory:   (empty — plugin handles output)
 #   Production branch:   dev
 
 [build]
   base = "/"
   command = "npm ci && npm run build -w @ssu/admin"
-  publish = "apps/admin/.next"
 
 [build.environment]
   NODE_VERSION = "24.14.0"

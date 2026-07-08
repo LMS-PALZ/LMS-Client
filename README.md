@@ -132,16 +132,18 @@ The `.netlify/` folder is build output from the Next.js plugin — do not commit
 
 ### Student site (e.g. ssustaging.netlify.app)
 
-| Setting                 | Value            |
-| ----------------------- | ---------------- |
-| **Production branch**   | `dev`            |
-| **Base directory**      | `/` (repo root)  |
-| **Package directory**   | `apps/student`   |
-| **Build command**       | _(empty)_        |
-| **Publish directory**   | _(empty)_        |
-| **Functions directory** | _(auto — leave)_ |
+| Setting                 | Value                                     |
+| ----------------------- | ----------------------------------------- |
+| **Production branch**   | `dev`                                     |
+| **Base directory**      | **`apps/student`** (not `/`)              |
+| **Package directory**   | `apps/student` _(auto-filled — leave it)_ |
+| **Build command**       | _(empty)_                                 |
+| **Publish directory**   | _(empty)_                                 |
+| **Functions directory** | _(auto — leave)_                          |
 
 Config file: `apps/student/netlify.toml`
+
+**Important:** Base must be `apps/student`, not `/`. With Base = `/`, Netlify reads the empty root `netlify.toml` and the site 404s.
 
 ### Admin site (e.g. adminstg.netlify.app)
 
@@ -164,8 +166,8 @@ Config file: `apps/admin/netlify.toml`
 
 ### Common deploy mistakes
 
-1. **Admin `[build]` in root `netlify.toml`** — student site with Base `/` deploys admin (shows "Admin sign in" on ssustaging).
-2. **Publish auto-fills to `apps/student/`** — must be overridden in toml as `apps/student/.next`.
+1. **Student Base = `/`** — Netlify reads empty root `netlify.toml` → 404. Use **Base = `apps/student`**.
+2. **Admin `[build]` in root `netlify.toml`** — student site deploys admin ("Admin sign in" on ssustaging).
 3. **Runtime: Next.js preset in UI** — remove it; the plugin in each app's `netlify.toml` is enough.
 
 ## Build troubleshooting
