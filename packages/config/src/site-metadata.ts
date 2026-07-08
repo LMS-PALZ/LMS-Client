@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getSiteUrl } from "./env";
 
-export type AppPortal = "student" | "admin" | "tutor";
+export type AppPortal = "student" | "admin";
 
 const BRAND = "Skill Scale Up";
 const DEFAULT_OG_IMAGE = "/firstlogo.png";
@@ -15,7 +15,6 @@ export const STUDENT_SIGNUP_OG_HEIGHT = 630;
 const PORTAL_TITLE: Record<AppPortal, string> = {
   student: "Student Dashboard",
   admin: "Admin Dashboard",
-  tutor: "Tutor Dashboard",
 };
 
 const PORTAL_DESCRIPTION: Record<AppPortal, string> = {
@@ -23,8 +22,6 @@ const PORTAL_DESCRIPTION: Record<AppPortal, string> = {
     "Register for a program, join live classes, connect Google Classroom, submit assessments, and track your learning progress.",
   admin:
     "Manage registered users, review trainer applications, configure training programs, and publish platform announcements.",
-  tutor:
-    "Publish courses, schedule live sessions, review and grade assignment submissions, and manage your tutor profile.",
 };
 
 export const STUDENT_SIGNUP_METADATA = {

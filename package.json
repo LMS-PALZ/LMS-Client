@@ -10,12 +10,10 @@
   "scripts": {
     "dev": "npm run dev -w @ssu/student",
     "dev:student": "npm run dev -w @ssu/student",
-    "dev:tutor": "npm run dev -w @ssu/tutor",
     "dev:admin": "npm run dev -w @ssu/admin",
     "build": "turbo run build",
     "build:student": "turbo run build --filter=@ssu/student",
     "build:admin": "turbo run build --filter=@ssu/admin",
-    "build:tutor": "turbo run build --filter=@ssu/tutor",
     "build:qa": "turbo run build --filter=@ssu/admin --filter=@ssu/student",
     "lint": "turbo run lint && oxlint . --deny-warnings --react-plugin --jest-plugin",
     "typecheck": "turbo run typecheck",
@@ -39,9 +37,6 @@
       "prettier --write"
     ],
     "apps/student/**/*.{ts,tsx}": [
-      "oxlint --fix --deny-warnings --react-plugin --jest-plugin"
-    ],
-    "apps/tutor/**/*.{ts,tsx}": [
       "oxlint --fix --deny-warnings --react-plugin --jest-plugin"
     ],
     "apps/admin/**/*.{ts,tsx}": [

@@ -1,6 +1,6 @@
 # Skill Scale Up LMS Client
 
-Monorepo for the **Skill Scale Up** learning management system front end. Three **Next.js 16** apps (student, tutor, admin) share internal packages for UI, API mocks, types, validation, and TanStack Query hooks. Each app uses the **App Router** (`src/app`); screen modules live under **`src/views`** to avoid colliding with the legacy Pages Router.
+Monorepo for the **Skill Scale Up** learning management system front end. Two **Next.js 16** apps (student, admin) share internal packages for UI, API, types, validation, and TanStack Query hooks. Trainers/tutors sign in through **admin** with a restricted role. Each app uses the **App Router** (`src/app`); screen modules live under **`src/views`** to avoid colliding with the legacy Pages Router.
 
 ## Requirements
 
@@ -16,7 +16,6 @@ Set the public origin in `.env.local` so share URLs resolve correctly:
 | App     | `NEXT_PUBLIC_SITE_URL` (local) |
 | ------- | ------------------------------ |
 | Student | `http://localhost:5173`        |
-| Tutor   | `http://localhost:5174`        |
 | Admin   | `http://localhost:5175`        |
 
 Use your deployed HTTPS URL in production (e.g. `https://student.skillscaleup.org`).
@@ -43,29 +42,28 @@ npm install
 
 Dependencies are managed with **npm workspaces** (`apps/*`, `packages/*`).
 
-## Run the three apps (development)
+## Run the apps (development)
 
 Each app is a Next.js workspace with its own dev port. Run them from the **repo root**:
 
 | App         | Command                                | URL                   |
 | ----------- | -------------------------------------- | --------------------- |
 | **Student** | `npm run dev` or `npm run dev:student` | http://localhost:5173 |
-| **Tutor**   | `npm run dev:tutor`                    | http://localhost:5174 |
 | **Admin**   | `npm run dev:admin`                    | http://localhost:5175 |
 
-Use **one terminal per app** if you want several open at once.
+Use **one terminal per app** if you want both open at once.
 
 ### Demo sign-in (mock auth)
 
 The demo API in `@ssu/api` accepts **any non-empty password** for known emails. Use the account that matches the app (each app checks role):
 
-| Role            | Email                      | Use in app |
-| --------------- | -------------------------- | ---------- |
-| Student         | `student@skillscaleup.dev` | Student    |
-| Tutor (trainer) | `trainer@skillscaleup.dev` | Tutor      |
-| Admin           | `admin@skillscaleup.dev`   | Admin      |
+| Role            | Email                      | Use in app                    |
+| --------------- | -------------------------- | ----------------------------- |
+| Student         | `student@skillscaleup.dev` | Student                       |
+| Tutor (trainer) | `trainer@skillscaleup.dev` | Admin (restricted tutor role) |
+| Admin           | `admin@skillscaleup.dev`   | Admin                         |
 
-There is also `pending@skillscaleup.dev` (tutor, pending approval) for testing the tutor pending flow in the **Tutor** app.
+There is also `pending@skillscaleup.dev` (tutor, pending approval) for testing pending trainer flows in the **admin** app.
 
 ## Turborepo
 
@@ -73,10 +71,9 @@ This monorepo uses [Turborepo](https://turbo.build) to run **build**, **lint**, 
 
 | Script                  | What it does                                             |
 | ----------------------- | -------------------------------------------------------- |
-| `npm run build`         | `next build` for student, admin, and tutor (parallel)    |
+| `npm run build`         | `next build` for student and admin (parallel)            |
 | `npm run build:student` | Build only `@ssu/student`                                |
 | `npm run build:admin`   | Build only `@ssu/admin`                                  |
-| `npm run build:tutor`   | Build only `@ssu/tutor`                                  |
 | `npm run build:qa`      | Admin + student (staging QA)                             |
 | `npm run lint`          | Per-package lint via Turbo + root oxlint                 |
 | `npm run typecheck`     | `tsc --noEmit` in all workspaces that define `typecheck` |
@@ -95,7 +92,7 @@ Dev servers are still one app at a time: `npm run dev`, `npm run dev:admin`, etc
 
 ## Repository layout
 
-- **`apps/student`**, **`apps/tutor`**, **`apps/admin`**: role-specific Next.js apps (App Router, shared layout + `RequireAuth`, Jest tests).
+- **`apps/student`**, **`apps/admin`**: role-specific Next.js apps (App Router, shared layout + `RequireAuth`, Jest tests). Trainers use **admin** with a restricted sidebar.
 - **`packages/ui`**: shared design system and layouts.
 - **`packages/api`**: client-side mock API and demo auth (`localStorage` session).
 - **`packages/queries`**: React Query hooks over the API layer.
@@ -110,7 +107,6 @@ For full product and UX requirements, see **`instruction.md`** in this repositor
 | `packages/config`        | Shared Tailwind, `site-metadata`, `env.ts` (`getSiteUrl`), route constants |
 | `apps/student`           | `netlify.toml`, `.env.example`, `src/config/routes.ts`                     |
 | `apps/admin`             | `netlify.toml`, `.env.example`, `src/config/routes.ts`                     |
-| `apps/tutor`             | `netlify.toml`, `.env.example`, `src/config/routes.ts`                     |
 | Repo root `.env.example` | Pointer only — Next reads env from each app folder                         |
 
 Copy `apps/<portal>/.env.example` to `apps/<portal>/.env.local` for local dev.
