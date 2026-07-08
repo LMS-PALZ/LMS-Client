@@ -10,12 +10,13 @@
 
 [build]
   base = "/"
-  command = "npm ci && npm run build -w @ssu/student"
-  publish = "apps/student/.next"
+  command = "npm ci --include=dev && npm run build -w @ssu/student"
   ignore = "git diff --quiet $CACHED_COMMIT $COMMIT_REF -- apps/student packages/ package.json package-lock.json turbo.json"
 
 [build.environment]
   NODE_VERSION = "24.14.0"
+  # Ensure @netlify/plugin-nextjs is installed in CI (it is a devDependency).
+  NPM_FLAGS = "--include=dev"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
