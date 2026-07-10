@@ -8,7 +8,6 @@ import {
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
 import { useSession } from "@ssu/queries";
-import { AdminModalProvider } from "@/contexts/AdminModalProvider";
 import { recordAuditEvent } from "@/lib/audit-log";
 import { Settings, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
@@ -58,25 +57,23 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AdminModalProvider>
-      <DashboardLayout
-        variant="admin"
-        fullWidthMain={isSessionPage}
-        sidebar={<AdminSidebarWrapper />}
-        header={
-          <HeaderBar
-            pageTitle={getAdminPageTitle(pathname)}
-            onBeforeLogout={handleBeforeLogout}
-            menuItems={[
-              { label: "Account", href: "/account", icon: Users },
-              { label: "Settings", href: "/settings", icon: Settings },
-              { label: "Support", href: "/support", icon: HelpCircle },
-            ]}
-          />
-        }
-      >
-        {children}
-      </DashboardLayout>
-    </AdminModalProvider>
+    <DashboardLayout
+      variant="admin"
+      fullWidthMain={isSessionPage}
+      sidebar={<AdminSidebarWrapper />}
+      header={
+        <HeaderBar
+          pageTitle={getAdminPageTitle(pathname)}
+          onBeforeLogout={handleBeforeLogout}
+          menuItems={[
+            { label: "Account", href: "/account", icon: Users },
+            { label: "Settings", href: "/settings", icon: Settings },
+            { label: "Support", href: "/support", icon: HelpCircle },
+          ]}
+        />
+      }
+    >
+      {children}
+    </DashboardLayout>
   );
 }

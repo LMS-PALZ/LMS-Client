@@ -1,10 +1,14 @@
 import { TagHorizontalIcon } from "../../icons";
 import { cn } from "@ssu/utils";
+import { StatusBadge } from "@ssu/ui";
 export type AssignmentSummaryStatusVariant =
   | "todo"
   | "graded"
   | "pendingReview"
-  | "notSubmitted";
+  | "notSubmitted"
+  | "closed"
+  | "draft"
+  | "archive";
 
 export interface AssignmentSummaryCardProps {
   title: string;
@@ -14,37 +18,12 @@ export interface AssignmentSummaryCardProps {
   scoreDisplay?: string;
   statusLabel?: string;
   statusVariant?: AssignmentSummaryStatusVariant;
+  statusStyle?: string;
   className?: string;
   onClick?: () => void;
 }
 
 export const ASSIGNMENT_SUMMARY_CARD_BG = "#F1F6FA";
-
-const statusPillStyles: Record<AssignmentSummaryStatusVariant, string> = {
-  todo: "bg-[#E8ECF0] text-neutral-700",
-  graded: "bg-[#D4EDDA] text-[#2D6A4F]",
-  pendingReview: "bg-[#E0F2FE] text-[#2563EB]",
-  notSubmitted: "bg-[#FEE8E8] text-[#DC2626]",
-};
-
-function AssignmentStatusPill({
-  label,
-  variant,
-}: {
-  label: string;
-  variant: AssignmentSummaryStatusVariant;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex rounded-full px-3 py-1 text-[11px] font-semibold leading-none",
-        statusPillStyles[variant],
-      )}
-    >
-      {label}
-    </span>
-  );
-}
 
 function MetricColumn({ label, value }: { label: string; value: string }) {
   return (
@@ -63,6 +42,7 @@ export function AssignmentSummaryCard({
   scoreDisplay = "N/A",
   statusLabel = "To do",
   statusVariant = "todo",
+  statusStyle,
   className,
   onClick,
 }: AssignmentSummaryCardProps) {
@@ -96,7 +76,9 @@ export function AssignmentSummaryCard({
       </dl>
 
       <div className="mt-auto flex justify-end">
-        <AssignmentStatusPill label={statusLabel} variant={statusVariant} />
+        <StatusBadge status={statusStyle ?? statusVariant ?? "todo"}>
+          {statusLabel}
+        </StatusBadge>
       </div>
     </Wrapper>
   );
