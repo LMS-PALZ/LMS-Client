@@ -4,6 +4,10 @@ export type UserStatus = "active" | "pending" | "suspended";
 
 export type AssignmentStatus =
   | "not-started"
+  | "published"
+  | "draft"
+  | "closed"
+  | "archive"
   | "submitted"
   | "graded"
   | "returned"
@@ -201,6 +205,31 @@ export interface StaffAssignment {
     total: string;
   };
   status: Status;
+}
+
+export interface StaffAssignmentsubmitted {
+  _id: string;
+  assessmentId: string;
+  programId: string;
+  studentId: {
+    _id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  submissionType: "file" | "url";
+  file?: {
+    url: string;
+    originalName: string;
+    fileType: string;
+    fileSizeMb: number;
+  };
+  submissionLink?: string | null;
+  status: Status;
+  score: number | null;
+  feedback: string | null;
+  comment: string | null;
+  submittedAt: string;
 }
 
 export interface Trainers {

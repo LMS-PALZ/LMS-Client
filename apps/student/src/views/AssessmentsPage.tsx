@@ -5,7 +5,12 @@ import {
   AssessmentProgressInsight,
 } from "@/components/assessments";
 import { assignmentCardProps } from "@/lib/assignment-display";
-import { useStudentProgress, useStudentassignments } from "@ssu/queries";
+import {
+  useStudentOverallProgress,
+  useStudentassignments,
+  useMySubmissions,
+} from "@ssu/queries";
+import type { AssignmentListItem, AssignmentStatus } from "@ssu/types";
 import {
   AlertBanner,
   AssignmentSummaryCard,
@@ -15,25 +20,85 @@ import {
 } from "@ssu/ui";
 import { ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+
+type AssessmentTab = "Assigned" | "Submitted";
 
 const PAGE_SIZE = 8;
 
 export function AssessmentsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchTab = (searchParams.get("tab") ?? "").toLowerCase();
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [activeTab, setActiveTab] = useState<AssessmentTab>(
+    searchTab === "submitted" ? "Submitted" : "Assigned",
+  );
+
+  useEffect(() => {
+    if (searchTab === "submitted") {
+      setActiveTab("Submitted");
+    } else if (searchTab === "assigned") {
+      setActiveTab("Assigned");
+    }
+  }, [searchTab]);
 
   const programId = localStorage.getItem("profileId") ?? "";
   const assignments = useStudentassignments(programId);
-  const progress = useStudentProgress();
+  const { data: submissions, isLoading: submissionsLoading } =
+    useMySubmissions();
+  const { data: overallProgress } = useStudentOverallProgress(programId);
 
   const filtered = useMemo(() => {
-    const data = assignments.data ?? [];
     const q = searchQuery.trim().toLowerCase();
+
+    if (activeTab === "Submitted") {
+      const list = Array.isArray(submissions) ? submissions : [];
+
+      const mapped: AssignmentListItem[] = list
+        .map((s: any) => {
+          const status: AssignmentStatus =
+            s.status === "graded" ? "graded" : "submitted";
+          const item: AssignmentListItem = {
+            id: s._id,
+            title: s.assessmentId?.title ?? "Untitled",
+            courseId: s.programId ?? "",
+            courseName: s.assessmentId?.module ?? "Assessment",
+            dueAt: s.assessmentId?.dueDate ?? "",
+            status,
+            moduleLabel: s.assessmentId?.module ?? "",
+            weightPercent: s.assessmentId?.weight ?? 0,
+            scoreDisplay: s.score !== null ? String(s.score) : "N/A",
+          };
+          return item;
+        })
+        .filter((a) => {
+          const { filterValue } = assignmentCardProps(a);
+          const matchesStatus =
+            statusFilter === "all" || filterValue === statusFilter;
+          const matchesSearch =
+            !q ||
+            a.title.toLowerCase().includes(q) ||
+            (a.moduleLabel ?? "").toLowerCase().includes(q) ||
+            a.courseName.toLowerCase().includes(q);
+          return matchesStatus && matchesSearch;
+        });
+
+      return mapped;
+    }
+
+    const data = assignments.data ?? [];
     return data.filter((a) => {
       const { filterValue } = assignmentCardProps(a);
+      const matchesTab =
+        a.status === "not-started" ||
+        a.status === "published" ||
+        a.status === "draft" ||
+        a.status === "closed" ||
+        a.status === "archive";
       const matchesStatus =
         statusFilter === "all" || filterValue === statusFilter;
       const matchesSearch =
@@ -41,13 +106,13 @@ export function AssessmentsPage() {
         a.title.toLowerCase().includes(q) ||
         (a.moduleLabel ?? "").toLowerCase().includes(q) ||
         a.courseName.toLowerCase().includes(q);
-      return matchesStatus && matchesSearch;
+      return matchesTab && matchesStatus && matchesSearch;
     });
-  }, [assignments.data, statusFilter, searchQuery]);
+  }, [assignments.data, submissions, statusFilter, searchQuery, activeTab]);
 
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
-  const scorePercent = progress.data?.overallScorePercent ?? 10;
+  const scorePercent = overallProgress?.percentage ?? 10;
 
   return (
     <div className="space-y-6">
@@ -66,6 +131,32 @@ export function AssessmentsPage() {
           Assignments
         </h2>
 
+        <div className="flex items-center gap-2 rounded-[12px] bg-[#ECF0F6] p-[2px] w-fit">
+          <button
+            type="button"
+            onClick={() => setActiveTab("Assigned")}
+            className={`rounded-[9px] px-5 py-2 text-[12px] font-medium transition ${
+              activeTab === "Assigned"
+                ? "bg-white text-[#1D1D1D] shadow-sm"
+                : "text-[#6B7280]"
+            }`}
+          >
+            Assigned
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("Submitted")}
+            className={`rounded-[9px] px-5 py-2 text-[12px] font-medium transition ${
+              activeTab === "Submitted"
+                ? "bg-white text-[#1D1D1D] shadow-sm"
+                : "text-[#6B7280]"
+            }`}
+          >
+            Submitted
+          </button>
+        </div>
+
         <AssessmentListToolbar
           statusFilter={statusFilter}
           onStatusFilterChange={(value) => {
@@ -79,7 +170,8 @@ export function AssessmentsPage() {
           }}
         />
 
-        {assignments.isLoading ? (
+        {assignments.isLoading ||
+        (activeTab === "Submitted" && submissionsLoading) ? (
           <AssignmentGridSkeleton
             count={8}
             columnsClassName="sm:grid-cols-2 lg:grid-cols-4"

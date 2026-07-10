@@ -1,3 +1,7 @@
 "use client";
 
-export default function Page() {}
+import { CreateAssignmentPage } from "@ssu/ui";
+
+export default function Page() {
+  return <CreateAssignmentPage />;
+}

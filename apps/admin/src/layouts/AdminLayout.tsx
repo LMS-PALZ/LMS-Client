@@ -8,8 +8,8 @@ import {
   HeaderBar,
   type NavigationSidebarItem,
   type NavigationSidebarLinkProps,
+  AdminModalProvider,
 } from "@ssu/ui";
-import { AdminModalProvider } from "@/contexts/AdminModalProvider";
 import {
   CalendarDays,
   ClipboardList,

@@ -1,5 +1,5 @@
 import { createSiteMetadata } from "@ssu/config/site-metadata";
-import { PlusJakartaFontLinks } from "@ssu/ui";
+import { PlusJakartaFontLinks, AdminModalProvider } from "@ssu/ui";
 import type { ReactNode } from "react";
 import { AppProviders } from "@/providers";
 import "./globals.css";
@@ -13,7 +13,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <PlusJakartaFontLinks />
       </head>
       <body>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <AdminModalProvider>{children}</AdminModalProvider>
+        </AppProviders>
       </body>
     </html>
   );

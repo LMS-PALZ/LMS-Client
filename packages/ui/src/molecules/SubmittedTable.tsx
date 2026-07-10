@@ -2,28 +2,13 @@
 
 import { DataTable, StatusBadge } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { StaffAssignment } from "@ssu/types";
-import { useRouter } from "next/navigation";
+import type { StaffAssignmentsubmitted } from "@ssu/types";
 import { EllipsisVertical } from "lucide-react";
 
 interface StudentsTableProps {
-  students: StaffAssignment[];
-
-  pagination?: {
-    page: number;
-    totalPages: number;
-    total?: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-
-  search: string;
-  setSearch: (value: string) => void;
-
-  status: string;
-  setStatus: (value: string) => void;
-
-  setPage: (page: number) => void;
+  students: StaffAssignmentsubmitted[];
+  weight: number;
+  onViewSubmission?: (submission: StaffAssignmentsubmitted) => void;
 }
 
 function formatDate(dateString: string) {
@@ -36,102 +21,77 @@ function formatDate(dateString: string) {
 
 export function SubmittedTable({
   students,
-  pagination,
-  search,
-  setSearch,
-  status,
-  setStatus,
-  setPage,
+  weight,
+  onViewSubmission,
 }: StudentsTableProps) {
-  const router = useRouter();
-
-  const columns: ColumnDef<StaffAssignment, any>[] = [
+  const columns: ColumnDef<StaffAssignmentsubmitted, any>[] = [
+    {
+      accessorKey: "student",
+      header: "Student",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-[13px] font-semibold text-white">
+            {row.original.studentId.first_name.charAt(0)}
+            {row.original.studentId.last_name.charAt(0)}
+          </span>
+          <div>
+            <p className="text-[14px] font-medium text-[#1D1D1D]">
+              {row.original.studentId.first_name}{" "}
+              {row.original.studentId.last_name}
+            </p>
+            <p className="text-[12px] text-[#6B7280]">
+              {row.original.studentId.email}
+            </p>
+          </div>
+        </div>
+      ),
+    },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
-
     {
-      accessorKey: "Title",
-      header: "Title",
+      accessorKey: "score",
+      header: "Score",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.title}</span>
-        </div>
+        <span className="text-sm">
+          {row.original.score !== null
+            ? `${row.original.score}/${weight}`
+            : "N/A"}
+        </span>
       ),
     },
-
-    {
-      accessorKey: "Course",
-      header: "Course",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.module}</span>
-        </div>
-      ),
-    },
-
-    {
-      accessorKey: "Submissions",
-      header: "Submissions",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">
-            {row.original.submissions.submitted} /{" "}
-            {row.original.submissions.total}
-          </span>
-        </div>
-      ),
-    },
-
-    {
-      accessorKey: "Weight",
-      header: "Weight",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.weight}%</span>
-        </div>
-      ),
-    },
-
     {
       accessorKey: "date",
-      header: "Due date",
+      header: "Date Submitted",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{formatDate(row.original.dueDate)}</span>
-        </div>
+        <span className="text-sm">{formatDate(row.original.submittedAt)}</span>
       ),
     },
-
     {
       id: "actions",
       header: "",
-      cell: ({ row }) => (
-        <button
-          type="button"
-          onClick={() => router.push(`/assessment/${row.original._id}`)}
-          className="text-[13px] text-[#4E845F] hover:opacity-80"
-        >
-          <EllipsisVertical />
-        </button>
-      ),
+      cell: ({ row }) => {
+        const handleClick = onViewSubmission
+          ? () => onViewSubmission(row.original)
+          : undefined;
+
+        return (
+          <button
+            type="button"
+            onClick={handleClick}
+            disabled={!onViewSubmission}
+            className={`text-[13px] text-[#4E845F] hover:opacity-80 ${
+              !onViewSubmission ? "cursor-not-allowed opacity-50" : ""
+            }`}
+          >
+            <EllipsisVertical />
+          </button>
+        );
+      },
     },
   ];
 
-  return (
-    <DataTable
-      columns={columns}
-      data={students ?? []}
-      pagination={pagination}
-      searchValue={search}
-      onSearchChange={setSearch}
-      statusFilter={status}
-      onStatusFilterChange={setStatus}
-      onPageChange={setPage}
-      searchable
-      statusOptions={["All", "published", "draft", "archive"]}
-    />
-  );
+  return <DataTable columns={columns} data={students ?? []} />;
 }

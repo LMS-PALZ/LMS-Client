@@ -4,7 +4,11 @@ export type AssessmentCardStatusVariant =
   | "todo"
   | "graded"
   | "pendingReview"
-  | "notSubmitted";
+  | "notSubmitted"
+  | "closed"
+  | "draft"
+  | "published"
+  | "archive";
 
 export function formatAssignmentDueDate(iso: string): string {
   const date = new Date(iso);
@@ -69,11 +73,31 @@ export function assignmentStatusDisplay(status: AssignmentStatus): {
         variant: "pendingReview",
         filterValue: "pending-review",
       };
+    case "draft":
+      return { label: "Draft", variant: "draft", filterValue: "draft" };
+    case "published":
+      return {
+        label: "Published",
+        variant: "published",
+        filterValue: "published",
+      };
+    case "archive":
+      return {
+        label: "Archived",
+        variant: "archive",
+        filterValue: "archive",
+      };
     case "overdue":
       return {
         label: "Not submitted",
         variant: "notSubmitted",
         filterValue: "not-submitted",
+      };
+    case "closed":
+      return {
+        label: "Closed",
+        variant: "closed",
+        filterValue: "closed",
       };
     case "returned":
       return {
@@ -132,7 +156,11 @@ export function assignmentCardProps(assignment: AssignmentListItem) {
 export const ASSESSMENT_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "All status" },
   { value: "to-do", label: "To do" },
+  { value: "published", label: "Published" },
+  { value: "draft", label: "Draft" },
   { value: "graded", label: "Graded" },
   { value: "pending-review", label: "Pending review" },
+  { value: "closed", label: "Closed" },
+  { value: "archive", label: "Archived" },
   { value: "not-submitted", label: "Not submitted" },
 ] as const;

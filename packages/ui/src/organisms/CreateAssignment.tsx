@@ -1,8 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Info, Calendar, Upload, Link2, FileText, X } from "lucide-react";
-import { CustomSelect, Button, Input, AlertBanner, Spinner } from "@ssu/ui";
+import { Info, Upload, Link2, FileText, X } from "lucide-react";
+import {
+  CustomSelect,
+  Button,
+  Input,
+  AlertBanner,
+  DatePicker,
+  Spinner,
+} from "@ssu/ui";
 import {
   usecreateAssessmentMutation,
   usePrograms,
@@ -317,13 +324,15 @@ export function CreateAssignmentPage() {
           <div>
             <label className="mb-2 block text-sm font-medium">Due date</label>
             <div className="relative">
-              <Input
+              <DatePicker value={dueDate} onChange={setDueDate} />
+              {/* <Input
                 type="date"
                 className="pl-10"
                 value={dueDate}
+
                 onChange={(e) => setDueDate(e.target.value)}
-              />
-              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" />
+              /> */}
+              {/* <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" /> */}
             </div>
             <div className="mt-2 flex items-center gap-2 rounded-lg bg-[#E8F0FF] px-3 py-2 text-sm text-[#2563EB]">
               <Info className="h-4 w-4" />
