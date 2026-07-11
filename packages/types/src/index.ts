@@ -205,7 +205,8 @@ export type Status =
   | "access-revoked"
   | "active"
   | "invited"
-  | "suspended";
+  | "suspended"
+  | "published";
 
 export interface Student {
   id: string;

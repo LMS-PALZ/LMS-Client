@@ -20,7 +20,6 @@ export * from "./atoms/Divider";
 export * from "./atoms/Datepicker";
 
 export * from "./molecules/FormField";
-export * from "./molecules/DatePicker";
 export * from "./molecules/TimePicker";
 export * from "./molecules/SearchInput";
 export * from "./molecules/StatCard";

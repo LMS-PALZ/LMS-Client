@@ -296,19 +296,6 @@ export function AssessmentMyWork({
                 <Paperclip className="h-4 w-4" />
                 From Device
               </button>
-              <button
-                type="button"
-                onClick={() => setTab("url")}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-semibold transition",
-                  tab === "url"
-                    ? "border-[#4E845F] bg-white text-[#4E845F]"
-                    : "border-transparent bg-white/60 text-neutral-600 hover:bg-white",
-                )}
-              >
-                <Link2 className="h-4 w-4" />
-                From URL
-              </button>
             </div>
           </div>
 

@@ -187,6 +187,11 @@ export function GradeSubmissionForm({
             / {weight}
           </span>
         </div>
+        {Number(score) > weight && (
+          <p className="mt-1 text-[12px] text-red-500">
+            Score cannot exceed {weight}
+          </p>
+        )}
       </div>
 
       <div>
@@ -217,7 +222,12 @@ export function GradeSubmissionForm({
           variant="primary"
           size="lg"
           onClick={handleSubmit}
-          disabled={gradeMutation.isPending || !score}
+          disabled={
+            gradeMutation.isPending ||
+            !score ||
+            Number(score) > weight ||
+            Number(score) < 0
+          }
           className="rounded-[30px] text-[var(--color-surface)]"
         >
           {gradeMutation.isPending ? (
