@@ -1002,6 +1002,84 @@ export async function getStudentAssessmentById(assessmentId: string) {
   }
 }
 
+export async function archiveAssessment(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/archive`,
+      { assessmentId },
+
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return { ok: true as const, message: res.data.message };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to archive assessment.",
+    };
+  }
+}
+
+export async function updateAssessment(
+  assessmentId: string,
+  data: {
+    title?: string;
+    module?: string;
+    instructions?: string;
+    submissionType?: "file" | "url";
+    submissionLink?: string;
+    dueDate?: string;
+    weight?: number;
+    files?: File[];
+  },
+) {
+  try {
+    const token = getStoredAuthToken();
+    const formData = new FormData();
+
+    if (data.title) formData.append("title", data.title);
+    if (data.module) formData.append("module", data.module);
+    if (data.instructions) formData.append("instructions", data.instructions);
+    if (data.submissionType)
+      formData.append("submissionType", data.submissionType);
+    if (data.submissionLink)
+      formData.append("submissionLink", data.submissionLink);
+    if (data.dueDate) formData.append("dueDate", data.dueDate);
+    if (data.weight !== undefined)
+      formData.append("weight", String(data.weight));
+    if (data.files?.length) {
+      data.files.forEach((file) => formData.append("referenceMaterials", file));
+    }
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/publish`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to update assessment.",
+    };
+  }
+}
+
 export const SESSION_STORAGE_KEY = "ssu_session";
 
 const AUTH_TOKEN_STORAGE_KEY = "token";

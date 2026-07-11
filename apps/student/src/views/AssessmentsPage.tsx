@@ -22,6 +22,7 @@ import { ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSignupStore } from "@ssu/store";
 
 type AssessmentTab = "Assigned" | "Submitted";
 
@@ -46,10 +47,14 @@ export function AssessmentsPage() {
     }
   }, [searchTab]);
 
-  const programId = localStorage.getItem("profileId") ?? "";
+  const programId = useSignupStore((state) => state.user?.programId ?? "");
+
   const assignments = useStudentassignments(programId);
-  const { data: submissions, isLoading: submissionsLoading } =
-    useMySubmissions();
+  const { data: submissions, isLoading: submissionsLoading } = useMySubmissions(
+    {
+      enabled: activeTab === "Submitted",
+    },
+  );
   const { data: overallProgress } = useStudentOverallProgress(programId);
 
   const filtered = useMemo(() => {

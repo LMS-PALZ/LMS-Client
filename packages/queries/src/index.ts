@@ -53,3 +53,5 @@ export * from "./setup-session-expiry";
 export * from "./use-gradeAssessmentSubmission";
 export * from "./use-mysubmissions";
 export * from "./use-overviewprogress";
+export * from "./use-archiveassessment-mutation";
+export * from "./use-updateassessment-mutation";

@@ -76,7 +76,7 @@ export function AssignmentDetailPage() {
           statusLabel={status.label}
           statusVariant={status.variant}
           dueDate={formatAssignmentDueDateLong(assignment.dueDate)}
-          weightPercent={assignment.weightPercent ?? 25}
+          weightPercent={assignment.weight ?? 25}
           scoreDisplay={assignment.scoreDisplay ?? "N/A"}
         />
 

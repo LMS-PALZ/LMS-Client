@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Info, Upload, Link2, FileText, X } from "lucide-react";
 import {
   CustomSelect,
@@ -14,6 +15,7 @@ import {
   usecreateAssessmentMutation,
   usePrograms,
   useClassroomModules,
+  useUpdateAssessmentMutation,
 } from "@ssu/queries";
 import { useRouter } from "next/navigation";
 
@@ -24,6 +26,12 @@ export function CreateAssignmentPage() {
   const router = useRouter();
   const createAssessment = usecreateAssessmentMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const programId =
+    typeof window !== "undefined"
+      ? (localStorage.getItem("programId") ?? "")
+      : "";
+
+  const updateAssessment = useUpdateAssessmentMutation(programId);
 
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -38,6 +46,28 @@ export function CreateAssignmentPage() {
   const [urlMeta, setUrlMeta] = useState<
     { name: string; type: string; url: string }[]
   >([]);
+
+  const searchParams = useSearchParams();
+  const isEditing = searchParams.get("edit");
+
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const editData = localStorage.getItem("editAssessment");
+    if (!editData) return;
+
+    try {
+      const assessment = JSON.parse(editData);
+      setTitle(assessment.title ?? "");
+      setInstructions(assessment.instructions ?? "");
+      setModule(assessment.module ?? "");
+      setDueDate(assessment.dueDate ? assessment.dueDate.split("T")[0] : "");
+      setWeight(assessment.weight ? String(assessment.weight) : "");
+      setCourseSlug(assessment.programId ?? "");
+      setCourseId(assessment.programId ?? "");
+      localStorage.removeItem("editAssessment");
+    } catch {}
+  }, [isEditing]);
 
   const { data: programs } = usePrograms();
 
@@ -70,24 +100,51 @@ export function CreateAssignmentPage() {
   };
 
   const handleSubmit = async (isDraft: boolean) => {
-    if (!title || !couseSlug) return;
+    if (!title) return;
 
     try {
-      await createAssessment.mutateAsync({
-        program: couseSlug,
-        title,
-        module: module || undefined,
-        instructions: instructions || undefined,
-        dueDate: dueDate ? dueDate.split("-").reverse().join("/") : undefined,
-        weight: weight ? Number(weight) : undefined,
-        referenceMaterialsMeta: urlMeta.length ? urlMeta : undefined,
-        files: files.length ? files : undefined,
-        isDraft,
-      });
+      if (isEditing) {
+        await updateAssessment.mutateAsync({
+          assessmentId: isEditing,
+          title,
+          module: module || undefined,
+          instructions: instructions || undefined,
+          dueDate: dueDate ? dueDate.split("-").reverse().join("/") : undefined,
+          weight: weight ? Number(weight) : undefined,
+          submissionType: urlMeta.length
+            ? "url"
+            : files.length
+              ? "file"
+              : undefined,
+          submissionLink: urlMeta.length ? urlMeta[0].url : undefined,
+          files: files.length ? files : undefined,
+        });
+      } else {
+        if (!couseSlug) return;
+        await createAssessment.mutateAsync({
+          program: couseSlug,
+          title,
+          module: module || undefined,
+          instructions: instructions || undefined,
+          dueDate: dueDate ? dueDate.split("-").reverse().join("/") : undefined,
+          weight: weight ? Number(weight) : undefined,
+          submissionType: urlMeta.length
+            ? "url"
+            : files.length
+              ? "file"
+              : undefined,
+          submissionLink: urlMeta.length ? urlMeta[0].url : undefined,
+          referenceMaterialsMeta: urlMeta.length ? urlMeta : undefined,
+          files: files.length ? files : undefined,
+          isDraft,
+        });
+      }
 
       router.push("/assessment");
     } catch {}
   };
+
+  const isPending = createAssessment.isPending || updateAssessment.isPending;
 
   return (
     <div className="space-y-8">
@@ -102,11 +159,13 @@ export function CreateAssignmentPage() {
           type="button"
           variant="secondary"
           className="rounded-full px-4 text-[#4C7D5B] text-sm bg-[#ECF1ED] border-none"
-          disabled={createAssessment.isPending}
+          disabled={isPending}
           onClick={() => handleSubmit(true)}
         >
-          {createAssessment.isPending ? (
+          {isPending ? (
             <Spinner className="h-4 w-4 animate-spin" />
+          ) : isEditing ? (
+            "Save changes"
           ) : (
             "Save as draft"
           )}
@@ -116,13 +175,15 @@ export function CreateAssignmentPage() {
           type="button"
           variant="primary"
           className="rounded-full px-6 bg-[#4C7D5B] text-[#F8F9FA]"
-          disabled={createAssessment.isPending || !title || !courseTitle}
+          disabled={isPending || (!isEditing && (!title || !couseSlug))}
           onClick={() => handleSubmit(false)}
         >
-          {createAssessment.isPending ? (
+          {isPending ? (
             <Spinner className="h-4 w-4 animate-spin" />
+          ) : isEditing ? (
+            "Update"
           ) : (
-            "Publish"
+            "Assign"
           )}
         </Button>
       </div>
@@ -233,7 +294,6 @@ export function CreateAssignmentPage() {
               </div>
             )}
 
-            {/* Uploaded files */}
             {files.length > 0 && (
               <div className="mt-3 space-y-2">
                 {files.map((file, index) => (
@@ -325,14 +385,6 @@ export function CreateAssignmentPage() {
             <label className="mb-2 block text-sm font-medium">Due date</label>
             <div className="relative">
               <DatePicker value={dueDate} onChange={setDueDate} />
-              {/* <Input
-                type="date"
-                className="pl-10"
-                value={dueDate}
-
-                onChange={(e) => setDueDate(e.target.value)}
-              /> */}
-              {/* <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" /> */}
             </div>
             <div className="mt-2 flex items-center gap-2 rounded-lg bg-[#E8F0FF] px-3 py-2 text-sm text-[#2563EB]">
               <Info className="h-4 w-4" />

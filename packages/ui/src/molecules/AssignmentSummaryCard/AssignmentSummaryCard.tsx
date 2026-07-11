@@ -8,7 +8,8 @@ export type AssignmentSummaryStatusVariant =
   | "notSubmitted"
   | "closed"
   | "draft"
-  | "archive";
+  | "archive"
+  | "published";
 
 export interface AssignmentSummaryCardProps {
   title: string;
