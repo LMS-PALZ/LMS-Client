@@ -95,7 +95,7 @@ export async function inviteStaff(data: {
     }
 
     const res = await axios.post(
-      `${API_BASE_URL}/api/v1/admins/invitations`,
+      `${API_BASE_URL}/api/v1/admins/admins/invitations`,
       data,
       {
         headers: {
