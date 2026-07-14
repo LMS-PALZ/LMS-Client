@@ -5,12 +5,11 @@ import { useSession } from "./use-session";
 
 export function useNotifications() {
   const { data: user } = useSession();
-  const isStudent = user?.role === "students";
 
   return useQuery({
-    queryKey: notificationKeys.list(),
+    queryKey: [...notificationKeys.list(), user?.role ?? "anonymous"],
     queryFn: notificationsApi.list,
-    enabled: Boolean(isStudent),
+    enabled: Boolean(user),
     staleTime: 60_000,
     refetchInterval: 60_000,
   });

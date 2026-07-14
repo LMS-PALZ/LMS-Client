@@ -19,6 +19,7 @@ const TUTOR_BLOCKED_PREFIXES = [
   "/transactions",
   "/auditlog",
   "/certificates",
+  "/courses/builder",
 ];
 
 export function normalizeAdminPortalRole(
@@ -45,6 +46,11 @@ export function isTutorRole(role: UserRole | string | undefined): boolean {
 export function isAdminStaffRole(role: UserRole | string | undefined): boolean {
   const normalized = normalizeAdminPortalRole(role);
   return normalized === "admin" || normalized === "super_admin";
+}
+
+/** Admins/super-admins can create courses and assign tutors. */
+export function canCreateCourses(role: UserRole | string | undefined): boolean {
+  return isAdminStaffRole(role);
 }
 
 export function normalizeAdminPathname(pathname: string): string {

@@ -8,6 +8,7 @@ import {
   Check,
   X,
   CalendarClock,
+  GraduationCap,
   Radio,
 } from "lucide-react";
 import { useRef, useState, useEffect, useMemo, useCallback } from "react";
@@ -43,6 +44,9 @@ function NotificationIcon({ kind }: { kind?: string }) {
   }
   if (kind === "class-upcoming") {
     return <CalendarClock className="mt-1 h-4 w-4 shrink-0 text-[#2563EB]" />;
+  }
+  if (kind === "course-assigned") {
+    return <GraduationCap className="mt-1 h-4 w-4 shrink-0 text-[#4C7D5B]" />;
   }
   return <span className="mt-1 text-lg">⭐</span>;
 }

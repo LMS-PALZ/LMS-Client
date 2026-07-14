@@ -11,6 +11,7 @@ export interface ClassroomLessonResource {
   title?: string;
   url?: string;
   type?: string;
+  content?: string | null;
 }
 
 export interface ProgramClassroomLesson {

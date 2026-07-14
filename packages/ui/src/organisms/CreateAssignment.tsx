@@ -13,17 +13,28 @@ import {
 } from "@ssu/ui";
 import {
   usecreateAssessmentMutation,
-  usePrograms,
+  useAdminPrograms,
   useClassroomModules,
+  useSession,
   useUpdateAssessmentMutation,
 } from "@ssu/queries";
 import { useRouter } from "next/navigation";
 
 type StaffTab = "file" | "link";
 
+function isTutorRole(role: string | undefined): boolean {
+  const normalized = (role ?? "").toLowerCase().trim();
+  return (
+    normalized === "tutor" ||
+    normalized === "trainer" ||
+    normalized === "instructor"
+  );
+}
+
 export function CreateAssignmentPage() {
   const [activeTab, setActiveTab] = useState<StaffTab>("file");
   const router = useRouter();
+  const { data: user, isLoading: isSessionLoading } = useSession();
   const createAssessment = usecreateAssessmentMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const programId =
@@ -49,6 +60,7 @@ export function CreateAssignmentPage() {
 
   const searchParams = useSearchParams();
   const isEditing = searchParams.get("edit");
+  const asTutor = isTutorRole(user?.role);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -69,7 +81,32 @@ export function CreateAssignmentPage() {
     } catch {}
   }, [isEditing]);
 
-  const { data: programs } = usePrograms();
+  const { data: programsData, isLoading: isProgramsLoading } = useAdminPrograms(
+    { page: 1, limit: 100 },
+    {
+      asTutor,
+      tutorUserId: user?.id,
+      tutorEmail: user?.email,
+      accessToken: user?.accessToken,
+      enabled: !isSessionLoading && Boolean(user),
+    },
+  );
+
+  const programs = programsData?.items ?? [];
+
+  useEffect(() => {
+    if (isSessionLoading || isProgramsLoading || !user) return;
+    if (asTutor && programs.length === 0) {
+      router.replace("/assessment");
+    }
+  }, [
+    asTutor,
+    isProgramsLoading,
+    isSessionLoading,
+    programs.length,
+    router,
+    user,
+  ]);
 
   const { data: modulesData } = useClassroomModules(courseId);
 
@@ -358,14 +395,14 @@ export function CreateAssignmentPage() {
               placeholder="Select a course"
               value={courseTitle}
               onChange={(selectedTitle) => {
-                const selected = programs?.find(
+                const selected = programs.find(
                   (p) => p.title === selectedTitle,
                 );
                 setCourseTitle(selectedTitle);
                 setCourseId(selected?.id ?? "");
                 setCourseSlug(selected?.slug ?? "");
               }}
-              options={programs?.map((program) => program.title) ?? []}
+              options={programs.map((program) => program.title)}
             />
           </div>
 

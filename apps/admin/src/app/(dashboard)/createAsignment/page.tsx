@@ -1,7 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { CreateAssignmentPage } from "@ssu/ui";
-
-export default function Page() {
-  return <CreateAssignmentPage />;
+/** Back-compat for the old PascalCase path. */
+export default function CreateAssignmentLegacyRedirect() {
+  redirect("/createassignment");
 }

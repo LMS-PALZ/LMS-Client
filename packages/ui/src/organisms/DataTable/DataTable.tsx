@@ -9,15 +9,16 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { cn } from "@ssu/utils";
-import { CustomSelect } from "@ssu/ui";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../../atoms/Button";
 import { Input } from "../../atoms/Input";
+import { CustomSelect } from "../../molecules/CustomSelect";
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  getRowId?: (originalRow: TData, index: number) => string;
 
   searchable?: boolean;
 
@@ -53,6 +54,7 @@ export interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
+  getRowId,
 
   searchable,
 
@@ -90,7 +92,13 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getRowId: getRowId ? (row, index) => getRowId(row, index) : undefined,
   });
+
+  const totalPagesLabel =
+    pagination?.totalPages && pagination.totalPages > 0
+      ? pagination.totalPages
+      : Math.max(1, data.length > 0 ? 1 : 0) || 1;
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -189,7 +197,10 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-between gap-2">
         <p className="text-small text-neutral-500">
-          Page {pagination?.page ?? 1} of {pagination?.totalPages ?? 1}
+          Page {pagination?.page ?? 1} of{" "}
+          {pagination?.totalPages && pagination.totalPages > 0
+            ? pagination.totalPages
+            : totalPagesLabel}
         </p>
         <div className="flex gap-2">
           <Button

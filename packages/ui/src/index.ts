@@ -54,7 +54,7 @@ export * from "./molecules/GreetingTitle";
 export * from "./molecules/SectionHeader";
 export * from "./molecules/HeaderBar";
 export * from "./molecules/GoBack";
-export * from "./molecules/ CustomSelect";
+export * from "./molecules/CustomSelect";
 export * from "./molecules/AsignmentTable";
 export * from "./molecules/SubmittedTable";
 export * from "./molecules/StaffAssessmentDetails";

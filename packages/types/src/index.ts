@@ -231,16 +231,18 @@ export interface StudentStat {
 export interface StaffAssignment {
   _id: string;
   title: string;
-  programTitle: string;
-  progressPercent: number;
+  programTitle?: string;
+  progressPercent?: number;
   module: string;
   weight: number;
   dueDate: string;
   submissions: {
-    submitted: string;
-    total: string;
+    submitted: number | string;
+    total: number | string;
+    graded?: number | string;
+    pendingReview?: number | string;
   };
-  status: Status;
+  status: Status | string;
 }
 
 export interface StaffAssignmentsubmitted {

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { acceptinvite } from "@ssu/api";
+import { getErrorMessage, mutationToast } from "./notify";
 
 export function useacceptInviteMutation() {
   const qc = useQueryClient();
@@ -18,8 +19,17 @@ export function useacceptInviteMutation() {
 
       return res;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      mutationToast.success(data.message || "Invitation accepted successfully");
       void qc.invalidateQueries({ queryKey: ["acceptInvite"] });
+    },
+    onError: (error) => {
+      mutationToast.error(
+        getErrorMessage(
+          error,
+          "Failed to accept invitation. Please try again.",
+        ),
+      );
     },
   });
 }

@@ -2,6 +2,22 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createAssessment } from "@ssu/api";
 import { toast } from "sonner";
 
+function readProgramId(value: unknown): string {
+  if (
+    typeof value === "string" &&
+    value.trim() &&
+    value !== "[object Object]"
+  ) {
+    return value.trim();
+  }
+  if (value && typeof value === "object") {
+    const row = value as Record<string, unknown>;
+    const id = row._id ?? row.id;
+    if (typeof id === "string" && id.trim()) return id.trim();
+  }
+  return "";
+}
+
 export function usecreateAssessmentMutation() {
   const qc = useQueryClient();
 
@@ -13,7 +29,12 @@ export function usecreateAssessmentMutation() {
     },
     onSuccess: (data) => {
       toast.success("Assessment created successfully");
-      localStorage.setItem("programId", data?.programId);
+      const programId = readProgramId(
+        (data as { programId?: unknown } | null | undefined)?.programId,
+      );
+      if (programId) {
+        localStorage.setItem("programId", programId);
+      }
       void qc.invalidateQueries({ queryKey: ["assessments"] });
     },
   });

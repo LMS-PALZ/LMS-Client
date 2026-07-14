@@ -176,7 +176,18 @@ export function parseAdminLoginResponse(
     fullName.split(/\s+/).slice(1).join(" ") ||
     "";
   const user: AuthUser = {
-    id: readString(userRecord, "id", "_id", "adminId"),
+    id: readString(
+      userRecord,
+      "id",
+      "_id",
+      "adminId",
+      "userId",
+      "user_id",
+      "tutorId",
+      "tutor_id",
+      "staffId",
+      "staff_id",
+    ),
     email,
     firstName,
     lastName,

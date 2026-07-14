@@ -33,9 +33,36 @@ function readNumber(value: unknown): number {
   return 0;
 }
 
-function readStringArray(value: unknown): string[] {
+function readIdList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string");
+
+  const ids: string[] = [];
+  for (const item of value) {
+    if (typeof item === "string" && item.trim()) {
+      ids.push(item.trim());
+      continue;
+    }
+    if (item && typeof item === "object") {
+      const row = item as Record<string, unknown>;
+      const id = readString(row.id ?? row._id ?? row.tutorId ?? row.userId);
+      if (id) ids.push(id);
+    }
+  }
+  return ids;
+}
+
+function readAssignedTutorIds(row: Record<string, unknown>): string[] {
+  const fromIds = readIdList(
+    row.assignedTutorIds ??
+      row.assigned_tutor_ids ??
+      row.tutorIds ??
+      row.tutor_ids,
+  );
+  if (fromIds.length > 0) return fromIds;
+
+  return readIdList(
+    row.assignedTutors ?? row.assigned_tutors ?? row.tutors ?? row.instructors,
+  );
 }
 
 function normalizeProgram(row: Record<string, unknown>): AdminProgram | null {
@@ -57,12 +84,82 @@ function normalizeProgram(row: Record<string, unknown>): AdminProgram | null {
     cohortEndDate: readString(row.cohortEndDate) || undefined,
     capacity: readNumber(row.capacity) || undefined,
     status: readString(row.status) || "draft",
-    assignedTutorIds: readStringArray(row.assignedTutorIds),
+    assignedTutorIds: readAssignedTutorIds(row),
     createdBy: readString(row.createdBy) || undefined,
     updatedBy: readString(row.updatedBy) || undefined,
     createdAt: readString(row.createdAt),
     updatedAt: readString(row.updatedAt),
   };
+}
+
+/** Programs assigned to a tutor — matches flexible id shapes from API/login. */
+export function filterProgramsForTutor(
+  programs: AdminProgram[],
+  tutorIdentity: { id?: string; email?: string; accessToken?: string },
+): AdminProgram[] {
+  const candidateIds = new Set<string>();
+  const id = tutorIdentity.id?.trim();
+  const email = tutorIdentity.email?.trim().toLowerCase();
+  if (id) candidateIds.add(id);
+
+  if (tutorIdentity.accessToken) {
+    try {
+      const payloadPart = tutorIdentity.accessToken.split(".")[1];
+      if (payloadPart) {
+        const json = JSON.parse(
+          atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/")),
+        ) as Record<string, unknown>;
+        for (const key of [
+          "sub",
+          "id",
+          "_id",
+          "userId",
+          "user_id",
+          "tutorId",
+          "tutor_id",
+          "adminId",
+          "staffId",
+        ]) {
+          const value = json[key];
+          if (typeof value === "string" && value.trim()) {
+            candidateIds.add(value.trim());
+          }
+        }
+      }
+    } catch {
+      /* ignore invalid token payloads */
+    }
+  }
+
+  const matched = programs.filter((program) => {
+    if (program.assignedTutorIds.some((tutorId) => candidateIds.has(tutorId))) {
+      return true;
+    }
+    if (
+      email &&
+      program.assignedTutorIds.some(
+        (tutorId) => tutorId.toLowerCase() === email,
+      )
+    ) {
+      return true;
+    }
+    return false;
+  });
+
+  // Backend often already scopes GET /programs to the tutor. If we can't match
+  // ids (format mismatch) but courses were returned, treat them as assigned.
+  if (matched.length === 0 && programs.length > 0 && candidateIds.size > 0) {
+    const anyProgramHasTutors = programs.some(
+      (program) => program.assignedTutorIds.length > 0,
+    );
+    if (!anyProgramHasTutors) return programs;
+  }
+
+  if (matched.length === 0 && programs.length > 0 && candidateIds.size === 0) {
+    return programs;
+  }
+
+  return matched;
 }
 
 function extractProgramRows(payload: unknown): AdminProgram[] {
@@ -147,6 +244,18 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return err.response?.data?.message || err.message || fallback;
 }
 
+function isMissingRouteError(error: unknown): boolean {
+  const err = error as {
+    response?: { status?: number; data?: { message?: string } };
+  };
+  const status = err.response?.status;
+  const message = (err.response?.data?.message ?? "").toLowerCase();
+  return (
+    status === 404 &&
+    (message.includes("does not exist") || message.includes("not found"))
+  );
+}
+
 export async function listAdminPrograms(params?: {
   page?: number;
   limit?: number;
@@ -194,6 +303,123 @@ export async function listAdminPrograms(params?: {
   }
 }
 
+/**
+ * Portal program list — always uses GET /api/v1/programs.
+ * Tutors: optionally filter client-side to programs where they are assigned.
+ */
+export async function listPortalPrograms(
+  params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  },
+  options?: {
+    asTutor?: boolean;
+    tutorUserId?: string;
+    tutorEmail?: string;
+    accessToken?: string;
+  },
+) {
+  const res = await listAdminPrograms(params);
+  if (!res.ok) return res;
+
+  if (options?.asTutor) {
+    const items = filterProgramsForTutor(res.data.items, {
+      id: options.tutorUserId,
+      email: options.tutorEmail,
+      accessToken: options.accessToken,
+    });
+    return {
+      ok: true as const,
+      data: {
+        items,
+        pagination: {
+          ...res.data.pagination,
+          total: items.length,
+          totalPages: items.length > 0 ? 1 : 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      } satisfies AdminProgramListResponse,
+      message: res.message,
+    };
+  }
+
+  return res;
+}
+
+async function getTutorProgramFromClassroom(
+  programId: string,
+): Promise<
+  | { ok: true; data: AdminProgram; message: string }
+  | { ok: false; message: string }
+> {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/tutors/programs/${programId}/classroom`,
+      { headers: authHeaders() },
+    );
+
+    const root = res.data as Record<string, unknown>;
+    const data =
+      root.data && typeof root.data === "object"
+        ? (root.data as Record<string, unknown>)
+        : root;
+    const programRow =
+      data.program && typeof data.program === "object"
+        ? (data.program as Record<string, unknown>)
+        : null;
+
+    const program = programRow ? normalizeProgram(programRow) : null;
+    if (!program) {
+      return {
+        ok: false as const,
+        message: "Course not found.",
+      };
+    }
+
+    return {
+      ok: true as const,
+      data: program,
+      message: readString(root.message),
+    };
+  } catch (error: unknown) {
+    if (isMissingRouteError(error)) {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/api/v1/tutors/programs/${programId}/classroom/modules`,
+          { headers: authHeaders() },
+        );
+        const root = res.data as Record<string, unknown>;
+        const data =
+          root.data && typeof root.data === "object"
+            ? (root.data as Record<string, unknown>)
+            : root;
+        const programRow =
+          data.program && typeof data.program === "object"
+            ? (data.program as Record<string, unknown>)
+            : null;
+        const program = programRow ? normalizeProgram(programRow) : null;
+        if (program) {
+          return {
+            ok: true as const,
+            data: program,
+            message: readString(root.message),
+          };
+        }
+      } catch {
+        /* fall through */
+      }
+    }
+
+    return {
+      ok: false as const,
+      message: getErrorMessage(error, "Failed to fetch course."),
+    };
+  }
+}
+
 export async function getAdminProgram(programId: string) {
   try {
     const trimmedId = programId.trim();
@@ -205,25 +431,26 @@ export async function getAdminProgram(programId: string) {
     }
 
     const listRes = await listAdminPrograms({ page: 1, limit: 100 });
-    if (!listRes.ok) {
-      return {
-        ok: false as const,
-        message: listRes.message,
-      };
+    if (listRes.ok) {
+      const program = listRes.data.items.find((item) => item.id === trimmedId);
+      if (program) {
+        return {
+          ok: true as const,
+          data: program,
+          message: "",
+        };
+      }
     }
 
-    const program = listRes.data.items.find((item) => item.id === trimmedId);
-    if (!program) {
-      return {
-        ok: false as const,
-        message: "Course not found.",
-      };
+    // Tutors cannot list all programs — resolve via assigned classroom APIs.
+    const tutorRes = await getTutorProgramFromClassroom(trimmedId);
+    if (tutorRes.ok) {
+      return tutorRes;
     }
 
     return {
-      ok: true as const,
-      data: program,
-      message: "",
+      ok: false as const,
+      message: listRes.ok ? "Course not found." : listRes.message,
     };
   } catch (error: unknown) {
     return {

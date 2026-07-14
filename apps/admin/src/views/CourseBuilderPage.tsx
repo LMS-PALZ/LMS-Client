@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
-import { useCreateProgramMutation } from "@ssu/queries";
+import { useCreateProgramMutation, useSession } from "@ssu/queries";
 import { AlertBanner } from "@ssu/ui";
 import {
   CourseBasicForm,
@@ -14,6 +14,7 @@ import {
 import { mapDraftToCreatePayload } from "@/features/courses/lib/program-mappers";
 import { isBasicStepComplete } from "@/features/courses/lib/course-utils";
 import type { CourseDraft, CourseStatus } from "@/features/courses/types";
+import { canCreateCourses } from "@/lib/admin-roles";
 
 const emptyDraft: CourseDraft = {
   name: "",
@@ -26,11 +27,20 @@ const emptyDraft: CourseDraft = {
 
 export function CourseBuilderPage() {
   const router = useRouter();
+  const { data: user, isLoading: isSessionLoading } = useSession();
   const createProgram = useCreateProgramMutation();
   const [draft, setDraft] = useState<CourseDraft>(emptyDraft);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successVariant, setSuccessVariant] =
     useState<CourseStatus>("published");
+
+  const allowed = canCreateCourses(user?.role);
+
+  useEffect(() => {
+    if (!isSessionLoading && user && !allowed) {
+      router.replace(adminPath("/courses"));
+    }
+  }, [allowed, isSessionLoading, router, user]);
 
   const canPublish = isBasicStepComplete(draft);
   const canSaveDraft = draft.name.trim().length > 0;
@@ -44,7 +54,7 @@ export function CourseBuilderPage() {
 
   const saveCourse = async (status: "draft" | "published") => {
     const canSave = status === "published" ? canPublish : canSaveDraft;
-    if (!canSave || createProgram.isPending) return;
+    if (!canSave || createProgram.isPending || !allowed) return;
 
     try {
       await createProgram.mutateAsync({
@@ -57,6 +67,10 @@ export function CourseBuilderPage() {
       // Error surfaced via mutation state below.
     }
   };
+
+  if (isSessionLoading || (user && !allowed)) {
+    return null;
+  }
 
   return (
     <section className="space-y-6">

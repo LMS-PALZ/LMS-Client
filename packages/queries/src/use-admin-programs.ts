@@ -2,7 +2,7 @@ import {
   assignAdminProgramTutors,
   createAdminProgram,
   getAdminProgram,
-  listAdminPrograms,
+  listPortalPrograms,
   updateAdminProgramStatus,
 } from "@ssu/api";
 import type {
@@ -18,19 +18,44 @@ export interface CreateProgramInput {
   tutorIds?: string[];
 }
 
-export function useAdminPrograms(params?: {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-}) {
+export function useAdminPrograms(
+  params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  },
+  options?: {
+    asTutor?: boolean;
+    tutorUserId?: string;
+    tutorEmail?: string;
+    accessToken?: string;
+    enabled?: boolean;
+  },
+) {
+  const asTutor = Boolean(options?.asTutor);
+  const tutorUserId = options?.tutorUserId?.trim() || "";
+  const tutorEmail = options?.tutorEmail?.trim() || "";
+  const accessToken = options?.accessToken?.trim() || "";
+
   return useQuery({
-    queryKey: adminProgramKeys.list(params),
+    queryKey: [
+      ...adminProgramKeys.list(params),
+      asTutor ? "tutor" : "admin",
+      tutorUserId,
+      tutorEmail,
+    ],
     queryFn: async () => {
-      const res = await listAdminPrograms(params);
+      const res = await listPortalPrograms(params, {
+        asTutor,
+        tutorUserId: asTutor ? tutorUserId : undefined,
+        tutorEmail: asTutor ? tutorEmail : undefined,
+        accessToken: asTutor ? accessToken : undefined,
+      });
       if (!res.ok) throw new Error(res.message);
       return res.data;
     },
+    enabled: options?.enabled ?? true,
   });
 }
 

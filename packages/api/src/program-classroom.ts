@@ -58,12 +58,14 @@ function normalizeLessonResources(
       const row = item as Record<string, unknown>;
       const title = readString(row.title ?? row.name);
       const url = readString(row.url ?? row.href);
-      if (!title && !url) return null;
+      const content = readString(row.content) || null;
+      if (!title && !url && !content) return null;
       return {
         id: readString(row.id ?? row._id) || undefined,
         title: title || undefined,
         url: url || undefined,
         type: readString(row.type) || undefined,
+        content,
       };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);

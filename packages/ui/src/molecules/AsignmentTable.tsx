@@ -1,12 +1,13 @@
 "use client";
 
-import { DataTable, StatusBadge } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { StaffAssignment } from "@ssu/types";
 import { useRouter } from "next/navigation";
 import { EllipsisVertical } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useArchiveAssessmentMutation } from "@ssu/queries";
+import { StatusBadge } from "../atoms/StatusBadge";
+import { DataTable } from "../organisms/DataTable";
 
 interface StudentsTableProps {
   students: StaffAssignment[];
@@ -23,10 +24,13 @@ interface StudentsTableProps {
   status: string;
   setStatus: (value: string) => void;
   setPage: (page: number) => void;
+  isLoading?: boolean;
 }
 
 function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -58,7 +62,7 @@ function ActionDropdown({
   const handleEdit = () => {
     setOpen(false);
     localStorage.setItem("editAssessment", JSON.stringify(assessment));
-    router.push(`/createasignment?edit=${assessment._id}`);
+    router.push(`/createassignment?edit=${assessment._id}`);
   };
 
   const handleView = () => {
@@ -68,12 +72,10 @@ function ActionDropdown({
 
   const handleDelete = async () => {
     setOpen(false);
-    console.log("assessment", assessment);
-    console.log("assessment._id", assessment._id);
     try {
       await archive.mutateAsync(assessment._id);
-    } catch (error: any) {
-      console.error(error.message);
+    } catch (error: unknown) {
+      console.error(error instanceof Error ? error.message : error);
     }
   };
 
@@ -108,7 +110,7 @@ function ActionDropdown({
               </button>
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => void handleDelete()}
                 disabled={archive.isPending}
                 className="w-full px-4 py-2.5 text-left text-[14px] text-[#EF4444] hover:bg-[#FEF2F2] disabled:opacity-50"
               >
@@ -131,68 +133,98 @@ export function AssignmentTable({
   status,
   setStatus,
   setPage,
+  isLoading = false,
 }: StudentsTableProps) {
-  const columns: ColumnDef<StaffAssignment, any>[] = [
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
-    },
-    {
-      accessorKey: "Title",
-      header: "Title",
-      cell: ({ row }) => <span className="text-sm">{row.original.title}</span>,
-    },
-    {
-      accessorKey: "Course",
-      header: "Course",
-      cell: ({ row }) => <span className="text-sm">{row.original.module}</span>,
-    },
-    {
-      accessorKey: "Submissions",
-      header: "Submissions",
-      cell: ({ row }) => (
-        <span className="text-sm">
-          {row.original.submissions.submitted} /{" "}
-          {row.original.submissions.total}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "Weight",
-      header: "Weight",
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.weight}%</span>
-      ),
-    },
-    {
-      accessorKey: "date",
-      header: "Due date",
-      cell: ({ row }) => (
-        <span className="text-sm">{formatDate(row.original.dueDate)}</span>
-      ),
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => (
-        <ActionDropdown assessment={row.original} programId={programId} />
-      ),
-    },
-  ];
+  const columns = useMemo<ColumnDef<StaffAssignment, unknown>[]>(
+    () => [
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <StatusBadge status={String(row.original.status ?? "")} />
+        ),
+      },
+      {
+        accessorKey: "title",
+        header: "Title",
+        cell: ({ row }) => (
+          <span className="text-sm">{row.original.title}</span>
+        ),
+      },
+      {
+        accessorKey: "module",
+        header: "Course",
+        cell: ({ row }) => (
+          <span className="text-sm">{row.original.module}</span>
+        ),
+      },
+      {
+        accessorKey: "submissions",
+        header: "Submissions",
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.submissions?.submitted ?? 0} /{" "}
+            {row.original.submissions?.total ?? 0}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "weight",
+        header: "Weight",
+        cell: ({ row }) => (
+          <span className="text-sm">{row.original.weight}%</span>
+        ),
+      },
+      {
+        accessorKey: "dueDate",
+        header: "Due date",
+        cell: ({ row }) => (
+          <span className="text-sm">{formatDate(row.original.dueDate)}</span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <ActionDropdown assessment={row.original} programId={programId} />
+        ),
+      },
+    ],
+    [programId],
+  );
+
+  const rows = Array.isArray(students) ? students : [];
 
   return (
-    <DataTable
-      columns={columns}
-      data={students ?? []}
-      pagination={pagination}
-      searchValue={search}
-      onSearchChange={setSearch}
-      statusFilter={status}
-      onStatusFilterChange={setStatus}
-      onPageChange={setPage}
-      searchable
-      statusOptions={["All", "published", "draft", "archive"]}
-    />
+    <div className="space-y-2">
+      {isLoading && rows.length === 0 ? (
+        <p className="text-[14px] text-[#94A3B8]">Loading assessments…</p>
+      ) : null}
+      <DataTable
+        columns={columns}
+        data={rows}
+        getRowId={(row, index) => row._id || String(index)}
+        pagination={pagination}
+        searchValue={search}
+        onSearchChange={setSearch}
+        statusFilter={status}
+        onStatusFilterChange={(value) => {
+          const next = value.trim().toLowerCase();
+          if (!next || next === "all" || next.startsWith("all status")) {
+            setStatus("");
+            return;
+          }
+          setStatus(next === "archive" ? "archived" : next);
+        }}
+        onPageChange={setPage}
+        searchable
+        statusOptions={["All statuses", "published", "draft", "archived"]}
+      />
+      {!isLoading && rows.length === 0 ? (
+        <p className="pt-2 text-center text-[14px] text-[#94A3B8]">
+          No assessments found for this course.
+        </p>
+      ) : null}
+    </div>
   );
 }

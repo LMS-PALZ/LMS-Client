@@ -655,13 +655,29 @@ export async function getAssessmentsByProgram(
 ) {
   try {
     const token = getStoredAuthToken();
+    const trimmedProgramId = programId.trim();
+    if (!trimmedProgramId) {
+      return {
+        ok: false as const,
+        message: "Course id is required.",
+      };
+    }
 
-    const params: Record<string, any> = { page, limit };
-    if (status) params.status = status;
-    if (search) params.search = search;
+    const normalizedStatus = status.trim().toLowerCase();
+    const params: Record<string, string | number> = { page, limit };
+    if (
+      normalizedStatus &&
+      normalizedStatus !== "all" &&
+      normalizedStatus !== "all status" &&
+      normalizedStatus !== "all statuses"
+    ) {
+      params.status =
+        normalizedStatus === "archive" ? "archived" : normalizedStatus;
+    }
+    if (search.trim()) params.search = search.trim();
 
     const res = await axios.get(
-      `${API_BASE_URL}/api/v1/staff/assessments/program/${programId}`,
+      `${API_BASE_URL}/api/v1/staff/assessments/program/${trimmedProgramId}`,
       {
         params,
         headers: {
@@ -670,10 +686,59 @@ export async function getAssessmentsByProgram(
       },
     );
 
+    const body = res.data as Record<string, unknown> | null;
+    const payload =
+      body?.data && typeof body.data === "object" && !Array.isArray(body.data)
+        ? (body.data as Record<string, unknown>)
+        : (body ?? {});
+
+    const assessments = Array.isArray(payload.assessments)
+      ? payload.assessments
+      : Array.isArray(payload.items)
+        ? payload.items
+        : Array.isArray(payload)
+          ? payload
+          : [];
+
+    const paginationRaw =
+      payload.pagination && typeof payload.pagination === "object"
+        ? (payload.pagination as Record<string, unknown>)
+        : {};
+
+    const total =
+      typeof paginationRaw.total === "number"
+        ? paginationRaw.total
+        : assessments.length;
+    const totalPages =
+      typeof paginationRaw.totalPages === "number"
+        ? paginationRaw.totalPages
+        : total > 0
+          ? Math.max(1, Math.ceil(total / limit))
+          : 0;
+
     return {
       ok: true as const,
-      data: res.data.data,
-      message: res.data.message,
+      data: {
+        assessments,
+        pagination: {
+          page:
+            typeof paginationRaw.page === "number" ? paginationRaw.page : page,
+          limit:
+            typeof paginationRaw.limit === "number"
+              ? paginationRaw.limit
+              : limit,
+          offset:
+            typeof paginationRaw.offset === "number" ? paginationRaw.offset : 0,
+          total,
+          totalPages,
+          hasNextPage: Boolean(paginationRaw.hasNextPage),
+          hasPreviousPage: Boolean(paginationRaw.hasPreviousPage),
+        },
+      },
+      message:
+        typeof body?.message === "string"
+          ? body.message
+          : "Assessments fetched successfully.",
     };
   } catch (error: any) {
     return {
