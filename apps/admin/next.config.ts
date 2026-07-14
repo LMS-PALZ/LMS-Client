@@ -9,6 +9,30 @@ const nextConfig: NextConfig = {
     "@ssu/ui",
     "@ssu/utils",
   ],
+  async redirects() {
+    return [
+      {
+        source: "/createAsignment",
+        destination: "/createassignment",
+        permanent: true,
+      },
+      {
+        source: "/createAsignment/:path*",
+        destination: "/createassignment/:path*",
+        permanent: true,
+      },
+      {
+        source: "/createasignment",
+        destination: "/createassignment",
+        permanent: true,
+      },
+      {
+        source: "/createasignment/:path*",
+        destination: "/createassignment/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
