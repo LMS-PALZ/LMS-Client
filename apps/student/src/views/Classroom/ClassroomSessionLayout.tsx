@@ -83,7 +83,8 @@ export function ClassroomSessionLayout({
     extendedLesson?.isLiveNow,
   );
   const isLive = sessionPhase === "live";
-  const meetUrl = lesson?.liveSessionUrl ?? mapped.course.meetUrl;
+  const meetUrl =
+    lesson?.zoomJoinUrl || lesson?.liveSessionUrl || mapped.course.meetUrl;
   const course = {
     ...mapped.course,
     sessionId,

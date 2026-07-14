@@ -50,7 +50,7 @@ export function mapClassroomResponse(data: any): {
     sessionId: liveLesson?.id,
     sessionLabel: program.cohortCode,
     sessionDuration: program.duration,
-    meetUrl: liveLesson?.liveSessionUrl ?? "",
+    meetUrl: liveLesson?.zoomJoinUrl || liveLesson?.liveSessionUrl || "",
     scheduledAt: liveStartsAt ?? undefined,
     liveVideoProvider: "zoom",
     description: classroom.description,

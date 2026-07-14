@@ -6,6 +6,13 @@ export type ClassroomLessonType =
   | "resource"
   | "other";
 
+export interface ClassroomLessonResource {
+  id?: string;
+  title?: string;
+  url?: string;
+  type?: string;
+}
+
 export interface ProgramClassroomLesson {
   id: string;
   title: string;
@@ -18,6 +25,12 @@ export interface ProgramClassroomLesson {
   liveSessionUrl?: string;
   startsAt?: string;
   recordingUrl?: string;
+  zoomMeetingId?: string;
+  zoomMeetingUuid?: string;
+  zoomJoinUrl?: string;
+  zoomStartUrl?: string;
+  isLiveNow?: boolean;
+  resources?: ClassroomLessonResource[];
 }
 
 export interface ProgramClassroomModule {

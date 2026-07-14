@@ -47,12 +47,43 @@ function readLessonType(value: unknown): ClassroomLessonType {
     : "other";
 }
 
+function normalizeLessonResources(
+  value: unknown,
+): ProgramClassroomLesson["resources"] {
+  if (!Array.isArray(value)) return undefined;
+
+  const resources = value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const title = readString(row.title ?? row.name);
+      const url = readString(row.url ?? row.href);
+      if (!title && !url) return null;
+      return {
+        id: readString(row.id ?? row._id) || undefined,
+        title: title || undefined,
+        url: url || undefined,
+        type: readString(row.type) || undefined,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+
+  return resources.length > 0 ? resources : [];
+}
+
 function normalizeLesson(
   row: Record<string, unknown>,
 ): ProgramClassroomLesson | null {
   const id = readString(row.id ?? row._id);
   const title = readString(row.title ?? row.name);
   if (!id || !title) return null;
+
+  const zoomJoinUrl =
+    readString(row.zoomJoinUrl ?? row.zoom_join_url) || undefined;
+  const liveSessionUrl =
+    readString(row.liveSessionUrl ?? row.live_session_url) ||
+    zoomJoinUrl ||
+    undefined;
 
   return {
     id,
@@ -65,11 +96,19 @@ function normalizeLesson(
       typeof row.isPublished === "boolean" ? row.isPublished : undefined,
     durationMinutes:
       readNumber(row.durationMinutes ?? row.duration_minutes) || undefined,
-    liveSessionUrl:
-      readString(row.liveSessionUrl ?? row.live_session_url) || undefined,
+    liveSessionUrl,
     startsAt: readString(row.startsAt ?? row.starts_at) || undefined,
     recordingUrl:
       readString(row.recordingUrl ?? row.recording_url) || undefined,
+    zoomMeetingId:
+      readString(row.zoomMeetingId ?? row.zoom_meeting_id) || undefined,
+    zoomMeetingUuid:
+      readString(row.zoomMeetingUuid ?? row.zoom_meeting_uuid) || undefined,
+    zoomJoinUrl,
+    zoomStartUrl:
+      readString(row.zoomStartUrl ?? row.zoom_start_url) || undefined,
+    isLiveNow: Boolean(row.isLiveNow ?? row.is_live_now),
+    resources: normalizeLessonResources(row.resources),
   };
 }
 

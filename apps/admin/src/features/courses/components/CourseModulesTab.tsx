@@ -11,12 +11,14 @@ import { ModuleAccordion } from "./ModuleAccordion";
 
 interface CourseModulesTabProps {
   modules: ProgramClassroomModule[];
+  courseId?: string;
   isLoading?: boolean;
   error?: string | null;
 }
 
 export function CourseModulesTab({
   modules,
+  courseId,
   isLoading = false,
   error = null,
 }: CourseModulesTabProps) {
@@ -54,6 +56,7 @@ export function CourseModulesTab({
         expandedModuleId={expandedModuleId}
         onToggleModule={toggleModule}
         mode="view"
+        courseId={courseId}
       />
     </div>
   );

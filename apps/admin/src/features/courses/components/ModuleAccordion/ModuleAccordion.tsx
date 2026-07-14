@@ -11,6 +11,7 @@ export function ModuleAccordion({
   expandedModuleId,
   onToggleModule,
   mode = "view",
+  courseId,
   onEditModule,
   onDeleteModule,
   onEditActivity,
@@ -55,6 +56,7 @@ export function ModuleAccordion({
                       module={module}
                       lessons={lessons}
                       mode={mode}
+                      courseId={courseId}
                       onEditActivity={onEditActivity}
                       onDeleteActivity={onDeleteActivity}
                     />

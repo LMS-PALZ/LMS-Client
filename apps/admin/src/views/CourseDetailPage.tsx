@@ -154,6 +154,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
           {activeTab === "modules" && (
             <CourseModulesTab
               modules={modules}
+              courseId={courseId}
               isLoading={isModulesLoading}
               error={
                 isModulesError && modulesError instanceof Error

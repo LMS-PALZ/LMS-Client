@@ -38,6 +38,7 @@ export interface ModuleAccordionProps extends ModuleActivityHandlers {
   expandedModuleId: string | null;
   onToggleModule: (moduleId: string) => void;
   mode?: ModuleAccordionMode;
+  courseId?: string;
   onEditModule?: (module: ProgramClassroomModule) => void;
   onDeleteModule?: (module: ProgramClassroomModule) => void;
   onAddActivity?: (module: ProgramClassroomModule) => void;

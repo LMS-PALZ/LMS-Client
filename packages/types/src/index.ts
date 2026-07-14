@@ -121,6 +121,7 @@ export type {
   ProgramApplicantsResponse,
 } from "./program-applicant";
 export type {
+  ClassroomLessonResource,
   ClassroomLessonType,
   ProgramClassroomLesson,
   ProgramClassroomModule,
