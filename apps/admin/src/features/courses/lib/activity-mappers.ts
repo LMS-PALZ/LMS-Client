@@ -10,7 +10,6 @@ export interface BuildLessonInput {
   activityType: ClassroomLessonType;
   title: string;
   overview: string;
-  meetingLink: string;
   sessionDate: Date | null;
   sessionTime: string | null;
   description: string;
@@ -36,9 +35,6 @@ export function buildLessonPayload(
     summary: isLiveSession ? input.description.trim() : undefined,
     lessonType: input.activityType,
     isPublished: true,
-    liveSessionUrl: isLiveSession
-      ? input.meetingLink.trim() || undefined
-      : undefined,
     startsAt: isLiveSession ? startsAt : undefined,
     recordingUrl: isLiveSession
       ? input.recordingUrl.trim() || undefined

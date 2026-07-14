@@ -71,7 +71,6 @@ export function buildUpsertClassroomPayload(
         order: lesson.order ?? lessonIndex + 1,
         isPublished: lesson.isPublished ?? true,
         durationMinutes: lesson.durationMinutes,
-        liveSessionUrl: lesson.liveSessionUrl,
         startsAt: lesson.startsAt,
         recordingUrl: lesson.recordingUrl,
       })),

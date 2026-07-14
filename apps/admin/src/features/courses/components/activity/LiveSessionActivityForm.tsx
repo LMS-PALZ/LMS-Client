@@ -9,8 +9,6 @@ import { UploadSection } from "./UploadSection";
 export function LiveSessionActivityForm({
   title,
   onTitleChange,
-  meetingLink,
-  onMeetingLinkChange,
   sessionDate,
   onSessionDateChange,
   sessionTime,
@@ -28,15 +26,6 @@ export function LiveSessionActivityForm({
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
           placeholder={titlePlaceholder}
-          className={activityFieldClassName}
-        />
-      </FormField>
-
-      <FormField id="live-meeting-link" label="Live meeting link">
-        <Input
-          value={meetingLink}
-          onChange={(event) => onMeetingLinkChange(event.target.value)}
-          placeholder="Enter your meeting link"
           className={activityFieldClassName}
         />
       </FormField>

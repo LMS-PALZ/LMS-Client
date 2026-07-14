@@ -68,9 +68,6 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
   );
   const [title, setTitle] = useState(existingLesson?.title ?? "");
   const [overview, setOverview] = useState(existingLesson?.overview ?? "");
-  const [meetingLink, setMeetingLink] = useState(
-    existingLesson?.liveSessionUrl ?? "",
-  );
   const [sessionDate, setSessionDate] = useState<Date | null>(() => {
     if (!initialSchedule.date) return null;
     return parseDDMMYYYY(initialSchedule.date);
@@ -104,7 +101,6 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       activityType,
       title,
       overview,
-      meetingLink,
       sessionDate,
       sessionTime,
       description,
@@ -203,8 +199,6 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
           <LiveSessionActivityForm
             title={title}
             onTitleChange={setTitle}
-            meetingLink={meetingLink}
-            onMeetingLinkChange={setMeetingLink}
             sessionDate={sessionDate}
             onSessionDateChange={setSessionDate}
             sessionTime={sessionTime}

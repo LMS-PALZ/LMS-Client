@@ -62,8 +62,6 @@ export interface ReadingActivityFormProps {
 export interface LiveSessionActivityFormProps {
   title: string;
   onTitleChange: (value: string) => void;
-  meetingLink: string;
-  onMeetingLinkChange: (value: string) => void;
   sessionDate: Date | null;
   onSessionDateChange: (value: Date | null) => void;
   sessionTime: string | null;
@@ -79,7 +77,6 @@ export interface ActivityFormState {
   activityType: ClassroomLessonType;
   title: string;
   overview: string;
-  meetingLink: string;
   sessionDate: Date | null;
   sessionTime: string | null;
   description: string;
