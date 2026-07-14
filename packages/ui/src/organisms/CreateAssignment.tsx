@@ -4,11 +4,11 @@ import { useRef, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Info, Upload, Link2, FileText, X } from "lucide-react";
 import {
+  AssessmentDatePicker,
   CustomSelect,
   Button,
   Input,
   AlertBanner,
-  DatePicker,
   Spinner,
 } from "@ssu/ui";
 import {
@@ -384,7 +384,7 @@ export function CreateAssignmentPage() {
           <div>
             <label className="mb-2 block text-sm font-medium">Due date</label>
             <div className="relative">
-              <DatePicker value={dueDate} onChange={setDueDate} />
+              <AssessmentDatePicker value={dueDate} onChange={setDueDate} />
             </div>
             <div className="mt-2 flex items-center gap-2 rounded-lg bg-[#E8F0FF] px-3 py-2 text-sm text-[#2563EB]">
               <Info className="h-4 w-4" />

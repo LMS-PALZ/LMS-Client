@@ -17,7 +17,11 @@ export * from "./skeletons";
 export * from "./atoms/Avatar";
 export * from "./atoms/Checkbox";
 export * from "./atoms/Divider";
-export * from "./atoms/Datepicker";
+export {
+  DatePicker as AssessmentDatePicker,
+  type DatePickerProps as AssessmentDatePickerProps,
+} from "./atoms/Datepicker";
+export * from "./molecules/DatePicker";
 
 export * from "./molecules/FormField";
 export * from "./molecules/TimePicker";

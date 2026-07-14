@@ -9,6 +9,10 @@ const statusPillStyles: Record<AssignmentSummaryStatusVariant, string> = {
   graded: "bg-[#D4EDDA] text-[#2D6A4F]",
   pendingReview: "bg-[#E0F2FE] text-[#2563EB]",
   notSubmitted: "bg-[#FEE8E8] text-[#DC2626]",
+  draft: "bg-[#FFDFC5] text-[#F49221]",
+  published: "bg-[#DBF1DC] text-[#1F6E2A]",
+  closed: "bg-[#E2E8F0] text-[#475569]",
+  archive: "bg-[#E2E8F0] text-[#475569]",
 };
 
 function MetricColumn({ label, value }: { label: string; value: string }) {
