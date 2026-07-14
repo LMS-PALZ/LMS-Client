@@ -1,15 +1,16 @@
 import { AcceptInviteForm } from "@ssu/ui";
 
 export default async function page({
-  params,
+  searchParams,
 }: {
-  params: Promise<{ token: string }>;
+  searchParams: Promise<{ token?: string; email?: string }>;
 }) {
-  const { token } = await params;
+  const { token = "", email = "" } = await searchParams;
 
   return (
     <AcceptInviteForm
       token={token}
+      email={email}
       description="Please complete the form below to create your account as an admin"
       onSuccessRedirect="/login"
     />

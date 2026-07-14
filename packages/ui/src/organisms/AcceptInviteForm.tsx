@@ -17,6 +17,7 @@ import { AuthFormSkeleton } from "../skeletons/AuthFormSkeleton";
 interface AcceptInviteFormProps {
   onSuccessRedirect?: string;
   token: string;
+  email?: string;
   requireSessionCheck?: boolean;
   logoSrc?: string;
   title?: string;
@@ -27,6 +28,7 @@ type FormValues = z.infer<typeof acceptInviteSchema>;
 
 export function AcceptInviteForm({
   token,
+  email = "",
   onSuccessRedirect = "/success",
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
@@ -36,6 +38,7 @@ export function AcceptInviteForm({
   const { data: session, isLoading: sessionLoading } = useSession();
   const [showPw, setShowPw] = useState(false);
   const acceptInvite = useacceptInviteMutation();
+  const inviteEmail = decodeURIComponent(email).trim();
 
   const {
     register,
@@ -46,7 +49,7 @@ export function AcceptInviteForm({
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
+      email: inviteEmail,
       password: "",
       confirmPassword: "",
     },
@@ -55,9 +58,9 @@ export function AcceptInviteForm({
   const onSubmit = handleSubmit(async (values) => {
     try {
       await acceptInvite.mutateAsync({
-        email: values.email,
-        token,
+        email: values.email.trim(),
         password: values.password,
+        token,
       });
 
       setTimeout(() => router.replace(onSuccessRedirect), 1500);
@@ -134,7 +137,8 @@ export function AcceptInviteForm({
               id="email"
               type="email"
               autoComplete="email"
-              disabled={isSubmitting}
+              disabled={isSubmitting || Boolean(inviteEmail)}
+              readOnly={Boolean(inviteEmail)}
               {...register("email")}
               placeholder="Enter your email address"
               className="rounded-[12px] placeholder:text-sm"

@@ -131,8 +131,12 @@ export async function acceptinvite(data: {
 > {
   try {
     const res = await axios.post(
-      `${API_BASE_URL}/api/v1/admins/invitations/accept`,
-      data,
+      `${API_BASE_URL}/api/v1/admins/auth/invitations/accept`,
+      {
+        email: data.email,
+        password: data.password,
+        token: data.token,
+      },
     );
 
     return {
