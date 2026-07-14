@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 import { EllipsisVertical } from "lucide-react";
 import { Assignrole } from "@/views/StaffManagement/Assignrole";
 import { StatusDialog } from "@/components/StatusDialog";
-import { useAdminModal } from "@/contexts/AdminModalProvider";
+import { useAdminModal } from "@ssu/ui";
 import { useUpdateStaffStatusMutation } from "@ssu/queries";
 
 const AVATAR_COLORS = [

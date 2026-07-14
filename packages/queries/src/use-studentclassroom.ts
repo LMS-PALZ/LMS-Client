@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { getStudentClassroom } from "@ssu/api";
-import { Profiledetail } from "./use-profiledetail";
+import { useProfileDetail } from "./use-profiledetail";
 
 export function useEnrolledProgram() {
-  const profileQuery = Profiledetail();
+  const profileQuery = useProfileDetail();
   const programId = profileQuery.data?.program?.id ?? "";
 
   return {

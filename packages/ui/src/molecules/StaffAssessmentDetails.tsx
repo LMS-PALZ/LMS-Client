@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { StatusBadge } from "@ssu/ui";
-import { Button } from "@ssu/ui";
-// import { SubmittedTable } from "@ssu/ui";
+import { StatusBadge, Button, SubmittedTable } from "@ssu/ui";
+import type { StaffAssignmentsubmitted } from "@ssu/types";
 
 interface Props {
   data: {
@@ -13,10 +12,15 @@ interface Props {
       title: string;
       dueDate: string;
       weight: number;
-      submissions: string;
+      submissions: {
+        submitted: string;
+        total: string;
+      };
       instructions: string;
     };
+    studentsSubmits: StaffAssignmentsubmitted[];
   };
+  onViewSubmission?: (submission: StaffAssignmentsubmitted) => void;
 }
 
 function formatDate(dateString: string) {
@@ -27,12 +31,12 @@ function formatDate(dateString: string) {
   });
 }
 
-export function StaffAssessmentDetails({ data }: Props) {
+export function StaffAssessmentDetails({ data, onViewSubmission }: Props) {
+  const studentdetails = data?.studentsSubmits;
   const info = data?.assessment;
+  const [open, setOpen] = useState(true);
 
   console.log("Assessment data:", data);
-
-  const [open, setOpen] = useState(true);
 
   return (
     <div className="space-y-8">
@@ -60,7 +64,7 @@ export function StaffAssessmentDetails({ data }: Props) {
             <div>
               <p className="text-sm text-[#6B7280]">Submissions</p>
               <p className="mt-1 text-[14px] font-semibold">
-                {/* {submissions} */}
+                {info?.submissions.submitted} / {info?.submissions.total}
               </p>
             </div>
           </div>
@@ -98,11 +102,13 @@ export function StaffAssessmentDetails({ data }: Props) {
         )}
       </div>
 
-      {/* <section>
-<SubmittedTable
-
-/>
-   </section> */}
+      <section>
+        <SubmittedTable
+          students={studentdetails ?? []}
+          weight={info?.weight ?? 0}
+          onViewSubmission={onViewSubmission}
+        />
+      </section>
     </div>
   );
 }

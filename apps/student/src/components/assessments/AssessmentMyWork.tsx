@@ -4,7 +4,7 @@ import {} from "@ssu/queries";
 import { EMPTY_SUBMISSION, useAssessmentSubmissionStore } from "@ssu/store";
 import { cn, formatFileSize } from "@ssu/utils";
 import { CloudUpload, FileText, Link2, Paperclip, Plus, X } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import type { AssessmentDetailContent } from "@/lib/assessments";
 import { AssessmentCommentsEditor } from "./AssessmentCommentsEditor";
@@ -13,6 +13,7 @@ import {
   useUndoSubmissionMutation,
 } from "@ssu/queries";
 import { notify } from "@ssu/ui";
+import { useRouter } from "next/navigation";
 
 type AttachmentTab = "device" | "url";
 
@@ -66,6 +67,8 @@ export function AssessmentMyWork({
   const uploadProgress = useAssessmentSubmissionStore(
     (s) => s.uploadProgress[assignmentId] ?? null,
   );
+  const router = useRouter();
+  const redirectTimeoutRef = useRef<number | null>(null);
   const setComments = useAssessmentSubmissionStore((s) => s.setComments);
   const addAttachment = useAssessmentSubmissionStore((s) => s.addAttachment);
   const removeAttachment = useAssessmentSubmissionStore(
@@ -113,6 +116,14 @@ export function AssessmentMyWork({
     noClick: true,
     noKeyboard: true,
   });
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleAddUrl = () => {
     const trimmed = urlDraft.trim();
@@ -171,6 +182,10 @@ export function AssessmentMyWork({
       );
       submitAssignment(assignmentId, submissionId);
       notify.success("Assignment submitted successfully!");
+
+      redirectTimeoutRef.current = window.setTimeout(() => {
+        router.push("/assessments?tab=Submitted");
+      }, 2000);
     } catch (error: any) {
       notify.error("Submission failed", error?.message);
     }
@@ -280,19 +295,6 @@ export function AssessmentMyWork({
               >
                 <Paperclip className="h-4 w-4" />
                 From Device
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("url")}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-semibold transition",
-                  tab === "url"
-                    ? "border-[#4E845F] bg-white text-[#4E845F]"
-                    : "border-transparent bg-white/60 text-neutral-600 hover:bg-white",
-                )}
-              >
-                <Link2 className="h-4 w-4" />
-                From URL
               </button>
             </div>
           </div>

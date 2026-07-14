@@ -27,7 +27,7 @@ export function AssessmentsPage() {
           className="rounded-full px-6 bg-[#4C7D5B] text-[#F8F9FA]"
           onClick={() => router.push("/createasignment")}
         >
-          + Create Assignment
+          + Create
         </Button>
       </div>
       {programId === "" ? (
@@ -39,6 +39,7 @@ export function AssessmentsPage() {
       ) : (
         <AssignmentTable
           students={data?.assessments ?? []}
+          programId={programId}
           pagination={data?.pagination}
           search={search}
           setSearch={setSearch}
