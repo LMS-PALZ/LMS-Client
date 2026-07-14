@@ -130,7 +130,7 @@ export function CourseBasicForm({ value, onChange }: CourseBasicFormProps) {
 
         <div className="space-y-3">
           <AddItemLink
-            label="Add cohort (Optional)"
+            label="Add cohort"
             onClick={() => setCohortModalOpen(true)}
             disabled={cohortLimitReached}
           />
