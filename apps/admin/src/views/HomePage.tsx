@@ -1,90 +1,116 @@
 "use client";
 
-import { adminPath } from "@ssu/config/portal-paths";
-import { ShieldCheck, Users, BookOpen, Monitor } from "lucide-react";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import {
+  GreetingTitle,
+  GreetingTitleSkeleton,
+  LiveClassBanner,
+  UpcomingClassCard,
+  AssessmentGradingTable,
+} from "@ssu/ui";
+import { useSession } from "@ssu/queries";
 
-interface AdminWelcomeProps {
-  title?: string;
-  description?: string;
+function greeting(first: string) {
+  const h = new Date().getHours();
+  if (h < 12) return `Good morning, ${first}`;
+  if (h < 18) return `Good afternoon, ${first}`;
+  return `Good evening, ${first}`;
 }
 
-export function HomePage({
-  title = "Welcome to the admin dashboard",
-  description = "This is the secure back office for managing Skill Scale Up students, programs, and trainers.",
-}: AdminWelcomeProps) {
-  const features = [
+export function HomePage() {
+  const { data: user } = useSession();
+
+  const displayFirstName = user?.firstName ?? "";
+
+  const showGreetingSkeleton = !user;
+
+  const myDdata = [
     {
-      title: "Students",
-      icon: Users,
-      href: adminPath("/students"),
+      title: "Active Programs",
+      value: "6",
     },
     {
-      title: "Programs",
-      icon: BookOpen,
-      href: adminPath("/courses"),
+      title: "Active Trainers",
+      value: "8",
     },
     {
-      title: "Trainers",
-      icon: Monitor,
-      href: adminPath("/staff"),
+      title: "Active Students",
+      value: "98",
+    },
+  ];
+
+  const upcoming = [
+    {
+      id: 1,
+      title: "Social Media Strategy: Viral Campaigns",
+      time: "10:00am",
+      date: "10/12",
+    },
+    {
+      id: 2,
+      title: "Social Media Strategy: Viral Campaigns",
+      time: "10:00am",
+      date: "10/12",
+    },
+    {
+      id: 3,
+      title: "Social Media Strategy: Viral Campaigns",
+      time: "10:00am",
+      date: "10/12",
     },
   ];
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col items-center text-center">
-      <motion.div
-        className="flex h-[120px] w-[120px] items-center justify-center"
-        animate={{
-          opacity: [0.4, 1, 0.4],
-          scale: [0.95, 1, 0.95],
-        }}
-        transition={{
-          duration: 2,
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatType: "loop",
-        }}
-      >
-        <img
-          src="/firstlogo.png"
-          alt="Skill Scale Up Logo"
-          className="h-full w-full object-contain"
+    <div className="space-y-2">
+      {showGreetingSkeleton ? (
+        <GreetingTitleSkeleton />
+      ) : (
+        <GreetingTitle>{`${greeting(displayFirstName)}!`}</GreetingTitle>
+      )}
+
+      <div className="flex items-center justify-center pb-4">
+        <p className="text-[16px] text-[#6C757D] font-medium md:text-[18px]">
+          Welcome to your dashboard, lets do great work today
+        </p>
+      </div>
+
+      <div className="mt-8 rounded-[12px] bg-[#F0F5F1] px-6 py-8">
+        <div className="grid grid-cols-3 gap-6">
+          {myDdata.map((item) => (
+            <div key={item.title}>
+              <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
+                {item.title}
+              </h3>
+              <p className="text-[18px] font-semibold text-[#495057]">
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-8 pt-4">
+        <LiveClassBanner
+          title="Social Media Strategy: Viral Campaigns"
+          time="10:00am"
+          date="10/12"
         />
-      </motion.div>
 
-      <div className="mt-8 rounded-full bg-[#0E5B1E] px-6 py-2">
-        <span className="flex items-center gap-2 text-[16px] font-medium text-[#B7FFB0]">
-          <ShieldCheck size={16} />
-          Secure admin access
-        </span>
+        <div className="border-t border-[#ECECEC]" />
+
+        <section className="space-y-3 pb-5">
+          <h2 className="text-[20px] font-semibold text-[#202124]">
+            Upcoming live class
+          </h2>
+
+          <div className="space-y-3">
+            {upcoming.map((item) => (
+              <UpcomingClassCard key={item.id} {...item} />
+            ))}
+          </div>
+        </section>
       </div>
 
-      <h1 className="mt-5 text-[18px] font-semibold md:text-[25px]">{title}</h1>
-
-      <p className="mt-3 max-w-[760px] text-[17px] leading-[40px] text-[#BDBDBD]">
-        {description}
-      </p>
-
-      <div className="my-12 h-[3px] w-[100px] rounded-full bg-gray-500" />
-
-      <div className="grid w-full gap-6 md:grid-cols-3">
-        {features.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.title}
-              href={item.href}
-              className="flex flex-col items-center justify-center rounded-[20px] border border-[#BDBDBD] py-8 text-[#737373] transition hover:border-[#4C7D5B] hover:bg-[#F5F9F6] hover:text-[#4C7D5B]"
-            >
-              <h3 className="mb-3 text-[18px] font-medium">{item.title}</h3>
-              <Icon size={20} />
-            </Link>
-          );
-        })}
-      </div>
+      <AssessmentGradingTable />
     </div>
   );
 }

@@ -25,7 +25,7 @@ interface ResetPasswordFormProps {
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordForm({
-  onSuccessRedirect = "/success",
+  onSuccessRedirect = "/login",
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
   title = "Set new password",

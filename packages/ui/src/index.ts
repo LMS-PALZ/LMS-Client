@@ -74,11 +74,15 @@ export * from "./organisms/LoginForm";
 export * from "./organisms/ForgotPasswordForm";
 export * from "./organisms/ResetPasswordForm";
 export * from "./organisms/SetPasswordForm";
+export * from "./organisms/ConfirmCodeForm";
 export * from "./organisms/AcceptInviteForm";
 export * from "./organisms/SidebarContext";
 export * from "./organisms/CreateAssignment";
 export * from "./organisms/AssessmentsPage";
 export * from "./organisms/NavigationSidebar/MobileSidebar";
+export * from "./organisms/UpcomingClassCard";
+export * from "./organisms/liveclass";
+export * from "./organisms/assignmentsubmission";
 
 export * from "./layouts/AuthLayout";
 export * from "./layouts/DashboardLayout";

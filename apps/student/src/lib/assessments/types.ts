@@ -1,5 +1,5 @@
 export interface AssessmentDetailContent {
-  instructionsIntro: string;
+  instructions: string;
   tasks: string[];
   submissionRequirements: string[];
   referenceTitle: string;

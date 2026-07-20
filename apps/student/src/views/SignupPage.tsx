@@ -92,7 +92,7 @@ export function SignupPage() {
     });
 
     setTimeout(() => {
-      router.replace("/confirmcode");
+      router.replace("/confirmcode?signup");
     }, 1500);
   });
 
