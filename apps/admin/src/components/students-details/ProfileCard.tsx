@@ -1,6 +1,7 @@
 "use client";
 
 import { StudentProfile } from "@ssu/types";
+import { StatusBadge } from "@ssu/ui";
 
 interface StudentProfileCardProps {
   profile: StudentProfile;
@@ -8,7 +9,7 @@ interface StudentProfileCardProps {
 
 export function StudentProfileCard({ profile }: StudentProfileCardProps) {
   return (
-    <div className="flex items-center rounded-[24px] border border-[#E6EBF0] bg-[#F8FAF8] p-8">
+    <div className="flex items-center justify-center rounded-[24px] p-4 border border-[#E6EBF0] bg-[#F8FAF8] ">
       <div className="flex gap-2 flex-col items-center text-center">
         <img
           src={"/firstlogo.png"}
@@ -24,6 +25,7 @@ export function StudentProfileCard({ profile }: StudentProfileCardProps) {
             {profile?.programTitle}
           </p>
         </section>
+        <StatusBadge status={profile?.status} />
       </div>
     </div>
   );

@@ -164,6 +164,7 @@ export interface StudentProfile {
   lastName: string;
   programTitle: string;
   image: string;
+  status: "active" | "suspended";
 }
 
 export interface StudentInfo {

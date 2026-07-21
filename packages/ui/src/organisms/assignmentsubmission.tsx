@@ -2,7 +2,7 @@
 
 import { DataTable } from "@ssu/ui";
 import { ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
 const AVATAR_COLORS = [
@@ -70,6 +70,7 @@ const data: AssessmentSubmission[] = [
 ];
 
 export function AssessmentGradingTable() {
+  const router = useRouter();
   const avatarColors = useMemo(
     () =>
       data.reduce<Record<string, string>>((acc, submission) => {
@@ -133,12 +134,12 @@ export function AssessmentGradingTable() {
           </p>
         </div>
 
-        <Link
-          href="/assessments"
+        <button
+          onClick={() => router.push("/assessment")}
           className="text-[14px] font-medium text-[#4B7F5C]"
         >
           View all assessment
-        </Link>
+        </button>
       </div>
 
       <DataTable columns={columns} data={rows} />

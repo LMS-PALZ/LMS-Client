@@ -1,13 +1,12 @@
 "use client";
 
-import { DataTable, StatusBadge } from "@ssu/ui";
+import { DataTable, StatusBadge, useAdminModal } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Trainers } from "@ssu/types";
 import { useMemo, useState } from "react";
 import { EllipsisVertical } from "lucide-react";
 import { Assignrole } from "@/views/StaffManagement/Assignrole";
 import { StatusDialog } from "@/components/StatusDialog";
-import { useAdminModal } from "@ssu/ui";
 import { useUpdateStaffStatusMutation } from "@ssu/queries";
 
 const AVATAR_COLORS = [
