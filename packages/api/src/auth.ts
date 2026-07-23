@@ -1315,6 +1315,18 @@ export async function getStudentOverallProgress(programId: string) {
   }
 }
 
+export async function getAdminDashboard() {
+  const token = getStoredAuthToken();
+
+  const { data } = await axios.get(`${API_BASE_URL}/api/v1/admins/dashboard`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data.data;
+}
+
 export function isStudentAuthenticated(): boolean {
   if (typeof window === "undefined") return false;
   const session = readSession();

@@ -6,8 +6,9 @@ import {
   LiveClassBanner,
   UpcomingClassCard,
   AssessmentGradingTable,
+  DataTableSkeleton,
 } from "@ssu/ui";
-import { useSession } from "@ssu/queries";
+import { useSession, useAdminDashboard } from "@ssu/queries";
 
 function greeting(first: string) {
   const h = new Date().getHours();
@@ -18,46 +19,14 @@ function greeting(first: string) {
 
 export function HomePage() {
   const { data: user } = useSession();
+  const { data, isLoading } = useAdminDashboard();
+  const stats = data?.stats;
+  const pendingAssessments = data?.pendingAssessments?.items;
+  const total = data?.pendingAssessments?.total;
 
   const displayFirstName = user?.firstName ?? "";
 
   const showGreetingSkeleton = !user;
-
-  const myDdata = [
-    {
-      title: "Active Programs",
-      value: "6",
-    },
-    {
-      title: "Active Trainers",
-      value: "8",
-    },
-    {
-      title: "Active Students",
-      value: "98",
-    },
-  ];
-
-  const upcoming = [
-    {
-      id: 1,
-      title: "Social Media Strategy: Viral Campaigns",
-      time: "10:00am",
-      date: "10/12",
-    },
-    {
-      id: 2,
-      title: "Social Media Strategy: Viral Campaigns",
-      time: "10:00am",
-      date: "10/12",
-    },
-    {
-      id: 3,
-      title: "Social Media Strategy: Viral Campaigns",
-      time: "10:00am",
-      date: "10/12",
-    },
-  ];
 
   return (
     <div className="space-y-2">
@@ -75,16 +44,30 @@ export function HomePage() {
 
       <div className="mt-8 rounded-[12px] bg-[#F0F5F1] px-6 py-8">
         <div className="grid grid-cols-3 gap-6">
-          {myDdata.map((item) => (
-            <div key={item.title}>
-              <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
-                {item.title}
-              </h3>
-              <p className="text-[18px] font-semibold text-[#495057]">
-                {item.value}
-              </p>
-            </div>
-          ))}
+          <div>
+            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
+              Active Programs
+            </h3>
+            <p className="text-[18px] font-semibold text-[#495057]">
+              {stats?.activePrograms}
+            </p>
+          </div>
+          <div>
+            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
+              Active Trainers
+            </h3>
+            <p className="text-[18px] font-semibold text-[#495057]">
+              {stats?.activeTrainers}
+            </p>
+          </div>
+          <div>
+            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
+              Active Students
+            </h3>
+            <p className="text-[18px] font-semibold text-[#495057]">
+              {stats?.activeStudents}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -103,14 +86,24 @@ export function HomePage() {
           </h2>
 
           <div className="space-y-3">
-            {upcoming.map((item) => (
-              <UpcomingClassCard key={item.id} {...item} />
-            ))}
+            {data?.upcomingClasses
+              ?.slice(0, 3)
+              .map((item: any, index: number) => (
+                <UpcomingClassCard key={index} {...item} />
+              ))}
           </div>
         </section>
       </div>
 
-      <AssessmentGradingTable />
+      {isLoading && !data ? (
+        <DataTableSkeleton
+          rows={3}
+          columns={4}
+          className="border-0 bg-transparent p-0 shadow-none"
+        />
+      ) : (
+        <AssessmentGradingTable data={pendingAssessments ?? []} total={total} />
+      )}
     </div>
   );
 }

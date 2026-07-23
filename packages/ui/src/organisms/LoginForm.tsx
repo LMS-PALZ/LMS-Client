@@ -13,7 +13,6 @@ import Link from "next/link";
 import type { z } from "zod";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { Button } from "../atoms/Button";
-import { Checkbox } from "../atoms/Checkbox";
 import { FormField } from "../molecules/FormField";
 import { Input } from "../atoms/Input";
 import { AuthFormSkeleton } from "../skeletons/AuthFormSkeleton";
@@ -155,16 +154,7 @@ export function LoginForm({
             </button>
           </div>
         </FormField>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Checkbox id="rememberMe" {...register("rememberMe")} />
-            <label
-              htmlFor="rememberMe"
-              className="text-sm text-neutral-700 cursor-pointer"
-            >
-              Remember me
-            </label>
-          </div>
+        <div className="flex items-center justify-end">
           <Link
             href={forgotPasswordLink}
             className="text-sm text-[#0D693B] hover:underline"

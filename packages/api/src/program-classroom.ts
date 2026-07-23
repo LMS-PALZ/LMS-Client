@@ -326,7 +326,7 @@ export async function upsertProgramClassroom(
       description: readString(classroom.description) || undefined,
       status:
         readString(classroom.status) === "published" ? "published" : "draft",
-      modules: extractModuleRows(res.data),
+      modules: extractModuleRows(res.data).slice(-1),
     };
 
     return {

@@ -255,6 +255,9 @@ export interface StaffAssignmentsubmitted {
     first_name: string;
     last_name: string;
     email: string;
+    file: {
+      url: string;
+    };
   };
   submissionType: "file" | "url";
   file?: {
@@ -288,4 +291,14 @@ export interface Admins {
   role: string;
   inviteAcceptedAt: string;
   status: Status;
+}
+
+export interface AssessmentSubmission {
+  id: string;
+  studentName: string;
+  avatar: string;
+  assessmentTitle: string;
+  submissionType: string;
+  submittedAt: string;
+  avatarUrl: string;
 }

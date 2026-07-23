@@ -54,6 +54,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   };
 
   const saveModules = async (nextModules: ProgramClassroomModule[]) => {
+    const latestModule = nextModules.at(-1);
     if (!program || upsertClassroom.isPending) return;
 
     try {
@@ -61,7 +62,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
         programId: program.id,
         payload: buildUpsertClassroomPayload(
           program,
-          nextModules,
+          latestModule ? [latestModule] : [],
           program.status === "published" ? "published" : "draft",
         ),
       });
