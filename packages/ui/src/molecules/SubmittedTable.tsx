@@ -30,10 +30,11 @@ export function SubmittedTable({
       header: "Student",
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-[13px] font-semibold text-white">
-            {row.original.studentId.first_name.charAt(0)}
-            {row.original.studentId.last_name.charAt(0)}
-          </span>
+          <img
+            src={row.original.profile.photo.url}
+            alt={row.original.studentId.first_name}
+            className="h-10 w-10 rounded-full object-cover"
+          />
           <div>
             <p className="text-[14px] font-medium text-[#1D1D1D]">
               {row.original.studentId.first_name}{" "}

@@ -255,7 +255,9 @@ export interface StaffAssignmentsubmitted {
     first_name: string;
     last_name: string;
     email: string;
-    file: {
+  };
+  profile: {
+    photo: {
       url: string;
     };
   };
