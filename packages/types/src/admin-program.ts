@@ -47,6 +47,7 @@ export interface CreateProgramPayload {
   capacity: number;
   status?: ProgramStatus;
   assignedTutorIds?: string[];
+  programType?: "general";
 }
 
 export interface UpdateProgramStatusPayload {

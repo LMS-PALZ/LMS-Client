@@ -86,6 +86,7 @@ export function mapDraftToCreatePayload(
     priceCurrency: "NGN",
     capacity,
     status,
+    programType: draft.isGeneral ? "general" : undefined,
     ...(firstCohort
       ? {
           cohortName: firstCohort.name,

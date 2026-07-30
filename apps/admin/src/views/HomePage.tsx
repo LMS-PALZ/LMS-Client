@@ -23,6 +23,7 @@ export function HomePage() {
   const stats = data?.stats;
   const pendingAssessments = data?.pendingAssessments?.items;
   const total = data?.pendingAssessments?.total;
+  const liveclass = data?.liveClass;
 
   const displayFirstName = user?.firstName ?? "";
 
@@ -72,11 +73,17 @@ export function HomePage() {
       </div>
 
       <div className="space-y-8 pt-4">
-        <LiveClassBanner
-          title="Social Media Strategy: Viral Campaigns"
-          time="10:00am"
-          date="10/12"
-        />
+        {liveclass === null ? (
+          ""
+        ) : (
+          <LiveClassBanner
+            title={liveclass?.title}
+            time={liveclass?.time}
+            date={liveclass?.date}
+            programName={liveclass?.programName}
+            zoomJoinUrl={liveclass?.zoomJoinUrl}
+          />
+        )}
 
         <div className="border-t border-[#ECECEC]" />
 
