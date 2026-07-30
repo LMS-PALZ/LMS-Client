@@ -1,2 +1,2 @@
 # Student site config lives in the repo root netlify.toml.
-# Set NETLIFY_APP=student and Publish=apps/student/.next on the student Netlify site.
+# In Netlify UI: Package directory empty, Publish = apps/student/.next

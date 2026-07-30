@@ -1,2 +1,2 @@
 # Admin site config lives in the repo root netlify.toml.
-# Set NETLIFY_APP=admin and Publish=apps/admin/.next on the admin Netlify site.
+# In Netlify UI: Package directory empty, Publish = apps/admin/.next
