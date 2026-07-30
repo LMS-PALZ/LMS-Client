@@ -6,9 +6,12 @@ set -euo pipefail
 
 detect_app_from_name() {
   local value="${1:-}"
+  # Lowercase for matching (site names / URLs vary).
+  value="$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]')"
   case "$value" in
-    ssuadmin*) echo admin ;;
-    ssuhub*) echo student ;;
+    # Legacy staging names + current free-account names (lmsadmidep, lmsstudent).
+    ssuadmin*|lmsadmi*) echo admin ;;
+    ssuhub*|lmsstudent*) echo student ;;
     *) echo "" ;;
   esac
 }
