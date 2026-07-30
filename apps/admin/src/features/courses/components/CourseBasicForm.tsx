@@ -47,7 +47,7 @@ export function CourseBasicForm({ value, onChange }: CourseBasicFormProps) {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[640px] space-y-6">
+      <div className="mx-auto w-full max-w-[640px] space-y-6 pb-5">
         <FormField id="course-name" label="Course name">
           <Input
             id="course-name"

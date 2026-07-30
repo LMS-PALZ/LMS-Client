@@ -114,15 +114,33 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       nextLesson,
     );
 
+    const updatedModule = nextModules.find(
+      (module) => module.id === targetModule.id,
+    );
+
+    if (!updatedModule) return;
+
+    const lessons = updatedModule.lessons ?? [];
+
+    const payloadLesson = lessonId
+      ? lessons.find((lesson) => lesson.id === lessonId)
+      : lessons.at(-1);
+
+    const payloadModule = {
+      ...updatedModule,
+      lessons: payloadLesson ? [payloadLesson] : [],
+    };
+
     try {
       await upsertClassroom.mutateAsync({
         programId: program.id,
         payload: buildUpsertClassroomPayload(
           program,
-          nextModules,
+          [payloadModule],
           program.status === "published" ? "published" : "draft",
         ),
       });
+
       mutationToast.success("Course activity saved");
       router.push(backHref);
     } catch (error) {

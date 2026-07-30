@@ -1,90 +1,116 @@
 "use client";
 
-import { adminPath } from "@ssu/config/portal-paths";
-import { ShieldCheck, Users, BookOpen, Monitor } from "lucide-react";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import {
+  GreetingTitle,
+  GreetingTitleSkeleton,
+  LiveClassBanner,
+  UpcomingClassCard,
+  AssessmentGradingTable,
+  DataTableSkeleton,
+} from "@ssu/ui";
+import { useSession, useAdminDashboard } from "@ssu/queries";
 
-interface AdminWelcomeProps {
-  title?: string;
-  description?: string;
+function greeting(first: string) {
+  const h = new Date().getHours();
+  if (h < 12) return `Good morning, ${first}`;
+  if (h < 18) return `Good afternoon, ${first}`;
+  return `Good evening, ${first}`;
 }
 
-export function HomePage({
-  title = "Welcome to the admin dashboard",
-  description = "This is the secure back office for managing Skill Scale Up students, programs, and trainers.",
-}: AdminWelcomeProps) {
-  const features = [
-    {
-      title: "Students",
-      icon: Users,
-      href: adminPath("/students"),
-    },
-    {
-      title: "Programs",
-      icon: BookOpen,
-      href: adminPath("/courses"),
-    },
-    {
-      title: "Trainers",
-      icon: Monitor,
-      href: adminPath("/staff"),
-    },
-  ];
+export function HomePage() {
+  const { data: user } = useSession();
+  const { data, isLoading } = useAdminDashboard();
+  const stats = data?.stats;
+  const pendingAssessments = data?.pendingAssessments?.items;
+  const total = data?.pendingAssessments?.total;
+  const liveclass = data?.liveClass;
+
+  const displayFirstName = user?.firstName ?? "";
+
+  const showGreetingSkeleton = !user;
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col items-center text-center">
-      <motion.div
-        className="flex h-[120px] w-[120px] items-center justify-center"
-        animate={{
-          opacity: [0.4, 1, 0.4],
-          scale: [0.95, 1, 0.95],
-        }}
-        transition={{
-          duration: 2,
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatType: "loop",
-        }}
-      >
-        <img
-          src="/firstlogo.png"
-          alt="Skill Scale Up Logo"
-          className="h-full w-full object-contain"
+    <div className="space-y-2">
+      {showGreetingSkeleton ? (
+        <GreetingTitleSkeleton />
+      ) : (
+        <GreetingTitle>{`${greeting(displayFirstName)}!`}</GreetingTitle>
+      )}
+
+      <div className="flex items-center justify-center pb-4">
+        <p className="text-[16px] text-[#6C757D] font-medium md:text-[18px]">
+          Welcome to your dashboard, lets do great work today
+        </p>
+      </div>
+
+      <div className="mt-8 rounded-[12px] bg-[#F0F5F1] px-6 py-8">
+        <div className="grid grid-cols-3 gap-6">
+          <div>
+            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
+              Active Programs
+            </h3>
+            <p className="text-[18px] font-semibold text-[#495057]">
+              {stats?.activePrograms}
+            </p>
+          </div>
+          <div>
+            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
+              Active Trainers
+            </h3>
+            <p className="text-[18px] font-semibold text-[#495057]">
+              {stats?.activeTrainers}
+            </p>
+          </div>
+          <div>
+            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
+              Active Students
+            </h3>
+            <p className="text-[18px] font-semibold text-[#495057]">
+              {stats?.activeStudents}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-8 pt-4">
+        {liveclass === null ? (
+          ""
+        ) : (
+          <LiveClassBanner
+            title={liveclass?.title}
+            time={liveclass?.time}
+            date={liveclass?.date}
+            programName={liveclass?.programName}
+            zoomJoinUrl={liveclass?.zoomJoinUrl}
+          />
+        )}
+
+        <div className="border-t border-[#ECECEC]" />
+
+        <section className="space-y-3 pb-5">
+          <h2 className="text-[20px] font-semibold text-[#202124]">
+            Upcoming live class
+          </h2>
+
+          <div className="space-y-3">
+            {data?.upcomingClasses
+              ?.slice(0, 3)
+              .map((item: any, index: number) => (
+                <UpcomingClassCard key={index} {...item} />
+              ))}
+          </div>
+        </section>
+      </div>
+
+      {isLoading && !data ? (
+        <DataTableSkeleton
+          rows={3}
+          columns={4}
+          className="border-0 bg-transparent p-0 shadow-none"
         />
-      </motion.div>
-
-      <div className="mt-8 rounded-full bg-[#0E5B1E] px-6 py-2">
-        <span className="flex items-center gap-2 text-[16px] font-medium text-[#B7FFB0]">
-          <ShieldCheck size={16} />
-          Secure admin access
-        </span>
-      </div>
-
-      <h1 className="mt-5 text-[18px] font-semibold md:text-[25px]">{title}</h1>
-
-      <p className="mt-3 max-w-[760px] text-[17px] leading-[40px] text-[#BDBDBD]">
-        {description}
-      </p>
-
-      <div className="my-12 h-[3px] w-[100px] rounded-full bg-gray-500" />
-
-      <div className="grid w-full gap-6 md:grid-cols-3">
-        {features.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.title}
-              href={item.href}
-              className="flex flex-col items-center justify-center rounded-[20px] border border-[#BDBDBD] py-8 text-[#737373] transition hover:border-[#4C7D5B] hover:bg-[#F5F9F6] hover:text-[#4C7D5B]"
-            >
-              <h3 className="mb-3 text-[18px] font-medium">{item.title}</h3>
-              <Icon size={20} />
-            </Link>
-          );
-        })}
-      </div>
+      ) : (
+        <AssessmentGradingTable data={pendingAssessments ?? []} total={total} />
+      )}
     </div>
   );
 }

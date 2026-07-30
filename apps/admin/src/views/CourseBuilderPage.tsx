@@ -15,6 +15,7 @@ import { mapDraftToCreatePayload } from "@/features/courses/lib/program-mappers"
 import { isBasicStepComplete } from "@/features/courses/lib/course-utils";
 import type { CourseDraft, CourseStatus } from "@/features/courses/types";
 import { canCreateCourses } from "@/lib/admin-roles";
+import { ToggleLeft, ToggleRight } from "lucide-react";
 
 const emptyDraft: CourseDraft = {
   name: "",
@@ -23,6 +24,7 @@ const emptyDraft: CourseDraft = {
   capacity: "",
   instructors: [],
   cohorts: [],
+  isGeneral: false,
 };
 
 export function CourseBuilderPage() {
@@ -98,6 +100,35 @@ export function CourseBuilderPage() {
         isSaving={createProgram.isPending}
       >
         <CourseBasicForm value={draft} onChange={setDraft} />
+
+        <div className="flex mx-auto w-full max-w-[640px] items-center justify-between rounded-xl border border-[#E2E8F0] p-4">
+          <div>
+            <p className="text-[15px] font-medium text-[#1D1D1D]">
+              General Course
+            </p>
+
+            <p className="text-sm text-[#64748B]">
+              Make this course available to all students.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setDraft((prev) => ({
+                ...prev,
+                isGeneral: !prev.isGeneral,
+              }))
+            }
+            className="transition"
+          >
+            {draft.isGeneral ? (
+              <ToggleRight size={40} className="text-[#16A34A]" />
+            ) : (
+              <ToggleLeft size={40} className="text-[#CBD5E1]" />
+            )}
+          </button>
+        </div>
       </CourseBuilderShell>
 
       <CourseSuccessModal

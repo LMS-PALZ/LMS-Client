@@ -44,6 +44,7 @@ export interface CourseDraft {
   capacity: string;
   instructors: Instructor[];
   cohorts: Cohort[];
+  isGeneral: boolean;
 }
 
 export const COURSE_DESCRIPTION_MAX = 140;

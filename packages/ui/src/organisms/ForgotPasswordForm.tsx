@@ -11,6 +11,7 @@ import { Button } from "../atoms/Button";
 import { FormField } from "../molecules/FormField";
 import { Input } from "../atoms/Input";
 import { AuthFormSkeleton } from "../skeletons/AuthFormSkeleton";
+import { useForgetEmailStore } from "@ssu/store";
 
 type FormValues = z.infer<typeof forgotPasswordSchema>;
 
@@ -25,7 +26,7 @@ interface ForgotPasswordFormProps {
 }
 
 export function ForgotPasswordForm({
-  onSuccessRedirect = "/login",
+  onSuccessRedirect = "/confirmcode?from=forgetpassword",
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
   title = "Reset password",
@@ -35,6 +36,8 @@ export function ForgotPasswordForm({
   const router = useRouter();
   const { data: session, isLoading: sessionLoading } = useSession();
   const forgotPassword = useForgotPasswordMutation();
+
+  const setUser = useForgetEmailStore((state) => state.setUser);
 
   const {
     register,
@@ -49,6 +52,7 @@ export function ForgotPasswordForm({
     try {
       const res = await forgotPassword.mutateAsync(values);
       if (res.ok) {
+        setUser({ forgotPasswordEmail: values.email });
         setTimeout(() => router.replace(onSuccessRedirect), 1500);
       }
     } catch {

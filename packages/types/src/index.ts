@@ -164,6 +164,7 @@ export interface StudentProfile {
   lastName: string;
   programTitle: string;
   image: string;
+  status: "active" | "suspended";
 }
 
 export interface StudentInfo {
@@ -255,6 +256,11 @@ export interface StaffAssignmentsubmitted {
     last_name: string;
     email: string;
   };
+  profile: {
+    photo: {
+      url: string;
+    };
+  };
   submissionType: "file" | "url";
   file?: {
     url: string;
@@ -287,4 +293,14 @@ export interface Admins {
   role: string;
   inviteAcceptedAt: string;
   status: Status;
+}
+
+export interface AssessmentSubmission {
+  id: string;
+  studentName: string;
+  avatar: string;
+  assessmentTitle: string;
+  submissionType: string;
+  submittedAt: string;
+  avatarUrl: string;
 }

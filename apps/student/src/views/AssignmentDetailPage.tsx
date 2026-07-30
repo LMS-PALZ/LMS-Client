@@ -7,7 +7,7 @@ import {
   AssessmentReferenceMaterial,
   AssessmentSuccessBanner,
 } from "@/components/assessments";
-import { getAssessmentDetailContent } from "@/lib/assessments";
+// import { getAssessmentDetailContent } from "@/lib/assessments";
 import {
   formatAssignmentDueDateLong,
   isAssignmentWorkLocked,
@@ -55,7 +55,8 @@ export function AssignmentDetailPage() {
   }
 
   const assignment = studentAssessment.data;
-  const content = getAssessmentDetailContent(assignment.instructions);
+  const content = studentAssessment.data;
+  const submissionRequirements: string[] = [];
   const status = resolveAssignmentDetailStatus(assignment, isSubmitted);
   const workLocked = isAssignmentWorkLocked(assignment, isSubmitted);
   const showSubmitSuccess =
@@ -83,15 +84,14 @@ export function AssignmentDetailPage() {
         <div className="space-y-6">
           <AssessmentInstructions content={content} />
           <AssessmentReferenceMaterial
-            title={content.referenceTitle}
-            url={content.referenceUrl}
+            materials={content?.referenceMaterials ?? []}
           />
         </div>
       </div>
 
       <AssessmentMyWork
         assignmentId={assignment._id}
-        submissionRequirements={content.submissionRequirements}
+        submissionRequirements={submissionRequirements}
         readOnly={workLocked}
       />
     </div>

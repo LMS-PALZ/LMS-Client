@@ -7,6 +7,8 @@ import {
   HeaderBar,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
+import { useSession } from "@ssu/queries";
+import { recordAuditEvent } from "@/lib/audit-log";
 import {
   CalendarDays,
   NotebookText,
@@ -20,7 +22,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { ProfileSetupProvider } from "@/contexts/ProfileSetupContext";
-import { useSignupStore } from "@ssu/store";
 import { getStudentPageTitle } from "@/lib/studentRoutes";
 
 const mainItems = [
@@ -67,8 +68,13 @@ function StudentSidebarWrapper() {
 export function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
+  const { data: user } = useSession();
 
-  const signupUser = useSignupStore((state) => state.user);
+  const handleBeforeLogout = async () => {
+    if (user) {
+      await recordAuditEvent("sign_out", user);
+    }
+  };
 
   return (
     <ProfileSetupProvider>
@@ -79,9 +85,7 @@ export function StudentLayout({ children }: { children: ReactNode }) {
         header={
           <HeaderBar
             pageTitle={getStudentPageTitle(pathname)}
-            firstName={signupUser?.first_name}
-            lastName={signupUser?.last_name}
-            email={signupUser?.email}
+            onBeforeLogout={handleBeforeLogout}
             menuItems={[
               { label: "Account", href: "/profile", icon: User },
               { label: "Certificate", href: "/certificate", icon: Award },
