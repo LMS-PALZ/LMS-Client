@@ -136,6 +136,7 @@ export function ClassroomSessionLayout({
           meetUrl={meetUrl}
           isLive
           displayName={displayName}
+          programId={liveGeneralFallback.programId}
         >
           {children}
         </ClassroomCourseLayoutShell>
@@ -210,6 +211,7 @@ export function ClassroomSessionLayout({
         meetingNumber={meetingNumber}
         isLive={isLive}
         displayName={displayName}
+        programId={programId}
       >
         {children}
       </ClassroomCourseLayoutShell>

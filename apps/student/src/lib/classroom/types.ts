@@ -28,6 +28,7 @@ export interface ClassroomLesson {
   subtitle?: string;
   completed?: boolean;
   description?: string;
+  isLive?: boolean;
 }
 
 export interface ClassroomWeek {

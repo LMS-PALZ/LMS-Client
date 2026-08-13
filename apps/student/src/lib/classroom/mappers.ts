@@ -1,3 +1,4 @@
+import { resolveLessonSessionPhase } from "@/lib/calendar/session-phase";
 import type {
   ClassroomCourseDetail,
   ClassroomWeek,
@@ -92,16 +93,26 @@ export function mapClassroomResponse(data: any): {
     label: module.weekLabel,
     topic: module.title,
     expanded: false,
-    lessons: module.lessons.map(
-      (lesson: any): ClassroomLesson => ({
+    lessons: module.lessons.map((lesson: any): ClassroomLesson => {
+      const type = lesson.lessonType === "live_session" ? "live" : "recorded";
+      const isLive =
+        type === "live" &&
+        resolveLessonSessionPhase(
+          lesson.startsAt,
+          lesson.durationMinutes,
+          lesson.isLiveNow,
+        ) === "live";
+
+      return {
         id: lesson.id,
         title: lesson.title,
-        type: lesson.lessonType === "live_session" ? "live" : "recorded",
+        type,
         subtitle: formatLessonDuration(lesson.durationMinutes),
         completed: false,
-        description: lesson.overview,
-      }),
-    ),
+        description: lesson.overview ?? lesson.summary,
+        isLive,
+      };
+    }),
   }));
 
   return { course, weeks };

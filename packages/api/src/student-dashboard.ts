@@ -5,7 +5,7 @@ import type {
   ProgramClassroomModule,
   StudentProgress,
 } from "@ssu/types";
-import { getStudentPofile } from "./auth";
+import { getStudentOverallProgress, getStudentPofile } from "./auth";
 import {
   getStudentAssessmentGrades,
   getStudentAssessments,
@@ -64,6 +64,32 @@ function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function readOverallPercent(payload: unknown): number | null {
+  if (typeof payload === "number" && Number.isFinite(payload)) {
+    return Math.round(Math.min(100, Math.max(0, payload)));
+  }
+  if (!payload || typeof payload !== "object") return null;
+
+  const obj = payload as Record<string, unknown>;
+  const raw =
+    obj.percentage ??
+    obj.overallScorePercent ??
+    obj.overallScore ??
+    obj.score ??
+    obj.progressPercent ??
+    obj.progress;
+
+  const value =
+    typeof raw === "number"
+      ? raw
+      : typeof raw === "string" && raw.trim() !== ""
+        ? Number(raw)
+        : NaN;
+
+  if (!Number.isFinite(value)) return null;
+  return Math.round(Math.min(100, Math.max(0, value)));
+}
+
 async function resolveEnrolledProgram(): Promise<{
   programId: string;
   programTitle: string;
@@ -113,7 +139,24 @@ export const studentDashboardApi = {
       return { overallScorePercent: 0, enrolledProgramTitle: "" };
     }
 
+    const overallRes = await getStudentOverallProgress(programId);
+    const overallFromApi = overallRes.ok
+      ? readOverallPercent(overallRes.data)
+      : null;
+
     const classroomRes = await getStudentClassroom(programId);
+    const enrolledProgramTitle =
+      classroomRes.ok && classroomRes.data.program.title
+        ? classroomRes.data.program.title
+        : programTitle;
+
+    if (overallFromApi !== null) {
+      return {
+        overallScorePercent: overallFromApi,
+        enrolledProgramTitle,
+      };
+    }
+
     if (!classroomRes.ok) {
       return {
         overallScorePercent: 0,
@@ -121,13 +164,14 @@ export const studentDashboardApi = {
       };
     }
 
-    const { program, classroom } = classroomRes.data;
-    const gradesRes = await getStudentAssessmentGrades(classroom.id);
+    const gradesRes = await getStudentAssessmentGrades(
+      classroomRes.data.classroom.id,
+    );
     const assignments = gradesRes.ok ? gradesRes.data : [];
 
     return {
       overallScorePercent: calculateOverallScorePercent(assignments),
-      enrolledProgramTitle: program.title || programTitle,
+      enrolledProgramTitle,
     };
   },
 

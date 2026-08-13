@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { gradeAssessmentSubmission } from "@ssu/api";
+import { studentProgressKeys } from "./use-student-progress";
 
 export function useGradeSubmissionMutation(assessmentId: string) {
   const qc = useQueryClient();
@@ -25,6 +26,8 @@ export function useGradeSubmissionMutation(assessmentId: string) {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["assessment", assessmentId] });
+      void qc.invalidateQueries({ queryKey: studentProgressKeys.all });
+      void qc.invalidateQueries({ queryKey: ["student-overall-progress"] });
     },
   });
 }

@@ -66,7 +66,11 @@ export function AssessmentsPage() {
       const mapped: AssignmentListItem[] = list
         .map((s: any) => {
           const status: AssignmentStatus =
-            s.status === "graded" ? "graded" : "submitted";
+            s.status === "graded" ||
+            s.status === "recorded" ||
+            s.status === "scored"
+              ? "graded"
+              : "submitted";
           const item: AssignmentListItem = {
             id: s._id,
             title: s.assessmentId?.title ?? "Untitled",

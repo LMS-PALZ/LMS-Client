@@ -9,7 +9,13 @@ import {
 import { LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import { GoBack } from "@ssu/ui";
-import { CheckCircle2, ChevronDown, ChevronLeft, Circle } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -32,6 +38,7 @@ interface ClassroomCourseLayoutShellProps {
   meetingNumber?: string;
   isLive?: boolean;
   displayName?: string;
+  programId?: string;
 }
 
 function ClassroomCourseLayoutShellInner({
@@ -43,6 +50,7 @@ function ClassroomCourseLayoutShellInner({
   meetingNumber,
   isLive = false,
   displayName,
+  programId,
 }: ClassroomCourseLayoutShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -140,6 +148,20 @@ function ClassroomCourseLayoutShellInner({
     course.sessionDuration ||
     "";
 
+  function joinLiveLesson(lesson: ClassroomLesson) {
+    const query = programId
+      ? `?programId=${encodeURIComponent(programId)}`
+      : "";
+    const href = `/classroom/${lesson.id}${query}`;
+
+    if (pathname.startsWith(`/classroom/${lesson.id}`)) {
+      setSelectedLesson(null);
+      return;
+    }
+
+    router.push(href);
+  }
+
   return (
     <div className="grid gap-3 xl:grid-cols-[1.9fr_0.78fr]">
       <div className="flex flex-col rounded-[20px] bg-white p-2 md:p-8">
@@ -171,6 +193,24 @@ function ClassroomCourseLayoutShellInner({
                   </p>
                 </div>
               )}
+              {selectedLesson.type === "live" && selectedLesson.isLive ? (
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                  <LiveIndicator
+                    label="LIVE SESSION"
+                    size="sm"
+                    tone="classroom"
+                    uppercase
+                  />
+                  <button
+                    type="button"
+                    onClick={() => joinLiveLesson(selectedLesson)}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
+                  >
+                    Join Session
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              ) : null}
             </div>
           </>
         ) : (
@@ -293,7 +333,11 @@ function ClassroomCourseLayoutShellInner({
                           <p className="text-[14px] font-medium text-[#1D1D1D]">
                             {lesson.title}
                           </p>
-                          {lesson.subtitle ? (
+                          {lesson.isLive ? (
+                            <p className="mt-1 text-[12px] font-medium text-[#C92A2A]">
+                              Live now
+                            </p>
+                          ) : lesson.subtitle ? (
                             <p className="mt-1 text-[12px] text-[#6B7280]">
                               {lesson.subtitle}
                             </p>

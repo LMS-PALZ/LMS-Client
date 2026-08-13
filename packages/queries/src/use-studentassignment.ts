@@ -29,7 +29,12 @@ function mapAssessmentStatus(status?: string): AssignmentStatus {
     return "submitted";
   }
 
-  if (normalized === "graded") {
+  if (
+    normalized === "graded" ||
+    normalized === "recorded" ||
+    normalized === "scored" ||
+    normalized === "marked"
+  ) {
     return "graded";
   }
 
@@ -63,7 +68,10 @@ export function useStudentassignments(programId: string) {
         status: mapAssessmentStatus(item.status),
         moduleLabel: item.module,
         weightPercent: item.weight ?? 0,
-        scoreDisplay: "N/A",
+        scoreDisplay:
+          item.score !== undefined && item.score !== null
+            ? `${item.score}%`
+            : item.scoreDisplay || "N/A",
       }));
     },
     enabled: !!programId,

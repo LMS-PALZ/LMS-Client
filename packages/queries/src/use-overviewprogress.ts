@@ -9,5 +9,6 @@ export function useStudentOverallProgress(programId: string) {
       if (!res.ok) throw new Error(res.message);
       return res.data;
     },
+    enabled: Boolean(programId),
   });
 }
