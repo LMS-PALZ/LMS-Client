@@ -266,7 +266,7 @@ export function CourseLessonDetailPage({
       </div>
 
       {isLiveSession && isJoined && canJoinInApp ? (
-        <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white p-4 shadow-sm">
+        <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] shadow-sm">
           <ZoomLiveEmbed
             meetUrl={meetUrl || `https://zoom.us/j/${meetingNumber}`}
             meetingNumber={meetingNumber || undefined}

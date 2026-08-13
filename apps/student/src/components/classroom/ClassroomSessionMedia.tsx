@@ -13,12 +13,16 @@ const ZoomLiveEmbed = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[640px] items-center justify-center rounded-[18px] bg-[#1a1a1a]">
+      <div className="flex aspect-[4/3] max-h-[85vh] min-h-[420px] items-center justify-center rounded-[18px] bg-[#242424]">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
       </div>
     ),
   },
 );
+
+// The app is cross-origin isolated (COEP) for Zoom, which blocks third-party
+// iframes unless they opt in. Loading them credentialless keeps them working.
+const CREDENTIALLESS = { credentialless: "" } as Record<string, string>;
 
 export type ClassroomMediaMode =
   | "live-meet"
@@ -73,15 +77,15 @@ export function ClassroomSessionMedia({
       meetingTarget?.kind === "zoom" ||
       (meetUrl && /zoom\.(us|com)/i.test(meetUrl))
     ) {
+      // The Zoom embed renders its own live header, so it skips LiveMediaShell.
       return (
-        <LiveMediaShell className={className}>
-          <ZoomLiveEmbed
-            meetUrl={meetUrl!}
-            meetingNumber={meetingNumber}
-            displayName={displayName}
-            onLeave={onLeaveMeeting}
-          />
-        </LiveMediaShell>
+        <ZoomLiveEmbed
+          meetUrl={meetUrl!}
+          meetingNumber={meetingNumber}
+          displayName={displayName}
+          className={className}
+          onLeave={onLeaveMeeting}
+        />
       );
     }
 
@@ -122,6 +126,7 @@ export function ClassroomSessionMedia({
         )}
       >
         <iframe
+          {...CREDENTIALLESS}
           title="Class recording"
           src={recordingEmbedUrl}
           className="absolute inset-0 h-full w-full border-0"

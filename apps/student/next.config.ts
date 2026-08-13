@@ -17,11 +17,15 @@ const nextConfig: NextConfig = {
     "@ssu/ui",
     "@ssu/utils",
   ],
-  // Isolate only the Zoom iframe so SAB works without breaking student API auth.
+  // Zoom needs SharedArrayBuffer for gallery view (more than one video at a
+  // time), which requires cross-origin isolation. A nested iframe only counts
+  // as isolated when the top-level document is too, so this has to be app-wide.
+  // credentialless keeps third-party images and scripts loading; third-party
+  // iframes additionally need the credentialless attribute.
   async headers() {
     return [
       {
-        source: "/zoom-embed.html",
+        source: "/:path*",
         headers: [
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },

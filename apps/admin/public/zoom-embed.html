@@ -6,23 +6,40 @@
     <title>Live session</title>
     <style>
       html,
-      body,
-      #zoom-root {
+      body {
         margin: 0;
         width: 100%;
         height: 100%;
-        background: #202124;
+        /*
+         * Matches the meeting window's own surface, so the two read as one.
+         * !important because the SDK's stylesheet loads after this one and
+         * paints the page white behind the window.
+         */
+        background: #242424 !important;
         overflow: hidden;
+      }
+      #zoom-root {
         position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: transparent !important;
+      }
+      /* The SDK's outer wrapper paints a light panel behind the meeting window. */
+      #zoom-root > div {
+        background-color: transparent !important;
       }
       #status {
         position: absolute;
         inset: 0;
+        z-index: 5;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #e8eaed;
-        font: 14px/1.4 system-ui, sans-serif;
+        font:
+          14px/1.4 system-ui,
+          sans-serif;
         text-align: center;
         padding: 24px;
         box-sizing: border-box;
@@ -43,6 +60,12 @@
         var joining = false;
         var didJoin = false;
         var clientRef = null;
+        var fitObserver = null;
+        var observedCard = null;
+        var fitFrame = 0;
+        var transformedCard = null;
+        var treeObserver = null;
+        var loggedBackdrop = false;
 
         function setStatus(message) {
           if (!message) {
@@ -135,6 +158,7 @@
         }
 
         function resetZoomRoot() {
+          stopFitting();
           var next = document.createElement("div");
           next.id = "zoom-root";
           rootEl.replaceWith(next);
@@ -162,22 +186,253 @@
           resetZoomRoot();
         }
 
+        function clamp(value, min, max) {
+          return Math.max(min, Math.min(max, value));
+        }
+
+        /**
+         * The SDK treats viewSizes.height as a floor, not a cap: it derives the
+         * canvas height from the requested width, so the width is what has to be
+         * constrained here. Gallery view needs the browser to render multiple
+         * videos, which needs SharedArrayBuffer and so cross-origin isolation;
+         * without it the SDK falls back to a portrait 250x274 single video.
+         *
+         * Gallery packs two 16:9 tiles side by side only when the canvas is
+         * wider than 16:9. Zoom's natural 720x411 canvas (1.75) falls just under
+         * that, so it stacks them into a narrow column with wide black bars
+         * either side - hence the slightly wider canvas requested here.
+         */
+        var CHROME_HEIGHT = 150;
+        var GALLERY_ASPECT = 1 / 1.85;
+        var SINGLE_VIDEO_ASPECT = 274 / 250;
+
+        function canRenderGallery() {
+          return (
+            typeof SharedArrayBuffer !== "undefined" &&
+            window.crossOriginIsolated !== false
+          );
+        }
+
+        function galleryAspect() {
+          return canRenderGallery() ? GALLERY_ASPECT : SINGLE_VIDEO_ASPECT;
+        }
+
         function resolveViewSize(payload) {
           var availableWidth = Math.floor(
-            Number(payload && payload.viewWidth) ||
-              rootEl.clientWidth ||
-              960,
+            Number(payload && payload.viewWidth) || rootEl.clientWidth || 960,
           );
           var availableHeight = Math.floor(
-            Number(payload && payload.viewHeight) ||
-              rootEl.clientHeight ||
-              560,
+            Number(payload && payload.viewHeight) || rootEl.clientHeight || 560,
           );
-          return {
-            width: Math.min(420, Math.max(360, availableWidth - 40)),
-            height: Math.min(540, Math.max(420, availableHeight - 40)),
-          };
+
+          var aspect = galleryAspect();
+          var widthForHeight = (availableHeight - CHROME_HEIGHT) / aspect;
+          var width = clamp(
+            Math.floor(Math.min(availableWidth - 12, widthForHeight)),
+            320,
+            1600,
+          );
+
+          return { width: width, height: Math.round(width * aspect) };
         }
+
+        /**
+         * The meeting window is the largest element that is not simply filling
+         * the embed. Screen sharing changes its shape, so this deliberately does
+         * not key off the size we requested, and matching on geometry avoids
+         * depending on the SDK's generated class names.
+         */
+        function findZoomCard() {
+          var rootWidth = rootEl.clientWidth;
+          var rootHeight = rootEl.clientHeight;
+          var nodes = rootEl.querySelectorAll("div");
+          var best = null;
+          var bestArea = 0;
+
+          for (var i = 0; i < nodes.length; i += 1) {
+            var el = nodes[i];
+            var width = el.offsetWidth;
+            var height = el.offsetHeight;
+            if (width < 120 || height < 120) continue;
+            // Ignore wrappers that simply fill the embed.
+            if (width >= rootWidth - 2 && height >= rootHeight - 2) continue;
+
+            var area = width * height;
+            if (area > bestArea) {
+              best = el;
+              bestArea = area;
+            }
+          }
+
+          return best;
+        }
+
+        function isLightBackground(el) {
+          var match = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(
+            window.getComputedStyle(el).backgroundColor,
+          );
+          if (!match) return false;
+          var alpha = match[4] === undefined ? 1 : Number(match[4]);
+          if (alpha < 0.05) return false;
+          var luminance =
+            (Number(match[1]) * 299 +
+              Number(match[2]) * 587 +
+              Number(match[3]) * 114) /
+            1000;
+          return luminance > 120;
+        }
+
+        /**
+         * The SDK paints a light panel behind the meeting window, which shows
+         * wherever the window does not reach. The panel is not always an
+         * ancestor of the window, so large light surfaces are matched on
+         * appearance too. Anything inside the window is left alone, and the
+         * override has to beat the SDK's own !important rules.
+         */
+        function clearBackdrops(card) {
+          var rootArea = rootEl.clientWidth * rootEl.clientHeight;
+          var nodes = rootEl.querySelectorAll("div");
+
+          for (var i = 0; i < nodes.length; i += 1) {
+            var el = nodes[i];
+            if (el === card || card.contains(el)) continue;
+
+            var covers =
+              rootArea > 0 &&
+              el.offsetWidth * el.offsetHeight > rootArea * 0.25;
+            if (el.contains(card) || (covers && isLightBackground(el))) {
+              if (covers && !loggedBackdrop) {
+                loggedBackdrop = true;
+                console.debug("[zoom-embed] cleared backdrop", el.className);
+              }
+              el.style.setProperty(
+                "background-color",
+                "transparent",
+                "important",
+              );
+            }
+          }
+
+          // A light window means the panel was matched instead of the meeting;
+          // the page behind it is already the meeting window's own colour.
+          if (isLightBackground(card)) {
+            card.style.setProperty(
+              "background-color",
+              "transparent",
+              "important",
+            );
+          }
+        }
+
+        /**
+         * Centers the Zoom card and scales it to the available space, so the embed
+         * looks like a full meeting window instead of a small box in the corner.
+         */
+        function fitZoomCard() {
+          var card = findZoomCard();
+          if (!card) return;
+
+          clearBackdrops(card);
+
+          if (transformedCard && transformedCard !== card) {
+            transformedCard.style.transform = "";
+          }
+          transformedCard = card;
+
+          card.style.transformOrigin = "center center";
+          card.style.transform = "none";
+
+          var cardRect = card.getBoundingClientRect();
+          var rootRect = rootEl.getBoundingClientRect();
+          if (!cardRect.width || !cardRect.height) return;
+          if (!rootRect.width || !rootRect.height) return;
+
+          var scale = clamp(
+            Math.min(
+              rootRect.width / cardRect.width,
+              rootRect.height / cardRect.height,
+            ) * 0.995,
+            0.4,
+            2.2,
+          );
+
+          var scaledWidth = cardRect.width * scale;
+          var scaledHeight = cardRect.height * scale;
+          var currentLeft = cardRect.left + (cardRect.width - scaledWidth) / 2;
+          var currentTop = cardRect.top + (cardRect.height - scaledHeight) / 2;
+          var dx = Math.round(
+            rootRect.left + (rootRect.width - scaledWidth) / 2 - currentLeft,
+          );
+          var dy = Math.round(
+            rootRect.top + (rootRect.height - scaledHeight) / 2 - currentTop,
+          );
+
+          // Leave the transform off when it would be a no-op; transformed
+          // ancestors can shift Zoom's fixed-position menus.
+          if (
+            Math.abs(dx) < 2 &&
+            Math.abs(dy) < 2 &&
+            Math.abs(scale - 1) < 0.01
+          ) {
+            return;
+          }
+
+          card.style.transform =
+            "translate(" + dx + "px, " + dy + "px) scale(" + scale + ")";
+        }
+
+        function scheduleFit() {
+          if (fitFrame) window.cancelAnimationFrame(fitFrame);
+          fitFrame = window.requestAnimationFrame(function () {
+            fitFrame = 0;
+            observeCard();
+            fitZoomCard();
+          });
+        }
+
+        function observeCard() {
+          if (!fitObserver) return;
+          var card = findZoomCard();
+          if (!card || card === observedCard) return;
+          if (observedCard) fitObserver.unobserve(observedCard);
+          observedCard = card;
+          fitObserver.observe(card);
+        }
+
+        function startFitting() {
+          scheduleFit();
+
+          // Re-renders replace the elements we restyle, so watch for new nodes.
+          // Only childList, since attribute changes would catch our own styling.
+          if (!treeObserver && typeof MutationObserver !== "undefined") {
+            treeObserver = new MutationObserver(scheduleFit);
+            treeObserver.observe(rootEl, { childList: true, subtree: true });
+          }
+
+          if (fitObserver || typeof ResizeObserver === "undefined") return;
+          fitObserver = new ResizeObserver(scheduleFit);
+          fitObserver.observe(rootEl);
+          observeCard();
+        }
+
+        function stopFitting() {
+          if (fitObserver) {
+            fitObserver.disconnect();
+            fitObserver = null;
+          }
+          if (treeObserver) {
+            treeObserver.disconnect();
+            treeObserver = null;
+          }
+          observedCard = null;
+          transformedCard = null;
+          if (fitFrame) {
+            window.cancelAnimationFrame(fitFrame);
+            fitFrame = 0;
+          }
+        }
+
+        window.addEventListener("resize", scheduleFit);
 
         async function joinMeeting(payload, isRetry) {
           if (joining) return;
@@ -213,6 +468,21 @@
             clientRef = client;
             var viewSize = resolveViewSize(payload);
 
+            if (!canRenderGallery()) {
+              console.warn(
+                "[zoom-embed] Not cross-origin isolated: SharedArrayBuffer is unavailable, so Zoom renders a single video instead of gallery view.",
+              );
+            }
+
+            parent.postMessage(
+              {
+                source: "ssu-zoom-embed",
+                type: "mode",
+                gallery: canRenderGallery(),
+              },
+              window.location.origin,
+            );
+
             await client.init({
               zoomAppRoot: rootEl,
               language: "en-US",
@@ -221,14 +491,18 @@
               maximumVideosInGalleryView: 9,
               customize: {
                 video: {
-                  isResizable: true,
+                  isResizable: false,
                   defaultViewType: "gallery",
-                  popper: { disableDraggable: false },
+                  popper: { disableDraggable: true },
                   viewSizes: {
                     default: viewSize,
                     ribbon: {
                       width: viewSize.width,
-                      height: Math.min(180, viewSize.height),
+                      height: clamp(
+                        Math.round(viewSize.height * 0.28),
+                        120,
+                        220,
+                      ),
                     },
                   },
                 },
@@ -238,6 +512,7 @@
             client.on("connection-change", function (event) {
               if (event && event.state === "Closed" && didJoin) {
                 didJoin = false;
+                stopFitting();
                 try {
                   if (window.ZoomMtgEmbedded) {
                     window.ZoomMtgEmbedded.destroyClient();
@@ -260,6 +535,9 @@
             });
             didJoin = true;
             setStatus("");
+            startFitting();
+            window.setTimeout(scheduleFit, 400);
+            window.setTimeout(scheduleFit, 1200);
             parent.postMessage(
               { source: "ssu-zoom-embed", type: "joined" },
               window.location.origin,
@@ -302,6 +580,10 @@
               { source: "ssu-zoom-embed", type: "ready" },
               window.location.origin,
             );
+            return;
+          }
+          if (data.type === "resize") {
+            scheduleFit();
             return;
           }
           if (data.type === "join") {

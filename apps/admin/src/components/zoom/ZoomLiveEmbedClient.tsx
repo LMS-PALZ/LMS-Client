@@ -1,6 +1,7 @@
 "use client";
 
 import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
+import { markLiveSessionEnded, markLiveSessionStarted } from "@ssu/queries";
 import { cn } from "@ssu/utils";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -51,6 +52,21 @@ function zoomErrorMessage(error: unknown): string {
   return normalized;
 }
 
+// Zoom sizes its meeting window from the canvas width, using the ratios below
+// plus its own header and control bar. Keep in sync with public/zoom-embed.html.
+const GALLERY_CANVAS_RATIO = 1 / 1.85;
+const SINGLE_VIDEO_CANVAS_RATIO = 274 / 250;
+const ZOOM_CHROME_HEIGHT = 150;
+
+/** Gallery view needs SharedArrayBuffer, which needs cross-origin isolation. */
+function canRenderGallery(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    typeof SharedArrayBuffer !== "undefined" &&
+    window.crossOriginIsolated !== false
+  );
+}
+
 /**
  * Runs Zoom inside an iframe so Zoom's CDN React/vendor scripts cannot
  * overwrite the host Next.js React tree.
@@ -64,6 +80,7 @@ export function ZoomLiveEmbedClient({
   onLeave,
 }: ZoomLiveEmbedClientProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const onLeaveRef = useRef(onLeave);
   const [status, setStatus] = useState<"loading" | "joined" | "error">(
@@ -71,20 +88,86 @@ export function ZoomLiveEmbedClient({
   );
   const [errorMessage, setErrorMessage] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [stageHeight, setStageHeight] = useState(0);
+  const [galleryMode, setGalleryMode] = useState<boolean | null>(null);
 
   useEffect(() => {
     onLeaveRef.current = onLeave;
   }, [onLeave]);
 
+  // Holds back the expired-session sign-out until the session is over.
+  useEffect(() => {
+    if (status !== "joined") return;
+    markLiveSessionStarted();
+    return () => {
+      markLiveSessionEnded();
+    };
+  }, [status]);
+
+  const notifyEmbedResize = () => {
+    iframeRef.current?.contentWindow?.postMessage(
+      { source: "ssu-zoom-embed-parent", type: "resize" },
+      window.location.origin,
+    );
+  };
+
   useEffect(() => {
     const onFullscreenChange = () => {
       setIsFullscreen(document.fullscreenElement === containerRef.current);
+      notifyEmbedResize();
     };
     document.addEventListener("fullscreenchange", onFullscreenChange);
     return () => {
       document.removeEventListener("fullscreenchange", onFullscreenChange);
     };
   }, []);
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      notifyEmbedResize();
+    });
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // Zoom derives the meeting window's height from its width, so the video only
+  // gets wider if the frame gets taller. The frame is sized from the space it
+  // has, never from the rendered window: Zoom resizes that window to follow its
+  // container, so measuring it would shrink the frame on every pass.
+  useEffect(() => {
+    if (isFullscreen) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const compute = () => {
+      const width = el.clientWidth;
+      if (!width) return;
+
+      const canvasRatio = canRenderGallery()
+        ? GALLERY_CANVAS_RATIO
+        : SINGLE_VIDEO_CANVAS_RATIO;
+      const maxHeight = Math.min(window.innerHeight * 0.85, 900);
+      const idealHeight = width * canvasRatio + ZOOM_CHROME_HEIGHT;
+
+      setStageHeight(Math.round(Math.min(idealHeight, maxHeight)));
+    };
+
+    compute();
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(compute);
+    observer?.observe(el);
+    window.addEventListener("resize", compute);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", compute);
+    };
+  }, [isFullscreen]);
 
   async function toggleFullscreen() {
     const el = containerRef.current;
@@ -134,12 +217,12 @@ export function ZoomLiveEmbedClient({
     };
 
     const readEmbedSize = () => {
-      const el = containerRef.current;
+      const el = stageRef.current;
       const width = Math.floor(el?.clientWidth || 960);
       const height = Math.floor(el?.clientHeight || 560);
       return {
-        viewWidth: Math.max(720, width),
-        viewHeight: Math.max(405, height),
+        viewWidth: Math.max(320, width),
+        viewHeight: Math.max(240, height),
       };
     };
 
@@ -170,12 +253,18 @@ export function ZoomLiveEmbedClient({
         source?: string;
         type?: string;
         message?: string;
+        gallery?: boolean;
       } | null;
       if (!data || data.source !== "ssu-zoom-embed") return;
 
       if (data.type === "ready") {
         iframeReady = true;
         postJoin();
+        return;
+      }
+
+      if (data.type === "mode") {
+        if (!cancelled) setGalleryMode(Boolean(data.gallery));
         return;
       }
 
@@ -282,73 +371,97 @@ export function ZoomLiveEmbedClient({
     <div
       ref={containerRef}
       className={cn(
-        "relative w-full bg-[#202124]",
-        isFullscreen ? "h-full" : className,
+        "relative w-full overflow-hidden bg-[#242424]",
+        isFullscreen
+          ? "h-full rounded-none"
+          : cn("mx-auto rounded-[18px]", className),
       )}
     >
-      <iframe
-        ref={iframeRef}
-        title="Live session"
-        src="/zoom-embed.html?v=23"
-        className={cn(
-          "w-full overflow-hidden border-0 bg-[#1a1a1a]",
-          isFullscreen
-            ? "h-full min-h-0 rounded-none"
-            : "min-h-[640px] rounded-[18px]",
+      <div
+        ref={stageRef}
+        style={
+          !isFullscreen && stageHeight
+            ? { height: `${stageHeight}px` }
+            : undefined
+        }
+        className={cn("relative w-full", isFullscreen && "h-full")}
+      >
+        <iframe
+          ref={iframeRef}
+          title="Live session"
+          src="/zoom-embed.html?v=38"
+          className="h-full w-full border-0 bg-[#242424]"
+          allow="camera; microphone; display-capture; autoplay; clipboard-write; fullscreen; cross-origin-isolated"
+          allowFullScreen
+        />
+
+        {status === "loading" && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#242424]/90">
+            <div className="text-center">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+              <p className="mt-4 text-[14px] text-[#E8EAED]">
+                Connecting to live session...
+              </p>
+            </div>
+          </div>
         )}
-        allow="camera; microphone; display-capture; autoplay; clipboard-write; fullscreen; cross-origin-isolated"
-        allowFullScreen
-      />
 
-      {status !== "error" && (
-        <button
-          type="button"
-          onClick={() => void toggleFullscreen()}
-          className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/75"
-          aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-        >
-          {isFullscreen ? (
-            <Minimize2 className="h-4 w-4" />
-          ) : (
-            <Maximize2 className="h-4 w-4" />
-          )}
-        </button>
-      )}
-
-      {status === "loading" && (
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-0 flex items-center justify-center bg-[#202124]/90",
-            !isFullscreen && "rounded-[18px]",
-          )}
-        >
-          <div className="text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-            <p className="mt-4 text-[14px] text-[#E8EAED]">
-              Connecting to live session...
-            </p>
+        {status === "error" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#242424] px-6 text-center">
+            <div>
+              <p className="text-[16px] font-semibold text-white">
+                Could not join live session
+              </p>
+              <p className="mt-2 max-w-md text-[14px] leading-6 text-[#BDC1C6]">
+                {errorMessage}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {status === "error" && (
-        <div
-          className={cn(
-            "absolute inset-0 flex items-center justify-center bg-[#202124] px-6 text-center",
-            !isFullscreen && "rounded-[18px]",
+      {/* Sits clear of Zoom's own toolbar, which runs along the top of its window. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 px-3 pt-11">
+        <div className="pointer-events-auto flex min-w-0 items-center gap-2 rounded-full bg-black/55 py-1 pl-1.5 pr-3 backdrop-blur-sm">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E5484D]/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#FF7A7A]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#E5484D]" />
+            Live
+          </span>
+          <p className="truncate text-[12px] text-white/70">
+            {status === "joined"
+              ? ""
+              : status === "error"
+                ? "Not connected"
+                : "Connecting..."}
+          </p>
+          {galleryMode === false && (
+            <span
+              className="shrink-0 rounded-full bg-amber-400/20 px-2 py-0.5 text-[11px] font-medium text-amber-300"
+              title="This browser cannot use SharedArrayBuffer, so Zoom shows one video at a time instead of the gallery."
+            >
+              Single video
+            </span>
           )}
-        >
-          <div>
-            <p className="text-[16px] font-semibold text-white">
-              Could not join live session
-            </p>
-            <p className="mt-2 max-w-md text-[14px] leading-6 text-[#BDC1C6]">
-              {errorMessage}
-            </p>
-          </div>
         </div>
-      )}
+
+        {status !== "error" && (
+          <button
+            type="button"
+            onClick={() => void toggleFullscreen()}
+            className="pointer-events-auto inline-flex h-8 items-center gap-1.5 rounded-full bg-black/55 px-3 text-[12px] font-medium text-white backdrop-blur-sm transition hover:bg-black/75"
+            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">
+              {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            </span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

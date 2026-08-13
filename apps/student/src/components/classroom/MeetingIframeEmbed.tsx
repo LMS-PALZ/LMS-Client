@@ -8,6 +8,10 @@ export interface MeetingIframeEmbedProps {
   className?: string;
 }
 
+// The app is cross-origin isolated (COEP) for Zoom, which blocks third-party
+// iframes unless they opt in. Loading them credentialless keeps them working.
+const CREDENTIALLESS = { credentialless: "" } as Record<string, string>;
+
 export function MeetingIframeEmbed({
   meetUrl,
   className,
@@ -35,6 +39,7 @@ export function MeetingIframeEmbed({
       )}
     >
       <iframe
+        {...CREDENTIALLESS}
         title="Live class"
         src={target.embedUrl}
         className="absolute inset-0 h-full w-full border-0"

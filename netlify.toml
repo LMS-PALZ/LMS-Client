@@ -27,9 +27,11 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Isolate only the Zoom iframe (SharedArrayBuffer) without breaking LMS auth.
+# Cross-origin isolation enables SharedArrayBuffer, which Zoom needs for gallery
+# view. A nested iframe is only isolated when the top-level document is too, so
+# this applies app-wide. Keep in sync with each app's next.config.ts headers().
 [[headers]]
-  for = "/zoom-embed.html"
+  for = "/*"
   [headers.values]
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "credentialless"
