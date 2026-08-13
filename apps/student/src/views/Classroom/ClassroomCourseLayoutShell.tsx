@@ -15,6 +15,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
+import { formatSessionTime } from "@/lib/assignment-display";
 import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
 import type {
   ClassroomCourseDetail,
@@ -134,6 +135,11 @@ function ClassroomCourseLayoutShellInner({
       ? "bg-[#D14B3D]"
       : "bg-[#436E53]";
 
+  const sessionMeta =
+    (course.scheduledAt ? formatSessionTime(course.scheduledAt) : "") ||
+    course.sessionDuration ||
+    "";
+
   return (
     <div className="grid gap-3 xl:grid-cols-[1.9fr_0.78fr]">
       <div className="flex flex-col rounded-[20px] bg-white p-2 md:p-8">
@@ -189,8 +195,12 @@ function ClassroomCourseLayoutShellInner({
                   </span>
                 </>
               )}
-              <span className="text-[#D1D5DB]">|</span>
-              <span>{course.sessionDuration}</span>
+              {sessionMeta ? (
+                <>
+                  <span className="text-[#D1D5DB]">|</span>
+                  <span>{sessionMeta}</span>
+                </>
+              ) : null}
             </div>
 
             <div className="mt-4">
@@ -283,9 +293,11 @@ function ClassroomCourseLayoutShellInner({
                           <p className="text-[14px] font-medium text-[#1D1D1D]">
                             {lesson.title}
                           </p>
-                          <p className="mt-1 text-[12px] text-[#6B7280]">
-                            {lesson.subtitle}
-                          </p>
+                          {lesson.subtitle ? (
+                            <p className="mt-1 text-[12px] text-[#6B7280]">
+                              {lesson.subtitle}
+                            </p>
+                          ) : null}
                         </div>
                       </button>
                     ))}

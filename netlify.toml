@@ -27,9 +27,9 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Zoom Meeting SDK Component View needs SharedArrayBuffer (cross-origin isolation).
+# Isolate only the Zoom iframe (SharedArrayBuffer) without breaking LMS auth.
 [[headers]]
-  for = "/*"
+  for = "/zoom-embed.html"
   [headers.values]
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "credentialless"

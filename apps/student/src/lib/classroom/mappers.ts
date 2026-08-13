@@ -10,6 +10,17 @@ function readIsoDate(value: unknown): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function formatLessonDuration(value: unknown): string {
+  const minutes =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim() !== ""
+        ? Number(value)
+        : NaN;
+  if (!Number.isFinite(minutes) || minutes <= 0) return "";
+  return `${minutes} mins`;
+}
+
 function findActiveLiveLesson(lessons: any[]): any | null {
   const liveNow = lessons.find(
     (l) => l?.lessonType === "live_session" && l?.isLiveNow,
@@ -49,7 +60,7 @@ export function mapClassroomResponse(data: any): {
     sessionPhase: liveLesson?.isLiveNow ? "live" : "upcoming",
     sessionId: liveLesson?.id,
     sessionLabel: program.cohortCode,
-    sessionDuration: program.duration,
+    sessionDuration: formatLessonDuration(liveLesson?.durationMinutes),
     meetUrl: liveLesson?.zoomJoinUrl || liveLesson?.liveSessionUrl || "",
     scheduledAt: liveStartsAt ?? undefined,
     liveVideoProvider: "zoom",
@@ -86,7 +97,7 @@ export function mapClassroomResponse(data: any): {
         id: lesson.id,
         title: lesson.title,
         type: lesson.lessonType === "live_session" ? "live" : "recorded",
-        subtitle: `${lesson.durationMinutes} mins`,
+        subtitle: formatLessonDuration(lesson.durationMinutes),
         completed: false,
         description: lesson.overview,
       }),

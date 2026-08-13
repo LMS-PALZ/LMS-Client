@@ -13,6 +13,7 @@
         height: 100%;
         background: #202124;
         overflow: hidden;
+        position: relative;
       }
       #status {
         position: absolute;
@@ -161,6 +162,23 @@
           resetZoomRoot();
         }
 
+        function resolveViewSize(payload) {
+          var availableWidth = Math.floor(
+            Number(payload && payload.viewWidth) ||
+              rootEl.clientWidth ||
+              960,
+          );
+          var availableHeight = Math.floor(
+            Number(payload && payload.viewHeight) ||
+              rootEl.clientHeight ||
+              640,
+          );
+          return {
+            width: Math.min(420, Math.max(360, availableWidth - 40)),
+            height: Math.min(540, Math.max(420, availableHeight - 40)),
+          };
+        }
+
         async function joinMeeting(payload, isRetry) {
           if (joining) return;
           joining = true;
@@ -185,8 +203,6 @@
             }
 
             var zoomSdk = await loadZoomSdk();
-            // Only tear down an existing client (retry / remount). Destroying on a
-            // fresh join races Strict Mode and can leave a black video surface.
             if (isRetry || clientRef) {
               forceCleanup(zoomSdk);
               await new Promise(function (resolve) {
@@ -194,28 +210,27 @@
               });
             }
 
-            if (!window.crossOriginIsolated) {
-              console.warn(
-                "[ssu-zoom] crossOriginIsolated=false — screen share may stay black. Restart Next after COOP/COEP headers.",
-              );
-            }
-
             var client = zoomSdk.createClient();
             clientRef = client;
+            var viewSize = resolveViewSize(payload);
 
-            // Stable size only at init. Do NOT call updateVideoOptions after join —
-            // that blanks screen-share for viewers.
             await client.init({
               zoomAppRoot: rootEl,
               language: "en-US",
               patchJsMedia: true,
               leaveOnPageUnload: true,
+              maximumVideosInGalleryView: 9,
               customize: {
                 video: {
                   isResizable: true,
-                  defaultViewType: "speaker",
+                  defaultViewType: "gallery",
+                  popper: { disableDraggable: false },
                   viewSizes: {
-                    default: { width: 1000, height: 562 },
+                    default: viewSize,
+                    ribbon: {
+                      width: 132,
+                      height: Math.min(180, viewSize.height),
+                    },
                   },
                 },
               },

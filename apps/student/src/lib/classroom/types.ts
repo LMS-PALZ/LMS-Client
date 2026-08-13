@@ -25,7 +25,7 @@ export interface ClassroomLesson {
   id: string;
   title: string;
   type: ClassroomLessonType;
-  subtitle: string;
+  subtitle?: string;
   completed?: boolean;
   description?: string;
 }
@@ -46,7 +46,7 @@ export interface ClassroomCourseDetail {
   sessionPhase: SessionPhase;
   sessionId?: string;
   sessionLabel: string;
-  sessionDuration: string;
+  sessionDuration?: string;
   scheduledAt?: string;
   meetUrl: string;
   liveVideoProvider?: LiveVideoProvider;

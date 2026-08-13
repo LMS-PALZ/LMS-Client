@@ -269,14 +269,14 @@ export function ZoomLiveEmbedClient({
       <iframe
         ref={iframeRef}
         title="Live class"
-        src="/zoom-embed.html?v=14"
+        src="/zoom-embed.html?v=20"
         className={cn(
-          "w-full overflow-hidden border-0 bg-[#202124]",
+          "w-full overflow-hidden border-0 bg-[#1a1a1a]",
           isFullscreen
             ? "h-full min-h-0 rounded-none"
-            : "min-h-[560px] rounded-[18px]",
+            : "min-h-[640px] rounded-[18px]",
         )}
-        allow="camera; microphone; display-capture; autoplay; clipboard-write; fullscreen"
+        allow="camera; microphone; display-capture; autoplay; clipboard-write; fullscreen; cross-origin-isolated"
         allowFullScreen
       />
 

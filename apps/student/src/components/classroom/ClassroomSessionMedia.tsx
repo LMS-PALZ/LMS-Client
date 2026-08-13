@@ -13,7 +13,7 @@ const ZoomLiveEmbed = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[560px] items-center justify-center rounded-[18px] bg-[#202124]">
+      <div className="flex min-h-[640px] items-center justify-center rounded-[18px] bg-[#1a1a1a]">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
       </div>
     ),

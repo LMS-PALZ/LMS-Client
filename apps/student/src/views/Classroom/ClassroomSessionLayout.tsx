@@ -112,7 +112,7 @@ export function ClassroomSessionLayout({
       sessionLabel: "Live",
       sessionDuration: liveGeneralFallback.durationMinutes
         ? `${liveGeneralFallback.durationMinutes} mins`
-        : "—",
+        : "",
       scheduledAt: liveGeneralFallback.startsAt,
       meetUrl,
       liveVideoProvider: "zoom",
@@ -188,7 +188,7 @@ export function ClassroomSessionLayout({
       ? `${lesson.durationMinutes} mins`
       : liveGeneralFallback?.durationMinutes
         ? `${liveGeneralFallback.durationMinutes} mins`
-        : mapped.course.sessionDuration,
+        : mapped.course.sessionDuration || "",
     resources:
       extendedLesson?.resources?.map((resource, index) => ({
         id: resource.id ?? `${sessionId}-resource-${index}`,

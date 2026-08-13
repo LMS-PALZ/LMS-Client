@@ -10,7 +10,7 @@ export function useProfileDetail() {
     queryKey: ["profiledetails"],
     queryFn: async () => {
       const res = await getStudentPofile();
-      if (!res.ok) throw new Error(res.message);
+      if (!res.ok) return null;
       return res.data;
     },
   });

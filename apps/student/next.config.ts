@@ -17,11 +17,11 @@ const nextConfig: NextConfig = {
     "@ssu/ui",
     "@ssu/utils",
   ],
-  // Required for Zoom Component View video / screen-share rendering (SharedArrayBuffer).
+  // Isolate only the Zoom iframe so SAB works without breaking student API auth.
   async headers() {
     return [
       {
-        source: "/:path*",
+        source: "/zoom-embed.html",
         headers: [
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
