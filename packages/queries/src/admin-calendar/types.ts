@@ -10,6 +10,7 @@ export interface AdminCalendarEvent {
   programId: string;
   programTitle: string;
   cohortName?: string;
+  moduleId: string;
   moduleTitle?: string;
   lessonId: string;
   lessonTitle: string;

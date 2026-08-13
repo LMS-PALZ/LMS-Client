@@ -20,6 +20,7 @@
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@hookform/resolvers": "^3.9.1",
+    "@netlify/plugin-nextjs": "^5.9.0",
     "@ssu/api": "file:../../packages/api",
     "@ssu/config": "file:../../packages/config",
     "@ssu/queries": "file:../../packages/queries",
@@ -36,8 +37,7 @@
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.5",
     "react-hook-form": "^7.54.2",
-    "zod": "^3.24.1",
-    "@netlify/plugin-nextjs": "^5.9.0"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@ssu/config": "file:../../packages/config",

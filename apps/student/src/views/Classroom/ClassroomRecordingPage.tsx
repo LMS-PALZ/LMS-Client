@@ -67,9 +67,11 @@ export function ClassroomRecordingPage({
                 {recording.title}
               </span>
 
-              <span className="text-[12px] text-[#6B7280]">
-                {recording.duration} mins
-              </span>
+              {recording.duration ? (
+                <span className="text-[12px] text-[#6B7280]">
+                  {recording.duration} mins
+                </span>
+              ) : null}
             </div>
           </button>
         );

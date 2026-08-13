@@ -40,33 +40,17 @@ export function findNextTodaySession(
   })[0];
 }
 
-function isUpcomingSession(session: LiveSessionItem, now: Date): boolean {
-  if (session.isLive) return false;
-  if (!session.startsAt) return false;
-
-  const start = new Date(session.startsAt);
-  if (Number.isNaN(start.getTime())) return false;
-
-  return start.getTime() > now.getTime();
-}
-
-/** Home dashboard: one live card plus the next two upcoming classes. */
+/** Home dashboard: every class still on today's schedule, live first. */
 export function buildHomeSessionCards(
   sessions: LiveSessionItem[],
   now = new Date(),
 ): LiveSessionItem[] {
-  const sorted = [...sessions].sort(
-    (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-  );
+  const todaySessions = filterTodayRemainingSessions(sessions, now);
 
-  const live = sorted.find((session) => session.isLive) ?? null;
-  const upcoming = sorted.filter((session) => isUpcomingSession(session, now));
-
-  if (live) {
-    return [live, ...upcoming.slice(0, 2)];
-  }
-
-  return upcoming.slice(0, 3);
+  return [...todaySessions].sort((a, b) => {
+    if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+    return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+  });
 }
 
 export function formatSessionDayLabel(iso: string, now = new Date()): string {

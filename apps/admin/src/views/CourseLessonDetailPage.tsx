@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
   useAdminProgram,
@@ -36,6 +37,7 @@ export function CourseLessonDetailPage({
   moduleId,
   lessonId,
 }: CourseLessonDetailPageProps) {
+  const router = useRouter();
   const { data: user } = useSession();
   const {
     data: program,
@@ -264,12 +266,16 @@ export function CourseLessonDetailPage({
       </div>
 
       {isLiveSession && isJoined && canJoinInApp ? (
-        <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white p-4 shadow-sm">
+        <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] shadow-sm">
           <ZoomLiveEmbed
             meetUrl={meetUrl || `https://zoom.us/j/${meetingNumber}`}
             meetingNumber={meetingNumber || undefined}
             displayName={hostName}
-            role={1}
+            role={0}
+            onLeave={() => {
+              setIsJoined(false);
+              router.push(courseHref);
+            }}
           />
         </div>
       ) : null}

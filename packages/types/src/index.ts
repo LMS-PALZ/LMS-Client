@@ -45,7 +45,18 @@ export interface LiveSessionItem {
   endsAt?: string;
   meetingUrl?: string;
   description?: string;
+  /** Present when the session belongs to a non-primary (e.g. general) program. */
+  programId?: string;
+  zoomJoinUrl?: string;
 }
+
+export type {
+  StudentMe,
+  StudentMeLiveGeneralProgram,
+  StudentMeLiveLesson,
+  StudentMeProgram,
+  StudentMeStudent,
+} from "./student-me";
 
 export interface StudentProgress {
   overallScorePercent: number;

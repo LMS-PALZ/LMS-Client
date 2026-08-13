@@ -13,12 +13,16 @@ const ZoomLiveEmbed = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[560px] items-center justify-center rounded-[18px] bg-[#202124]">
+      <div className="flex aspect-[4/3] max-h-[85vh] min-h-[420px] items-center justify-center rounded-[18px] bg-[#242424]">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
       </div>
     ),
   },
 );
+
+// The app is cross-origin isolated (COEP) for Zoom, which blocks third-party
+// iframes unless they opt in. Loading them credentialless keeps them working.
+const CREDENTIALLESS = { credentialless: "" } as Record<string, string>;
 
 export type ClassroomMediaMode =
   | "live-meet"
@@ -29,9 +33,11 @@ export type ClassroomMediaMode =
 export interface ClassroomSessionMediaProps {
   mode: ClassroomMediaMode;
   meetUrl?: string;
+  meetingNumber?: string;
   displayName?: string;
   recordingEmbedUrl?: string | null;
   className?: string;
+  onLeaveMeeting?: () => void;
 }
 
 function LiveMediaShell({
@@ -49,7 +55,7 @@ function LiveMediaShell({
         size="sm"
         tone="overlay"
         uppercase
-        className="absolute right-3 top-3 z-10"
+        className="pointer-events-none absolute left-3 top-3 z-10"
       />
     </div>
   );
@@ -58,9 +64,11 @@ function LiveMediaShell({
 export function ClassroomSessionMedia({
   mode,
   meetUrl,
+  meetingNumber,
   displayName,
   recordingEmbedUrl,
   className,
+  onLeaveMeeting,
 }: ClassroomSessionMediaProps) {
   if (mode === "live-meet") {
     const meetingTarget = meetUrl ? parseMeetingTarget(meetUrl) : null;
@@ -70,9 +78,13 @@ export function ClassroomSessionMedia({
       (meetUrl && /zoom\.(us|com)/i.test(meetUrl))
     ) {
       return (
-        <LiveMediaShell className={className}>
-          <ZoomLiveEmbed meetUrl={meetUrl!} displayName={displayName} />
-        </LiveMediaShell>
+        <ZoomLiveEmbed
+          meetUrl={meetUrl!}
+          meetingNumber={meetingNumber}
+          displayName={displayName}
+          className={className}
+          onLeave={onLeaveMeeting}
+        />
       );
     }
 
@@ -113,6 +125,7 @@ export function ClassroomSessionMedia({
         )}
       >
         <iframe
+          {...CREDENTIALLESS}
           title="Class recording"
           src={recordingEmbedUrl}
           className="absolute inset-0 h-full w-full border-0"

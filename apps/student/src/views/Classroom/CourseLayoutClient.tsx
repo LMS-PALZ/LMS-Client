@@ -52,6 +52,8 @@ export function CourseLayoutClient({ moduleId, children }: Props) {
       weeks={allWeeks}
       meetUrl={meetUrl}
       backFallbackHref="/classroom"
+      programId={programId}
+      isLive={course.sessionPhase === "live"}
     >
       {children}
     </ClassroomCourseLayoutShell>

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminlogin, login, writeSession } from "@ssu/api";
+import { adminlogin, login, writeSession, writePortalTokenRaw } from "@ssu/api";
 import { sessionKey } from "./keys";
 import { mutationToast } from "./notify";
 
@@ -23,9 +23,8 @@ export function useLoginMutation(portal: LoginPortal = "student") {
     },
     onSuccess: (data) => {
       writeSession(data.data);
-      const token = data.data.accessToken;
-      if (token) {
-        localStorage.setItem("token", token);
+      if (data.data.accessToken) {
+        writePortalTokenRaw(data.data.accessToken);
       }
       void qc.setQueryData(sessionKey, data.data);
     },

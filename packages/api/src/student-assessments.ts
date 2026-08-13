@@ -55,7 +55,15 @@ function extractRows(payload: unknown): Record<string, unknown>[] {
 
 function mapStatus(value: string): AssignmentStatus {
   const normalized = value.toLowerCase();
-  if (normalized.includes("grade")) return "graded";
+  if (
+    normalized.includes("grade") ||
+    normalized === "recorded" ||
+    normalized.includes("recorded") ||
+    normalized === "scored" ||
+    normalized === "marked"
+  ) {
+    return "graded";
+  }
   if (normalized.includes("submit") || normalized.includes("pending")) {
     return "submitted";
   }
@@ -178,16 +186,23 @@ export async function getStudentAssessmentGrades(classroomId: string) {
   }
 }
 
+function parseScoreDisplay(scoreDisplay?: string): number | null {
+  if (!scoreDisplay || scoreDisplay.trim().toUpperCase() === "N/A") return null;
+  const match = scoreDisplay.match(/([\d.]+)/);
+  if (!match) return null;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
 export function calculateOverallScorePercent(
   assignments: AssignmentListItem[],
 ): number {
-  const graded = assignments.filter((item) => item.status === "graded");
-  if (graded.length === 0) return 0;
+  const scored = assignments
+    .map((item) => parseScoreDisplay(item.scoreDisplay))
+    .filter((value): value is number => value !== null);
 
-  const total = graded.reduce((sum, item) => {
-    const match = item.scoreDisplay?.match(/([\d.]+)/);
-    return sum + (match ? Number(match[1]) : 0);
-  }, 0);
+  if (scored.length === 0) return 0;
 
-  return Math.round(total / graded.length);
+  const total = scored.reduce((sum, value) => sum + value, 0);
+  return Math.round(total / scored.length);
 }

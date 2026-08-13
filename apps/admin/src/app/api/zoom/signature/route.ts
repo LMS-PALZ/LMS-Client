@@ -2,7 +2,7 @@ import {
   generateMeetingSdkSignature,
   normalizeMeetingNumber,
   readZoomSdkCredentials,
-} from "@/lib/zoom/signature";
+} from "@ssu/config/zoom-signature";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           message:
-            "Zoom Meeting SDK is not configured. Add ZOOM_MEETING_SDK_CLIENT_ID and ZOOM_MEETING_SDK_CLIENT_SECRET.",
+            "Zoom Meeting SDK is not configured. Set ZOOM_MEETING_SDK_CLIENT_ID and ZOOM_MEETING_SDK_CLIENT_SECRET in the repo root .env (local) or in your hosting provider's environment variables (Netlify).",
         },
         { status: 503 },
       );

@@ -5,6 +5,10 @@ import { CountdownBlocks } from "../CountdownBlocks";
 
 export type VideoSessionFrameState = "countdown" | "live" | "ended";
 
+// The app is cross-origin isolated (COEP) for Zoom, which blocks third-party
+// iframes unless they opt in. Loading them credentialless keeps them working.
+const CREDENTIALLESS = { credentialless: "" } as Record<string, string>;
+
 export interface VideoSessionFrameProps {
   state: VideoSessionFrameState;
   embedUrl?: string;
@@ -36,6 +40,7 @@ export function VideoSessionFrame({
     >
       {state === "live" && embedUrl ? (
         <iframe
+          {...CREDENTIALLESS}
           title="Live session"
           src={embedUrl}
           className="absolute inset-0 h-full w-full border-0"

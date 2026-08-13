@@ -1,6 +1,7 @@
 "use client";
 
 import { adminPath } from "@ssu/config/portal-paths";
+import { setAuthPortal } from "@ssu/api";
 import {
   createAuthAwareQueryClient,
   setupSessionExpiryHandler,
@@ -8,6 +9,8 @@ import {
 import { AppToaster } from "@ssu/ui";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useState } from "react";
+
+setAuthPortal("admin");
 
 const LOGIN_PATH = adminPath("/login");
 

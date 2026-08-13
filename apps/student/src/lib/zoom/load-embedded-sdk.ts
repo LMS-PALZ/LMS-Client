@@ -9,9 +9,9 @@ type ZoomEmbeddedClient = {
   }) => Promise<unknown>;
   join: (args: {
     signature: string;
-    sdkKey: string;
+    sdkKey?: string;
     meetingNumber: string;
-    password: string;
+    password?: string;
     userName: string;
   }) => Promise<unknown>;
 };
@@ -59,6 +59,10 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+/**
+ * Zoom 6.x CDN no longer serves /css/bootstrap.css (403).
+ * Load Component View JS from CDN and styles from our public copy.
+ */
 export async function loadZoomEmbeddedSdk(): Promise<ZoomEmbeddedSdk> {
   if (window.ZoomMtgEmbedded) {
     return window.ZoomMtgEmbedded;
@@ -66,10 +70,10 @@ export async function loadZoomEmbeddedSdk(): Promise<ZoomEmbeddedSdk> {
 
   const base = `https://source.zoom.us/${ZOOM_SDK_VERSION}`;
 
-  await Promise.all([
-    loadStylesheet(`${base}/css/bootstrap.css`),
-    loadStylesheet(`${base}/css/react-select.css`),
-  ]);
+  // Zoom's own CDN returns 403 for 6.x /css/*.css — load styles from the npm CDN instead.
+  await loadStylesheet(
+    `https://cdn.jsdelivr.net/npm/@zoom/meetingsdk@${ZOOM_SDK_VERSION}/dist/ui/zoom-meetingsdk.css`,
+  );
 
   await loadScript(`${base}/lib/vendor/react.min.js`);
   await loadScript(`${base}/lib/vendor/react-dom.min.js`);
