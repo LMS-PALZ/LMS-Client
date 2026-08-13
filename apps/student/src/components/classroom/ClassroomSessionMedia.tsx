@@ -77,7 +77,6 @@ export function ClassroomSessionMedia({
       meetingTarget?.kind === "zoom" ||
       (meetUrl && /zoom\.(us|com)/i.test(meetUrl))
     ) {
-      // The Zoom embed renders its own live header, so it skips LiveMediaShell.
       return (
         <ZoomLiveEmbed
           meetUrl={meetUrl!}

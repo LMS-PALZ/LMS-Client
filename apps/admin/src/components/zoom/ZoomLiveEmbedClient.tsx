@@ -9,11 +9,9 @@ import { useEffect, useRef, useState } from "react";
 export interface ZoomLiveEmbedClientProps {
   meetUrl: string;
   displayName?: string;
-  /** 0 = participant, 1 = host. Host usually needs ZAK; we fall back to 0. */
   role?: 0 | 1;
   meetingNumber?: string;
   className?: string;
-  /** Called when the user leaves or the meeting ends. */
   onLeave?: () => void;
 }
 
@@ -52,13 +50,10 @@ function zoomErrorMessage(error: unknown): string {
   return normalized;
 }
 
-// Zoom sizes its meeting window from the canvas width, using the ratios below
-// plus its own header and control bar. Keep in sync with public/zoom-embed.html.
 const GALLERY_CANVAS_RATIO = 1 / 1.85;
 const SINGLE_VIDEO_CANVAS_RATIO = 274 / 250;
 const ZOOM_CHROME_HEIGHT = 150;
 
-/** Gallery view needs SharedArrayBuffer, which needs cross-origin isolation. */
 function canRenderGallery(): boolean {
   if (typeof window === "undefined") return false;
   return (
@@ -67,10 +62,6 @@ function canRenderGallery(): boolean {
   );
 }
 
-/**
- * Runs Zoom inside an iframe so Zoom's CDN React/vendor scripts cannot
- * overwrite the host Next.js React tree.
- */
 export function ZoomLiveEmbedClient({
   meetUrl,
   displayName,
@@ -95,7 +86,6 @@ export function ZoomLiveEmbedClient({
     onLeaveRef.current = onLeave;
   }, [onLeave]);
 
-  // Holds back the expired-session sign-out until the session is over.
   useEffect(() => {
     if (status !== "joined") return;
     markLiveSessionStarted();
@@ -134,10 +124,6 @@ export function ZoomLiveEmbedClient({
     };
   }, []);
 
-  // Zoom derives the meeting window's height from its width, so the video only
-  // gets wider if the frame gets taller. The frame is sized from the space it
-  // has, never from the rendered window: Zoom resizes that window to follow its
-  // container, so measuring it would shrink the frame on every pass.
   useEffect(() => {
     if (isFullscreen) return;
     const el = containerRef.current;
@@ -178,9 +164,7 @@ export function ZoomLiveEmbedClient({
       } else {
         await el.requestFullscreen();
       }
-    } catch {
-      // Browser may block fullscreen without a user gesture or policy.
-    }
+    } catch {}
   }
 
   useEffect(() => {
@@ -420,7 +404,6 @@ export function ZoomLiveEmbedClient({
         )}
       </div>
 
-      {/* Sits clear of Zoom's own toolbar, which runs along the top of its window. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 px-3 pt-11">
         <div className="pointer-events-auto flex min-w-0 items-center gap-2 rounded-full bg-black/55 py-1 pl-1.5 pr-3 backdrop-blur-sm">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E5484D]/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#FF7A7A]">

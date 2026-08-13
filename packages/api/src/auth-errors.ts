@@ -77,8 +77,6 @@ export function isAuthExpiredError(error: unknown): boolean {
   }
 
   const err = error as { response?: { status?: number } };
-  // Generic 401/Unauthorized is often a permission or isolation glitch, not a
-  // dead session. Only force logout when the stored JWT is actually expired.
   if (err.response?.status === 401 && isStoredJwtExpired()) return true;
 
   return false;

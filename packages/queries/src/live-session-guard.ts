@@ -1,11 +1,3 @@
-/**
- * A live class runs longer than the access token lives, so the token expires
- * mid-class and the expiry handler signs the user out, dropping them from the
- * meeting. Zoom holds its own meeting credentials, so the class itself survives
- * an expired token: only the sign-out has to wait until the class is over.
- */
-
-/** Bounds the hold in case a class never reports that it ended. */
 const MAX_HOLD_MS = 3 * 60 * 60 * 1000;
 
 let activeSessions = 0;
@@ -42,10 +34,6 @@ export function markLiveSessionEnded(): void {
   runPendingSignOut();
 }
 
-/**
- * Returns true when the sign-out was held back, in which case it runs as soon
- * as the last live session ends.
- */
 export function holdSignOutDuringLiveSession(signOut: () => void): boolean {
   if (!isLiveSessionActive()) return false;
   pendingSignOut = signOut;

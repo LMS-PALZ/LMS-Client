@@ -2,8 +2,6 @@ import type { NextConfig } from "next";
 import { loadEnvConfig } from "@next/env";
 import path from "node:path";
 
-// Next.js caches the first loadEnvConfig(appDir) call; without forceReload,
-// loading the monorepo root .env is silently ignored.
 loadEnvConfig(path.join(__dirname, "../.."), undefined, undefined, true);
 
 const nextConfig: NextConfig = {
@@ -17,11 +15,6 @@ const nextConfig: NextConfig = {
     "@ssu/ui",
     "@ssu/utils",
   ],
-  // Zoom needs SharedArrayBuffer for gallery view (more than one video at a
-  // time), which requires cross-origin isolation. A nested iframe only counts
-  // as isolated when the top-level document is too, so this has to be app-wide.
-  // credentialless keeps third-party images and scripts loading; third-party
-  // iframes additionally need the credentialless attribute.
   async headers() {
     return [
       {

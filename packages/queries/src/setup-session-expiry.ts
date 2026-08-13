@@ -27,7 +27,6 @@ function handleSessionExpired(loginPath: string) {
     window.location.assign(loginPath);
   };
 
-  // Signing out mid-class would drop the user from the meeting, so it waits.
   if (holdSignOutDuringLiveSession(signOut)) {
     if (!warnedDuringLiveSession) {
       warnedDuringLiveSession = true;

@@ -10,11 +10,6 @@
         margin: 0;
         width: 100%;
         height: 100%;
-        /*
-         * Matches the meeting window's own surface, so the two read as one.
-         * !important because the SDK's stylesheet loads after this one and
-         * paints the page white behind the window.
-         */
         background: #242424 !important;
         overflow: hidden;
       }
@@ -25,7 +20,6 @@
         overflow: hidden;
         background: transparent !important;
       }
-      /* The SDK's outer wrapper paints a light panel behind the meeting window. */
       #zoom-root > div {
         background-color: transparent !important;
       }
@@ -190,18 +184,6 @@
           return Math.max(min, Math.min(max, value));
         }
 
-        /**
-         * The SDK treats viewSizes.height as a floor, not a cap: it derives the
-         * canvas height from the requested width, so the width is what has to be
-         * constrained here. Gallery view needs the browser to render multiple
-         * videos, which needs SharedArrayBuffer and so cross-origin isolation;
-         * without it the SDK falls back to a portrait 250x274 single video.
-         *
-         * Gallery packs two 16:9 tiles side by side only when the canvas is
-         * wider than 16:9. Zoom's natural 720x411 canvas (1.75) falls just under
-         * that, so it stacks them into a narrow column with wide black bars
-         * either side - hence the slightly wider canvas requested here.
-         */
         var CHROME_HEIGHT = 150;
         var GALLERY_ASPECT = 1 / 1.85;
         var SINGLE_VIDEO_ASPECT = 274 / 250;
@@ -236,12 +218,6 @@
           return { width: width, height: Math.round(width * aspect) };
         }
 
-        /**
-         * The meeting window is the largest element that is not simply filling
-         * the embed. Screen sharing changes its shape, so this deliberately does
-         * not key off the size we requested, and matching on geometry avoids
-         * depending on the SDK's generated class names.
-         */
         function findZoomCard() {
           var rootWidth = rootEl.clientWidth;
           var rootHeight = rootEl.clientHeight;
@@ -254,7 +230,6 @@
             var width = el.offsetWidth;
             var height = el.offsetHeight;
             if (width < 120 || height < 120) continue;
-            // Ignore wrappers that simply fill the embed.
             if (width >= rootWidth - 2 && height >= rootHeight - 2) continue;
 
             var area = width * height;
@@ -282,13 +257,6 @@
           return luminance > 120;
         }
 
-        /**
-         * The SDK paints a light panel behind the meeting window, which shows
-         * wherever the window does not reach. The panel is not always an
-         * ancestor of the window, so large light surfaces are matched on
-         * appearance too. Anything inside the window is left alone, and the
-         * override has to beat the SDK's own !important rules.
-         */
         function clearBackdrops(card) {
           var rootArea = rootEl.clientWidth * rootEl.clientHeight;
           var nodes = rootEl.querySelectorAll("div");
@@ -313,8 +281,6 @@
             }
           }
 
-          // A light window means the panel was matched instead of the meeting;
-          // the page behind it is already the meeting window's own colour.
           if (isLightBackground(card)) {
             card.style.setProperty(
               "background-color",
@@ -324,10 +290,6 @@
           }
         }
 
-        /**
-         * Centers the Zoom card and scales it to the available space, so the embed
-         * looks like a full meeting window instead of a small box in the corner.
-         */
         function fitZoomCard() {
           var card = findZoomCard();
           if (!card) return;
@@ -367,8 +329,6 @@
             rootRect.top + (rootRect.height - scaledHeight) / 2 - currentTop,
           );
 
-          // Leave the transform off when it would be a no-op; transformed
-          // ancestors can shift Zoom's fixed-position menus.
           if (
             Math.abs(dx) < 2 &&
             Math.abs(dy) < 2 &&
@@ -402,8 +362,6 @@
         function startFitting() {
           scheduleFit();
 
-          // Re-renders replace the elements we restyle, so watch for new nodes.
-          // Only childList, since attribute changes would catch our own styling.
           if (!treeObserver && typeof MutationObserver !== "undefined") {
             treeObserver = new MutationObserver(scheduleFit);
             treeObserver.observe(rootEl, { childList: true, subtree: true });

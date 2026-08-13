@@ -271,7 +271,6 @@ export function CourseLessonDetailPage({
             meetUrl={meetUrl || `https://zoom.us/j/${meetingNumber}`}
             meetingNumber={meetingNumber || undefined}
             displayName={hostName}
-            // Host (1) needs a Zoom ZAK token. Join as participant until ZAK is wired.
             role={0}
             onLeave={() => {
               setIsJoined(false);

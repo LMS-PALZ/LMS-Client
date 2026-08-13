@@ -55,7 +55,6 @@ function extractRows(payload: unknown): Record<string, unknown>[] {
 
 function mapStatus(value: string): AssignmentStatus {
   const normalized = value.toLowerCase();
-  // Tutors "record" grades; backend may send recorded/scored instead of graded.
   if (
     normalized.includes("grade") ||
     normalized === "recorded" ||
