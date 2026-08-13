@@ -1,5 +1,6 @@
 "use client";
 
+import { setAuthPortal } from "@ssu/api";
 import {
   createAuthAwareQueryClient,
   setupSessionExpiryHandler,
@@ -7,6 +8,8 @@ import {
 import { AppToaster } from "@ssu/ui";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useState } from "react";
+
+setAuthPortal("student");
 
 const LOGIN_PATH = "/login";
 

@@ -1,43 +1,207 @@
 "use client";
 
 import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
-import { loadZoomEmbeddedSdk } from "@/lib/zoom/load-embedded-sdk";
 import { cn } from "@ssu/utils";
+import { Maximize2, Minimize2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export interface ZoomLiveEmbedClientProps {
   meetUrl: string;
   displayName?: string;
+  /** Fallback when meetUrl does not contain a meeting id (e.g. only zoomMeetingId from API). */
+  meetingNumber?: string;
   className?: string;
+  /** Called when the user leaves or the meeting ends. */
+  onLeave?: () => void;
 }
 
+function zoomErrorMessage(error: unknown): string {
+  if (!error) return "Unable to join the Zoom meeting.";
+
+  const text =
+    typeof error === "string"
+      ? error
+      : error instanceof Error
+        ? error.message
+        : typeof error === "object"
+          ? [
+              (error as { reason?: string }).reason,
+              (error as { errorMessage?: string }).errorMessage,
+              (error as { message?: string }).message,
+              (error as { type?: string }).type,
+              (error as { errorCode?: number | string }).errorCode != null
+                ? `code ${(error as { errorCode?: number | string }).errorCode}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" — ")
+          : "";
+
+  const normalized = text || "Unable to join the Zoom meeting.";
+  const isSignatureInvalid =
+    /signature is invalid/i.test(normalized) ||
+    /\b3712\b/.test(normalized) ||
+    /\b3172\b/.test(normalized);
+
+  if (isSignatureInvalid) {
+    return `${normalized}. In Zoom Marketplace → your app → Features → Embed, enable Meeting SDK, then use that app’s Client ID/Secret in ZOOM_MEETING_SDK_CLIENT_ID and ZOOM_MEETING_SDK_CLIENT_SECRET.`;
+  }
+
+  return normalized;
+}
+
+/**
+ * Runs Zoom inside an iframe so Zoom's CDN React/vendor scripts cannot
+ * overwrite the host Next.js React tree (which was logging students out).
+ */
 export function ZoomLiveEmbedClient({
   meetUrl,
   displayName,
+  meetingNumber: meetingNumberProp,
   className,
+  onLeave,
 }: ZoomLiveEmbedClientProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const zoomSdkRef = useRef<Awaited<
-    ReturnType<typeof loadZoomEmbeddedSdk>
-  > | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const onLeaveRef = useRef(onLeave);
   const [status, setStatus] = useState<"loading" | "joined" | "error">(
     "loading",
   );
   const [errorMessage, setErrorMessage] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    onLeaveRef.current = onLeave;
+  }, [onLeave]);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === containerRef.current);
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+    };
+  }, []);
+
+  async function toggleFullscreen() {
+    const el = containerRef.current;
+    if (!el) return;
+    try {
+      if (document.fullscreenElement === el) {
+        await document.exitFullscreen();
+      } else {
+        await el.requestFullscreen();
+      }
+    } catch {
+      // Browser may block fullscreen without a user gesture or policy.
+    }
+  }
 
   useEffect(() => {
     const target = parseMeetingTarget(meetUrl);
-    if (!target || target.kind !== "zoom" || !target.meetingNumber) {
+    const meetingNumber =
+      (meetingNumberProp || "").replace(/\D/g, "") ||
+      (target?.kind === "zoom" ? target.meetingNumber : "");
+    const password = target?.kind === "zoom" ? (target.password ?? "") : "";
+
+    if (!meetingNumber) {
       setStatus("error");
       setErrorMessage("Invalid Zoom meeting link.");
       return;
     }
 
-    const meetingNumber = target.meetingNumber;
-    const password = target.password ?? "";
     let cancelled = false;
+    let iframeReady = false;
+    let joinSent = false;
+    let joinPayload: {
+      signature: string;
+      sdkKey: string;
+      meetingNumber: string;
+      password: string;
+      userName: string;
+      viewWidth: number;
+      viewHeight: number;
+    } | null = null;
 
-    async function joinMeeting() {
+    const pingIframe = () => {
+      iframeRef.current?.contentWindow?.postMessage(
+        { source: "ssu-zoom-embed-parent", type: "ping" },
+        window.location.origin,
+      );
+    };
+
+    const readEmbedSize = () => {
+      const el = containerRef.current;
+      const width = Math.floor(el?.clientWidth || 960);
+      const height = Math.floor(el?.clientHeight || 560);
+      return {
+        viewWidth: Math.max(720, width),
+        viewHeight: Math.max(405, height),
+      };
+    };
+
+    const postJoin = () => {
+      if (
+        cancelled ||
+        joinSent ||
+        !iframeReady ||
+        !joinPayload ||
+        !iframeRef.current?.contentWindow
+      ) {
+        return;
+      }
+      joinSent = true;
+      iframeRef.current.contentWindow.postMessage(
+        {
+          source: "ssu-zoom-embed-parent",
+          type: "join",
+          payload: joinPayload,
+        },
+        window.location.origin,
+      );
+    };
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as {
+        source?: string;
+        type?: string;
+        message?: string;
+      } | null;
+      if (!data || data.source !== "ssu-zoom-embed") return;
+
+      if (data.type === "ready") {
+        iframeReady = true;
+        postJoin();
+        return;
+      }
+
+      if (data.type === "joined") {
+        if (!cancelled) setStatus("joined");
+        return;
+      }
+
+      if (data.type === "left") {
+        if (cancelled) return;
+        if (document.fullscreenElement) {
+          void document.exitFullscreen().catch(() => undefined);
+        }
+        onLeaveRef.current?.();
+        return;
+      }
+
+      if (data.type === "error") {
+        if (cancelled) return;
+        setStatus("error");
+        setErrorMessage(zoomErrorMessage(data.message || data));
+      }
+    };
+
+    window.addEventListener("message", onMessage);
+    pingIframe();
+
+    async function prepareJoin() {
       try {
         setStatus("loading");
         setErrorMessage("");
@@ -68,65 +232,77 @@ export function ZoomLiveEmbedClient({
           throw new Error("Zoom signature response was incomplete.");
         }
 
-        const zoomSdk = await loadZoomEmbeddedSdk();
-        if (cancelled || !containerRef.current) return;
-
-        zoomSdkRef.current = zoomSdk;
-        const client = zoomSdk.createClient();
-
-        await client.init({
-          zoomAppRoot: containerRef.current,
-          language: "en-US",
-          patchJsMedia: true,
-          leaveOnPageUnload: true,
-        });
-
         if (cancelled) return;
 
-        await client.join({
+        joinPayload = {
           signature: signatureBody.signature,
           sdkKey: signatureBody.sdkKey,
           meetingNumber,
           password,
           userName: displayName?.trim() || "Student",
-        });
-
-        if (!cancelled) {
-          setStatus("joined");
-        }
+          ...readEmbedSize(),
+        };
+        postJoin();
       } catch (error) {
         if (cancelled) return;
         setStatus("error");
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to join the Zoom meeting.",
-        );
+        setErrorMessage(zoomErrorMessage(error));
       }
     }
 
-    void joinMeeting();
+    void prepareJoin();
 
     return () => {
       cancelled = true;
-      try {
-        zoomSdkRef.current?.destroyClient();
-      } catch {
-        /* ignore cleanup errors */
-      }
-      zoomSdkRef.current = null;
+      window.removeEventListener("message", onMessage);
     };
-  }, [meetUrl, displayName]);
+  }, [meetUrl, displayName, meetingNumberProp]);
 
   return (
-    <div className={cn("relative w-full", className)}>
-      <div
-        ref={containerRef}
-        className="min-h-[560px] w-full overflow-hidden rounded-[18px] bg-[#202124]"
+    <div
+      ref={containerRef}
+      className={cn(
+        "relative w-full bg-[#202124]",
+        isFullscreen ? "h-full" : className,
+      )}
+    >
+      <iframe
+        ref={iframeRef}
+        title="Live class"
+        src="/zoom-embed.html?v=14"
+        className={cn(
+          "w-full overflow-hidden border-0 bg-[#202124]",
+          isFullscreen
+            ? "h-full min-h-0 rounded-none"
+            : "min-h-[560px] rounded-[18px]",
+        )}
+        allow="camera; microphone; display-capture; autoplay; clipboard-write; fullscreen"
+        allowFullScreen
       />
 
+      {status !== "error" && (
+        <button
+          type="button"
+          onClick={() => void toggleFullscreen()}
+          className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/75"
+          aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        >
+          {isFullscreen ? (
+            <Minimize2 className="h-4 w-4" />
+          ) : (
+            <Maximize2 className="h-4 w-4" />
+          )}
+        </button>
+      )}
+
       {status === "loading" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[18px] bg-[#202124]/90">
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 flex items-center justify-center bg-[#202124]/90",
+            !isFullscreen && "rounded-[18px]",
+          )}
+        >
           <div className="text-center">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
             <p className="mt-4 text-[14px] text-[#E8EAED]">
@@ -137,7 +313,12 @@ export function ZoomLiveEmbedClient({
       )}
 
       {status === "error" && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-[18px] bg-[#202124] px-6 text-center">
+        <div
+          className={cn(
+            "absolute inset-0 flex items-center justify-center bg-[#202124] px-6 text-center",
+            !isFullscreen && "rounded-[18px]",
+          )}
+        >
           <div>
             <p className="text-[16px] font-semibold text-white">
               Could not join live class

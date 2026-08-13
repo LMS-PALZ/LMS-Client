@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
   useAdminProgram,
@@ -36,6 +37,7 @@ export function CourseLessonDetailPage({
   moduleId,
   lessonId,
 }: CourseLessonDetailPageProps) {
+  const router = useRouter();
   const { data: user } = useSession();
   const {
     data: program,
@@ -269,7 +271,12 @@ export function CourseLessonDetailPage({
             meetUrl={meetUrl || `https://zoom.us/j/${meetingNumber}`}
             meetingNumber={meetingNumber || undefined}
             displayName={hostName}
-            role={1}
+            // Host (1) needs a Zoom ZAK token. Join as participant until ZAK is wired.
+            role={0}
+            onLeave={() => {
+              setIsJoined(false);
+              router.push(courseHref);
+            }}
           />
         </div>
       ) : null}

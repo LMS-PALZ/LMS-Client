@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Live class</title>
+    <style>
+      html,
+      body,
+      #zoom-root {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #202124;
+        overflow: hidden;
+      }
+      #status {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e8eaed;
+        font: 14px/1.4 system-ui, sans-serif;
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      #status[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status">Connecting to live class...</div>
+    <div id="zoom-root"></div>
+    <script>
+      (function () {
+        var ZOOM_SDK_VERSION = "6.2.0";
+        var statusEl = document.getElementById("status");
+        var rootEl = document.getElementById("zoom-root");
+        var joining = false;
+        var didJoin = false;
+        var clientRef = null;
+
+        function setStatus(message) {
+          if (!message) {
+            statusEl.hidden = true;
+            statusEl.textContent = "";
+            return;
+          }
+          statusEl.hidden = false;
+          statusEl.textContent = message;
+        }
+
+        function errorMessage(error, stage) {
+          var raw =
+            (error && (error.reason || error.errorMessage || error.message)) ||
+            "";
+          if (!raw && error != null) {
+            try {
+              raw = JSON.stringify(error);
+            } catch (e) {
+              raw = String(error);
+            }
+          }
+          var base = raw || "Unable to join the Zoom meeting.";
+          return stage ? stage + ": " + base : base;
+        }
+
+        function isMeetingInProgressError(error) {
+          var text = errorMessage(error, "").toLowerCase();
+          return (
+            text.indexOf("already has other meetings") !== -1 ||
+            text.indexOf("meeting in progress") !== -1 ||
+            text.indexOf("already in progress") !== -1
+          );
+        }
+
+        function loadStylesheet(href) {
+          return new Promise(function (resolve, reject) {
+            if (document.querySelector('link[href="' + href + '"]')) {
+              resolve();
+              return;
+            }
+            var link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = href;
+            link.onload = function () {
+              resolve();
+            };
+            link.onerror = function () {
+              reject(new Error("Failed to load stylesheet " + href));
+            };
+            document.head.appendChild(link);
+          });
+        }
+
+        function loadScript(src) {
+          return new Promise(function (resolve, reject) {
+            if (document.querySelector('script[src="' + src + '"]')) {
+              resolve();
+              return;
+            }
+            var script = document.createElement("script");
+            script.src = src;
+            script.async = true;
+            script.onload = function () {
+              resolve();
+            };
+            script.onerror = function () {
+              reject(new Error("Failed to load script " + src));
+            };
+            document.body.appendChild(script);
+          });
+        }
+
+        async function loadZoomSdk() {
+          if (window.ZoomMtgEmbedded) return window.ZoomMtgEmbedded;
+          var base = "https://source.zoom.us/" + ZOOM_SDK_VERSION;
+          await loadStylesheet(base + "/ui/zoom-meetingsdk.css");
+          await loadScript(base + "/lib/vendor/react.min.js");
+          await loadScript(base + "/lib/vendor/react-dom.min.js");
+          await loadScript(base + "/lib/vendor/redux.min.js");
+          await loadScript(base + "/lib/vendor/redux-thunk.min.js");
+          await loadScript(base + "/lib/vendor/lodash.min.js");
+          await loadScript(
+            base + "/zoom-meeting-embedded-" + ZOOM_SDK_VERSION + ".min.js",
+          );
+          if (!window.ZoomMtgEmbedded) {
+            throw new Error("Zoom Meeting SDK failed to load.");
+          }
+          return window.ZoomMtgEmbedded;
+        }
+
+        function resetZoomRoot() {
+          var next = document.createElement("div");
+          next.id = "zoom-root";
+          rootEl.replaceWith(next);
+          rootEl = next;
+        }
+
+        function forceCleanup(zoomSdk) {
+          try {
+            if (clientRef && typeof clientRef.leaveMeeting === "function") {
+              clientRef.leaveMeeting();
+            }
+          } catch (e) {}
+          try {
+            if (zoomSdk && typeof zoomSdk.destroyClient === "function") {
+              zoomSdk.destroyClient();
+            } else if (
+              window.ZoomMtgEmbedded &&
+              typeof window.ZoomMtgEmbedded.destroyClient === "function"
+            ) {
+              window.ZoomMtgEmbedded.destroyClient();
+            }
+          } catch (e) {}
+          clientRef = null;
+          didJoin = false;
+          resetZoomRoot();
+        }
+
+        async function joinMeeting(payload, isRetry) {
+          if (joining) return;
+          joining = true;
+          try {
+            setStatus("Connecting to live class...");
+            var meetingNumber = String(payload.meetingNumber || "").replace(
+              /\D/g,
+              "",
+            );
+            var signature = payload.signature;
+            var sdkKey = payload.sdkKey;
+            var userName =
+              String(payload.userName || "Student").trim() || "Student";
+            var password =
+              payload.password == null ? "" : String(payload.password);
+
+            if (!meetingNumber || !signature) {
+              throw new Error("Missing meeting details.");
+            }
+            if (!sdkKey) {
+              throw new Error("Missing Zoom SDK key.");
+            }
+
+            var zoomSdk = await loadZoomSdk();
+            // Only tear down an existing client (retry / remount). Destroying on a
+            // fresh join races Strict Mode and can leave a black video surface.
+            if (isRetry || clientRef) {
+              forceCleanup(zoomSdk);
+              await new Promise(function (resolve) {
+                window.setTimeout(resolve, isRetry ? 500 : 150);
+              });
+            }
+
+            if (!window.crossOriginIsolated) {
+              console.warn(
+                "[ssu-zoom] crossOriginIsolated=false — screen share may stay black. Restart Next after COOP/COEP headers.",
+              );
+            }
+
+            var client = zoomSdk.createClient();
+            clientRef = client;
+
+            // Stable size only at init. Do NOT call updateVideoOptions after join —
+            // that blanks screen-share for viewers.
+            await client.init({
+              zoomAppRoot: rootEl,
+              language: "en-US",
+              patchJsMedia: true,
+              leaveOnPageUnload: true,
+              customize: {
+                video: {
+                  isResizable: true,
+                  defaultViewType: "speaker",
+                  viewSizes: {
+                    default: { width: 1000, height: 562 },
+                  },
+                },
+              },
+            });
+
+            client.on("connection-change", function (event) {
+              if (event && event.state === "Closed" && didJoin) {
+                didJoin = false;
+                try {
+                  if (window.ZoomMtgEmbedded) {
+                    window.ZoomMtgEmbedded.destroyClient();
+                  }
+                } catch (e) {}
+                clientRef = null;
+                parent.postMessage(
+                  { source: "ssu-zoom-embed", type: "left" },
+                  window.location.origin,
+                );
+              }
+            });
+
+            await client.join({
+              signature: signature,
+              sdkKey: sdkKey,
+              meetingNumber: meetingNumber,
+              userName: userName,
+              password: password,
+            });
+            didJoin = true;
+            setStatus("");
+            parent.postMessage(
+              { source: "ssu-zoom-embed", type: "joined" },
+              window.location.origin,
+            );
+          } catch (error) {
+            if (!isRetry && isMeetingInProgressError(error)) {
+              joining = false;
+              try {
+                if (window.ZoomMtgEmbedded) {
+                  forceCleanup(window.ZoomMtgEmbedded);
+                }
+              } catch (e) {}
+              await new Promise(function (resolve) {
+                window.setTimeout(resolve, 500);
+              });
+              return joinMeeting(payload, true);
+            }
+            var message = errorMessage(error, "Join failed");
+            setStatus(message);
+            parent.postMessage(
+              {
+                source: "ssu-zoom-embed",
+                type: "error",
+                message: message,
+                errorCode: error && error.errorCode,
+              },
+              window.location.origin,
+            );
+          } finally {
+            joining = false;
+          }
+        }
+
+        window.addEventListener("message", function (event) {
+          if (event.origin !== window.location.origin) return;
+          var data = event.data;
+          if (!data || data.source !== "ssu-zoom-embed-parent") return;
+          if (data.type === "ping") {
+            parent.postMessage(
+              { source: "ssu-zoom-embed", type: "ready" },
+              window.location.origin,
+            );
+            return;
+          }
+          if (data.type === "join") {
+            void joinMeeting(data.payload || {}, false);
+          }
+        });
+
+        parent.postMessage(
+          { source: "ssu-zoom-embed", type: "ready" },
+          window.location.origin,
+        );
+      })();
+    </script>
+  </body>
+</html>

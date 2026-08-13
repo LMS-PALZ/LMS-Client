@@ -112,14 +112,9 @@ async function listClassSessionNotifications(): Promise<NotificationDto[]> {
   const profileRes = await getStudentPofile();
   if (!profileRes.ok) return [];
 
-  const profile = profileRes.data as Record<string, unknown>;
-  const program =
-    profile.program && typeof profile.program === "object"
-      ? (profile.program as Record<string, unknown>)
-      : null;
-
-  const programId = readString(program?.id ?? program?._id);
-  const programTitle = readString(program?.title ?? program?.name);
+  const program = profileRes.data.program;
+  const programId = readString(program?.id);
+  const programTitle = readString(program?.title);
   if (!programId) return [];
 
   const classroomRes = await getStudentClassroom(programId);

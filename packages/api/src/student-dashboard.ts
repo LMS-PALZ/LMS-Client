@@ -73,16 +73,37 @@ async function resolveEnrolledProgram(): Promise<{
     return { programId: "", programTitle: "" };
   }
 
-  const profile = profileRes.data as Record<string, unknown>;
-  const program =
-    profile.program && typeof profile.program === "object"
-      ? (profile.program as Record<string, unknown>)
-      : null;
+  const program = profileRes.data.program;
 
   return {
-    programId: readString(program?.id ?? program?._id),
-    programTitle: readString(program?.title ?? program?.name),
+    programId: readString(program?.id),
+    programTitle: readString(program?.title),
   };
+}
+
+function mapLiveGeneralToSessions(
+  liveGeneralPrograms: Array<{
+    lessonId: string;
+    lessonTitle: string;
+    programTitle: string;
+    programId: string;
+    startsAt: string;
+    liveSessionUrl?: string | null;
+    zoomJoinUrl?: string | null;
+  }>,
+): LiveSessionItem[] {
+  return liveGeneralPrograms
+    .filter((item) => item.lessonId && item.lessonTitle)
+    .map((item) => ({
+      id: item.lessonId,
+      title: item.lessonTitle,
+      courseName: item.programTitle || "",
+      startsAt: item.startsAt || new Date().toISOString(),
+      isLive: true,
+      meetingUrl: item.liveSessionUrl ?? undefined,
+      zoomJoinUrl: item.zoomJoinUrl ?? undefined,
+      programId: item.programId,
+    }));
 }
 
 export const studentDashboardApi = {
@@ -111,15 +132,75 @@ export const studentDashboardApi = {
   },
 
   async getSessions(): Promise<LiveSessionItem[]> {
-    const { programId, programTitle } = await resolveEnrolledProgram();
-    if (!programId) return [];
+    const profileRes = await getStudentPofile();
+    if (!profileRes.ok) return [];
 
-    const classroomRes = await getStudentClassroom(programId);
-    if (!classroomRes.ok) return [];
+    const {
+      program,
+      generalPrograms,
+      liveGeneralPrograms,
+      hasLiveGeneralProgram,
+    } = profileRes.data;
+    const programId = readString(program?.id);
+    const programTitle = readString(program?.title);
 
-    return mapClassroomLessonsToSessions(
-      classroomRes.data.classroom.modules,
-      classroomRes.data.program.title || programTitle,
+    const sessionSources: LiveSessionItem[] = [];
+
+    if (programId) {
+      const classroomRes = await getStudentClassroom(programId);
+      if (classroomRes.ok) {
+        sessionSources.push(
+          ...mapClassroomLessonsToSessions(
+            classroomRes.data.classroom.modules,
+            classroomRes.data.program.title || programTitle,
+          ).map((session) => ({
+            ...session,
+            programId,
+          })),
+        );
+      }
+    }
+
+    const generalClassroomResults = await Promise.all(
+      generalPrograms.map(async (gp) => {
+        const gpId = readString(gp.id);
+        if (!gpId) return null;
+        const classroomRes = await getStudentClassroom(gpId);
+        if (!classroomRes.ok) return null;
+        return {
+          gpId,
+          title: classroomRes.data.program.title || readString(gp.title),
+          modules: classroomRes.data.classroom.modules,
+        };
+      }),
+    );
+
+    for (const result of generalClassroomResults) {
+      if (!result) continue;
+      sessionSources.push(
+        ...mapClassroomLessonsToSessions(result.modules, result.title).map(
+          (session) => ({
+            ...session,
+            programId: result.gpId,
+          }),
+        ),
+      );
+    }
+
+    if (hasLiveGeneralProgram) {
+      sessionSources.push(...mapLiveGeneralToSessions(liveGeneralPrograms));
+    }
+
+    const byId = new Map<string, LiveSessionItem>();
+    for (const session of sessionSources) {
+      const existing = byId.get(session.id);
+      if (!existing || (!existing.isLive && session.isLive)) {
+        byId.set(session.id, session);
+      }
+    }
+
+    return Array.from(byId.values()).sort(
+      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
     );
   },
 

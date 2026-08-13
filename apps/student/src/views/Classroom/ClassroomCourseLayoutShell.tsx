@@ -11,7 +11,7 @@ import { cn } from "@ssu/utils";
 import { GoBack } from "@ssu/ui";
 import { CheckCircle2, ChevronDown, ChevronLeft, Circle } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -28,6 +28,7 @@ interface ClassroomCourseLayoutShellProps {
   children: ReactNode;
   backFallbackHref?: string;
   meetUrl?: string;
+  meetingNumber?: string;
   isLive?: boolean;
   displayName?: string;
 }
@@ -38,10 +39,12 @@ function ClassroomCourseLayoutShellInner({
   children,
   backFallbackHref = "/classroom",
   meetUrl,
+  meetingNumber,
   isLive = false,
   displayName,
 }: ClassroomCourseLayoutShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { recordingEmbedUrl, clearRecording } = useClassroomPlayback();
 
   const [openWeeks, setOpenWeeks] = useState(
@@ -194,8 +197,10 @@ function ClassroomCourseLayoutShellInner({
               <ClassroomSessionMedia
                 mode={mediaMode}
                 meetUrl={liveVideo.meetUrl}
+                meetingNumber={meetingNumber}
                 displayName={displayName}
                 recordingEmbedUrl={recordingEmbedUrl}
+                onLeaveMeeting={() => router.push(backFallbackHref)}
               />
             </div>
 

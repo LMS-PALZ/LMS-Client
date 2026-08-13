@@ -20,6 +20,16 @@
 
 [build.environment]
   NODE_VERSION = "24.14.0"
+  # Required on BOTH admin and student Netlify sites for in-app Zoom join:
+  # ZOOM_MEETING_SDK_CLIENT_ID
+  # ZOOM_MEETING_SDK_CLIENT_SECRET
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Zoom Meeting SDK Component View needs SharedArrayBuffer (cross-origin isolation).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "credentialless"

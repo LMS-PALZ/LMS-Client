@@ -5,12 +5,20 @@ import { useProfileDetail } from "./use-profiledetail";
 export function useEnrolledProgram() {
   const profileQuery = useProfileDetail();
   const programId = profileQuery.data?.program?.id ?? "";
+  const generalPrograms = profileQuery.data?.generalPrograms ?? [];
+  const liveGeneralPrograms = profileQuery.data?.liveGeneralPrograms ?? [];
+  const hasLiveGeneralProgram = Boolean(
+    profileQuery.data?.hasLiveGeneralProgram,
+  );
 
   return {
     ...profileQuery,
     programId,
     program: profileQuery.data?.program,
     student: profileQuery.data?.student,
+    generalPrograms,
+    liveGeneralPrograms,
+    hasLiveGeneralProgram,
   };
 }
 

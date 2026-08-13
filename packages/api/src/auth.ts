@@ -1,6 +1,12 @@
 import type { AuthUser } from "@ssu/types";
 import axios from "axios";
 import {
+  clearPortalAuthStorage,
+  readPortalSessionRaw,
+  writePortalSessionRaw,
+  writePortalTokenRaw,
+} from "./auth-portal";
+import {
   appendProfileFormData,
   formatProfileDob,
   formatProfileEmploymentStatus,
@@ -13,6 +19,15 @@ import {
   parseStudentLoginResponse,
   type StudentLoginResult,
 } from "./student-login";
+
+export {
+  getAuthPortal,
+  getAuthTokenStorageKey,
+  getSessionStorageKey,
+  setAuthPortal,
+  writePortalTokenRaw,
+  type AuthPortal,
+} from "./auth-portal";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -800,6 +815,129 @@ export async function getStudentDetails(userId: string) {
   }
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
+function readMeString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function mapStudentMeProgram(value: unknown) {
+  const row = asRecord(value);
+  if (!row) return null;
+
+  const id = readMeString(row.id ?? row._id);
+  if (!id) return null;
+
+  const cohortStartDate = readMeString(row.cohortStartDate ?? row.startDate);
+  const cohortEndDate = readMeString(row.cohortEndDate ?? row.endDate);
+
+  return {
+    id,
+    title: readMeString(row.title ?? row.name) || "Untitled course",
+    slug: readMeString(row.slug) || undefined,
+    description: readMeString(row.description) || undefined,
+    category: readMeString(row.category) || undefined,
+    programType: readMeString(row.programType) || undefined,
+    priceAmount:
+      typeof row.priceAmount === "number" ? row.priceAmount : undefined,
+    priceCurrency: readMeString(row.priceCurrency) || undefined,
+    cohortName: readMeString(row.cohortName) || undefined,
+    cohortCode: readMeString(row.cohortCode) || undefined,
+    cohortStartDate: cohortStartDate || undefined,
+    cohortEndDate: cohortEndDate || undefined,
+    startDate: cohortStartDate || undefined,
+    endDate: cohortEndDate || undefined,
+    capacity: typeof row.capacity === "number" ? row.capacity : undefined,
+    status: readMeString(row.status) || undefined,
+    assignedTutorIds: Array.isArray(row.assignedTutorIds)
+      ? row.assignedTutorIds.filter(
+          (id): id is string => typeof id === "string" && id.trim().length > 0,
+        )
+      : undefined,
+    duration: readMeString(row.duration) || undefined,
+    isLiveNow: Boolean(row.isLiveNow),
+    liveLesson: mapStudentMeLiveLesson(row.liveLesson),
+  };
+}
+
+function mapStudentMeLiveLesson(value: unknown) {
+  const row = asRecord(value);
+  if (!row) return null;
+
+  const lessonId = readMeString(row.lessonId ?? row.id ?? row._id);
+  const programId = readMeString(row.programId);
+  if (!lessonId || !programId) return null;
+
+  return {
+    programId,
+    programTitle: readMeString(row.programTitle ?? row.courseName),
+    lessonId,
+    lessonTitle: readMeString(row.lessonTitle ?? row.title),
+    startsAt: readMeString(row.startsAt) || new Date().toISOString(),
+    durationMinutes:
+      typeof row.durationMinutes === "number" ? row.durationMinutes : undefined,
+    liveSessionUrl: readMeString(row.liveSessionUrl) || null,
+    zoomJoinUrl: readMeString(row.zoomJoinUrl) || null,
+  };
+}
+
+function parseStudentMePayload(raw: unknown) {
+  const root = asRecord(raw) ?? {};
+  const generalPrograms = Array.isArray(root.generalPrograms)
+    ? root.generalPrograms
+        .map(mapStudentMeProgram)
+        .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    : [];
+
+  const liveFromArray = Array.isArray(root.liveGeneralPrograms)
+    ? root.liveGeneralPrograms
+        .map(mapStudentMeLiveLesson)
+        .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    : [];
+
+  // Some responses only mark programs live on generalPrograms.isLiveNow / liveLesson.
+  const liveFromPrograms = generalPrograms
+    .map((program) => {
+      if (program.liveLesson) return program.liveLesson;
+      if (!program.isLiveNow) return null;
+      return null;
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  const liveByLessonId = new Map<string, (typeof liveFromArray)[number]>();
+  for (const item of [...liveFromArray, ...liveFromPrograms]) {
+    liveByLessonId.set(item.lessonId, item);
+  }
+  const liveGeneralPrograms = Array.from(liveByLessonId.values());
+  // Trust the API flag for live general sessions only.
+  const hasLiveGeneralProgram = root.hasLiveGeneralProgram === true;
+
+  return {
+    student: asRecord(root.student) as {
+      _id: string;
+      first_name?: string;
+      last_name?: string;
+      email?: string;
+      phone_number?: string;
+      role?: string;
+      status?: string;
+      isVerified?: boolean;
+      profileUploaded?: boolean;
+      program?: string;
+    } | null,
+    profile: root.profile ?? null,
+    program: mapStudentMeProgram(root.program),
+    generalPrograms,
+    liveGeneralPrograms: hasLiveGeneralProgram ? liveGeneralPrograms : [],
+    hasLiveGeneralProgram,
+  };
+}
+
 export async function getStudentPofile() {
   try {
     const token = getStoredAuthToken();
@@ -810,10 +948,15 @@ export async function getStudentPofile() {
       },
     });
 
+    const payload =
+      res.data?.data && typeof res.data.data === "object"
+        ? res.data.data
+        : res.data;
+
     return {
       ok: true as const,
-      data: res.data.data,
-      message: res.data.message,
+      data: parseStudentMePayload(payload),
+      message: res.data?.message,
     };
   } catch (error: any) {
     return {
@@ -1151,12 +1294,10 @@ export async function updateAssessment(
 
 export const SESSION_STORAGE_KEY = "ssu_session";
 
-const AUTH_TOKEN_STORAGE_KEY = "token";
-
 export function readSession(): AuthUser | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = readPortalSessionRaw();
     if (!raw) return null;
     return JSON.parse(raw) as AuthUser;
   } catch {
@@ -1335,9 +1476,9 @@ export function isStudentAuthenticated(): boolean {
 }
 
 export function clearStudentAuth(): void {
-  writeSession(null);
   if (typeof window === "undefined") return;
-  localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  writeSession(null);
+  clearPortalAuthStorage();
   localStorage.removeItem("reset-email");
   clearProfileSetupDismissed();
 }
@@ -1345,8 +1486,12 @@ export function clearStudentAuth(): void {
 export function writeSession(user: AuthUser | null): void {
   if (typeof window === "undefined") return;
   if (!user) {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+    writePortalSessionRaw(null);
+    writePortalTokenRaw(null);
     return;
   }
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+  writePortalSessionRaw(JSON.stringify(user));
+  if (user.accessToken) {
+    writePortalTokenRaw(user.accessToken);
+  }
 }

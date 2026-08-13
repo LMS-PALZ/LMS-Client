@@ -29,9 +29,11 @@ export type ClassroomMediaMode =
 export interface ClassroomSessionMediaProps {
   mode: ClassroomMediaMode;
   meetUrl?: string;
+  meetingNumber?: string;
   displayName?: string;
   recordingEmbedUrl?: string | null;
   className?: string;
+  onLeaveMeeting?: () => void;
 }
 
 function LiveMediaShell({
@@ -49,7 +51,7 @@ function LiveMediaShell({
         size="sm"
         tone="overlay"
         uppercase
-        className="absolute right-3 top-3 z-10"
+        className="pointer-events-none absolute left-3 top-3 z-10"
       />
     </div>
   );
@@ -58,9 +60,11 @@ function LiveMediaShell({
 export function ClassroomSessionMedia({
   mode,
   meetUrl,
+  meetingNumber,
   displayName,
   recordingEmbedUrl,
   className,
+  onLeaveMeeting,
 }: ClassroomSessionMediaProps) {
   if (mode === "live-meet") {
     const meetingTarget = meetUrl ? parseMeetingTarget(meetUrl) : null;
@@ -71,7 +75,12 @@ export function ClassroomSessionMedia({
     ) {
       return (
         <LiveMediaShell className={className}>
-          <ZoomLiveEmbed meetUrl={meetUrl!} displayName={displayName} />
+          <ZoomLiveEmbed
+            meetUrl={meetUrl!}
+            meetingNumber={meetingNumber}
+            displayName={displayName}
+            onLeave={onLeaveMeeting}
+          />
         </LiveMediaShell>
       );
     }

@@ -1,4 +1,5 @@
 import type { AuthUser, UserRole } from "@ssu/types";
+import { readPortalSessionRaw, readPortalTokenRaw } from "./auth-portal";
 
 export type StudentLoginSuccess = {
   ok: true;
@@ -228,11 +229,11 @@ function readTokenFromRaw(raw: string | null): string | null {
 export function getStoredAuthToken(): string | null {
   if (typeof window === "undefined") return null;
 
-  const fromTokenKey = readTokenFromRaw(localStorage.getItem("token"));
+  const fromTokenKey = readTokenFromRaw(readPortalTokenRaw());
   if (fromTokenKey) return fromTokenKey;
 
   try {
-    const sessionRaw = localStorage.getItem("ssu_session");
+    const sessionRaw = readPortalSessionRaw();
     if (!sessionRaw) return null;
     const session = asRecord(JSON.parse(sessionRaw));
     if (!session) return null;

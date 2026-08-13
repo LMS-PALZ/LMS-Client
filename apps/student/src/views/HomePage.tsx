@@ -29,6 +29,7 @@ import {
   buildHomeSessionCards,
   formatSessionDayLabel,
 } from "@/lib/sessions/today-sessions";
+import { ClassroomCourseCard } from "@/views/Classroom/ClassroomCourseCard";
 import { GraduationCap, Notebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -45,7 +46,13 @@ function greeting(first: string) {
 export function HomePage() {
   const router = useRouter();
   const { data: user } = useSession();
-  const { data: profileData, program } = useEnrolledProgram();
+  const {
+    data: profileData,
+    program,
+    generalPrograms,
+    liveGeneralPrograms,
+    hasLiveGeneralProgram,
+  } = useEnrolledProgram();
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
   useProfileDetail();
@@ -82,6 +89,13 @@ export function HomePage() {
   const programTitle =
     progress.data?.enrolledProgramTitle || program?.title || "your course";
 
+  const joinSession = (session: (typeof sessionList)[number]) => {
+    const programQuery = session.programId
+      ? `?programId=${encodeURIComponent(session.programId)}`
+      : "";
+    router.push(`/classroom/${session.id}${programQuery}`);
+  };
+
   return (
     <div className="space-y-8">
       {showGreetingSkeleton ? (
@@ -107,8 +121,8 @@ export function HomePage() {
           emptyState={
             <DashboardEmptyState
               icon={GraduationCap}
-              title="No upcoming classes"
-              description="When you have a live session or upcoming classes scheduled, they will show up here."
+              title="No classes today"
+              description="Live and upcoming classes scheduled for today will show up here."
             />
           }
           sessions={sessionList.map((s) => ({
@@ -121,7 +135,7 @@ export function HomePage() {
               <button
                 type="button"
                 onClick={() => {
-                  router.push(`/classroom/${s.id}`);
+                  joinSession(s);
                 }}
                 className="font-semibold text-[#4E845F] hover:underline"
               >
@@ -135,6 +149,42 @@ export function HomePage() {
           }))}
         />
       </div>
+
+      {generalPrograms.length > 0 ? (
+        <section className="rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06)] sm:p-6">
+          <SectionHeader variant="inline" title="Courses" className="mb-5" />
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {generalPrograms.map((item) => {
+              const liveFromList = hasLiveGeneralProgram
+                ? liveGeneralPrograms.find((live) => live.programId === item.id)
+                : undefined;
+              const liveLesson =
+                liveFromList ??
+                (item.isLiveNow && item.liveLesson?.lessonId
+                  ? item.liveLesson
+                  : null);
+              const lessonId =
+                liveFromList?.lessonId ??
+                (liveLesson && "lessonId" in liveLesson
+                  ? liveLesson.lessonId
+                  : undefined);
+              const href = lessonId
+                ? `/classroom/${lessonId}?programId=${encodeURIComponent(item.id)}`
+                : `/classroom?programId=${encodeURIComponent(item.id)}`;
+
+              return (
+                <ClassroomCourseCard
+                  key={item.id}
+                  course={{ id: item.id, title: item.title }}
+                  href={href}
+                  subtitle={item.cohortName || item.description}
+                  meta={item.duration}
+                />
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06)] sm:p-6">
         <SectionHeader
