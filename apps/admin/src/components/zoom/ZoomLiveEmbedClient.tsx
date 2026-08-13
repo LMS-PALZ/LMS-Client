@@ -289,7 +289,7 @@ export function ZoomLiveEmbedClient({
       <iframe
         ref={iframeRef}
         title="Live session"
-        src="/zoom-embed.html?v=20"
+        src="/zoom-embed.html?v=23"
         className={cn(
           "w-full overflow-hidden border-0 bg-[#1a1a1a]",
           isFullscreen
