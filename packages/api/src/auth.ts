@@ -1,94 +1,1295 @@
-import type { AuthUser, UserRole } from "@ssu/types";
+import type { AuthUser } from "@ssu/types";
+import axios from "axios";
+import {
+  clearPortalAuthStorage,
+  readPortalSessionRaw,
+  writePortalSessionRaw,
+  writePortalTokenRaw,
+} from "./auth-portal";
+import {
+  appendProfileFormData,
+  formatProfileDob,
+  formatProfileEmploymentStatus,
+  formatProfileGender,
+} from "./profile-payload";
+import { clearProfileSetupDismissed } from "./student-profile";
+import {
+  getStoredAuthToken,
+  parseAdminLoginResponse,
+  parseStudentLoginResponse,
+  type StudentLoginResult,
+} from "./student-login";
 
-const MOCK_USERS: Record<
-  string,
-  {
-    id: string;
-    role: UserRole;
-    firstName: string;
-    lastName: string;
-    status: string;
-  }
-> = {
-  "student@skillscaleup.dev": {
-    id: "u-student",
-    role: "student",
-    firstName: "Sam",
-    lastName: "Student",
-    status: "active",
-  },
-  "trainer@skillscaleup.dev": {
-    id: "u-trainer",
-    role: "trainer",
-    firstName: "Terry",
-    lastName: "Tutor",
-    status: "active",
-  },
-  "admin@skillscaleup.dev": {
-    id: "u-admin",
-    role: "admin",
-    firstName: "Alex",
-    lastName: "Admin",
-    status: "active",
-  },
-  "pending@skillscaleup.dev": {
-    id: "u-pending",
-    role: "trainer",
-    firstName: "Pat",
-    lastName: "Pending",
-    status: "pending",
-  },
-};
+export {
+  getAuthPortal,
+  getAuthTokenStorageKey,
+  getSessionStorageKey,
+  setAuthPortal,
+  writePortalTokenRaw,
+  type AuthPortal,
+} from "./auth-portal";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://base-api.skillscaleup.org";
 
 export type LoginErrorCode = "invalid" | "pending_approval" | "suspended";
 
-export async function loginDemo(
+export async function login(
   email: string,
   password: string,
-  expectedRole: UserRole,
+): Promise<StudentLoginResult> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/students/auth/login`;
+
+    const res = await axios.post(url, { email, password });
+    const body = res.data as {
+      status?: boolean;
+      message?: string;
+      code?: string;
+    };
+
+    if (body?.status === false) {
+      return {
+        ok: false,
+        code: (body.code as LoginErrorCode) || "invalid",
+        message: body.message ?? "Login failed. Please try again.",
+      };
+    }
+
+    const parsed = parseStudentLoginResponse(res.data);
+    if (!parsed) {
+      return {
+        ok: false,
+        code: "invalid",
+        message:
+          body?.message ??
+          "Login response was invalid. Please contact support.",
+      };
+    }
+
+    return parsed;
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
+    return {
+      ok: false,
+      code: (err.response?.data?.code as LoginErrorCode) || "invalid",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Login failed. Please try again.",
+    };
+  }
+}
+
+export type InviteStaffErrorCode =
+  | "invalid"
+  | "duplicate_email"
+  | "server_error";
+
+export async function inviteStaff(data: {
+  email: string;
+  name: string;
+  role: string;
+}): Promise<
+  | { ok: true; data: any; message: string }
+  | { ok: false; code: InviteStaffErrorCode; message: string }
+> {
+  try {
+    const token = getStoredAuthToken();
+    if (!token) {
+      return {
+        ok: false,
+        code: "invalid",
+        message: "You are not signed in. Please log in again.",
+      };
+    }
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/admins/invitations`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true,
+      data: res.data.data,
+      message: res.data.message || "Invitation sent successfully",
+    };
+  } catch (error: any) {
+    return {
+      ok: false,
+      code: error.response?.data?.code || "invalid",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send invitation. Please try again.",
+    };
+  }
+}
+
+export async function acceptinvite(data: {
+  email: string;
+  token: string;
+  password: string;
+}): Promise<
+  | { ok: true; data: any; message: string }
+  | { ok: false; code: InviteStaffErrorCode; message: string }
+> {
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/admins/auth/invitations/accept`,
+      {
+        email: data.email,
+        password: data.password,
+        token: data.token,
+      },
+    );
+
+    return {
+      ok: true,
+      data: res.data.data,
+      message: res.data.message || "Invitation accepted successfully",
+    };
+  } catch (error: any) {
+    return {
+      ok: false,
+      code: error.response?.data?.code || "invalid",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to accept invitation.",
+    };
+  }
+}
+
+export type SignupErrorCode =
+  | "email_exists"
+  | "validation_error"
+  | "invalid"
+  | "server_error"
+  | "pending_approval";
+
+export async function signupStudent(input: {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  program: string;
+}): Promise<
+  | { status: true; message: string; data: AuthUser }
+  | { status: false; code: SignupErrorCode; message: string }
+> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/students/auth/signup`;
+
+    const res = await axios.post(url, input);
+
+    return res.data;
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
+    return {
+      status: false,
+      code: "server_error",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Signup failed. Please try again.",
+    };
+  }
+}
+
+export type ResetPasswordErrorCode = "invalid" | "server_error";
+
+export async function resetPassword(
+  email: string,
+  password: string,
 ): Promise<
-  | { ok: true; user: AuthUser }
+  | { ok: true; message: string }
+  | { ok: false; code: ResetPasswordErrorCode; message: string }
+> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/auth/reset`;
+
+    await axios.post(url, { email, password });
+
+    return {
+      ok: true,
+      message: "Password reset successful",
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
+    return {
+      ok: false,
+      code:
+        (err.response?.data?.code as ResetPasswordErrorCode) || "server_error",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Reset password failed. Please try again.",
+    };
+  }
+}
+
+export type ForgetPasswordErrorCode = "invalid" | "server_error";
+
+export async function forgetPassword(
+  email: string,
+): Promise<
+  | { ok: true; message: string }
+  | { ok: false; code: ForgetPasswordErrorCode; message: string }
+> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/auth/forget`;
+
+    await axios.post(url, { email });
+
+    return {
+      ok: true,
+      message: "Check your email to reset your password",
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
+    return {
+      ok: false,
+      code: (err.response?.data?.code as ForgetPasswordErrorCode) || "invalid",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Forget password failed. Please try again.",
+    };
+  }
+}
+
+export type VerifyEmailErrorCode = "invalid" | "server_error";
+
+export async function verifyStudentEmail(
+  email: string,
+  otp: string,
+): Promise<
+  | { ok: true; message: string }
+  | { ok: false; code: VerifyEmailErrorCode; message: string }
+> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/students/auth/verify`;
+
+    await axios.post(url, {
+      email,
+      otp,
+    });
+
+    return {
+      ok: true,
+      message: "Email verified successfully",
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
+    return {
+      ok: false,
+      code: (err.response?.data?.code as VerifyEmailErrorCode) || "invalid",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Email verification failed. Please try again.",
+    };
+  }
+}
+
+export type ResendOtpErrorCode = "invalid" | "server_error";
+
+export async function resendOtp(
+  email: string,
+): Promise<
+  | { ok: true; message: string }
+  | { ok: false; code: ResendOtpErrorCode; message: string }
+> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/students/auth/resend`;
+
+    await axios.post(url, { email });
+
+    return {
+      ok: true,
+      message: "OTP resent successfully",
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
+    return {
+      ok: false,
+      code: (err.response?.data?.code as ResendOtpErrorCode) || "invalid",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Resend OTP failed. Please try again.",
+    };
+  }
+}
+
+export type SetPasswordErrorCode = "invalid" | "server_error";
+
+export async function setPassword(
+  email: string,
+  password: string,
+): Promise<
+  | { ok: true; message: string }
+  | { ok: false; code: SetPasswordErrorCode; message: string }
+> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/students/auth/password`;
+
+    await axios.post(url, { email, password });
+
+    return {
+      ok: true,
+      message: "Password set successfully",
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
+    return {
+      ok: false,
+      code: (err.response?.data?.code as SetPasswordErrorCode) || "invalid",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Set password failed. Please try again.",
+    };
+  }
+}
+
+export async function programslist(): Promise<
+  | {
+      status: "success";
+      message: string;
+      data: {
+        items: {
+          id: string;
+          title: string;
+          slug: string;
+          priceAmount: number;
+        }[];
+      };
+    }
+  | {
+      status: "error";
+      message: string;
+    }
+> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/programs/available`;
+
+    const res = await axios.get(url);
+
+    return {
+      status: "success",
+      message: res.data.message,
+      data: res.data.data,
+    };
+  } catch (error: unknown) {
+    const err = error as { message?: string };
+    return {
+      status: "error",
+      message: err.message || "Failed to fetch programs. Please try again.",
+    };
+  }
+}
+
+export async function adminlogin(
+  email: string,
+  password: string,
+): Promise<
+  | { ok: true; data: AuthUser; message: string }
   | { ok: false; code: LoginErrorCode; message: string }
 > {
-  await new Promise((r) => setTimeout(r, 150));
-  const key = email.toLowerCase().trim();
-  if (password.length < 1) {
-    return { ok: false, code: "invalid", message: "Password is required." };
-  }
-  const row = MOCK_USERS[key];
-  if (!row) {
-    return { ok: false, code: "invalid", message: "Invalid credentials." };
-  }
-  if (row.role !== expectedRole) {
+  try {
+    const url = `${API_BASE_URL}/api/v1/admins/auth/login`;
+
+    const res = await axios.post(url, { email, password });
+    const parsed = parseAdminLoginResponse(res.data);
+
+    if (!parsed) {
+      const body = res.data as { message?: string };
+      return {
+        ok: false,
+        code: "invalid",
+        message:
+          body?.message ??
+          "Login response was invalid. Please contact support.",
+      };
+    }
+
+    return {
+      ok: true,
+      data: parsed.data,
+      message: parsed.message,
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: { code?: string; message?: string } };
+      message?: string;
+    };
     return {
       ok: false,
-      code: "invalid",
-      message: "Use the correct app for this account.",
+      code: (err.response?.data?.code as LoginErrorCode) || "invalid",
+      message:
+        err.response?.data?.message ||
+        err.message ||
+        "Login failed. Please try again.",
     };
   }
-  if (row.role === "trainer" && row.status === "pending") {
+}
+
+export async function initializePayment(
+  email: string,
+  program: string,
+  options?: { callbackUrl?: string },
+) {
+  try {
+    const payload: Record<string, string> = { email, program };
+    if (options?.callbackUrl) {
+      payload.callback_url = options.callbackUrl;
+    }
+
+    const url =
+      typeof window !== "undefined"
+        ? "/api/payments/initialize"
+        : `${API_BASE_URL}/api/v1/payments/initialize`;
+
+    const res = await axios.post(url, payload);
+
     return {
-      ok: false,
-      code: "pending_approval",
-      message: "Your tutor account is pending approval.",
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
     };
-  }
-  if (row.status === "suspended") {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
     return {
-      ok: false,
-      code: "suspended",
-      message: "Your account is suspended.",
+      ok: false as const,
+      message: err.response?.data?.message || "Payment initialization failed.",
     };
   }
-  const user: AuthUser = {
-    id: row.id,
-    email: key,
-    firstName: row.firstName,
-    lastName: row.lastName,
-    role: row.role,
-    status: row.status,
+}
+
+export async function verifyPayment(reference: string) {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/api/v1/payments/verify`, {
+      params: { reference },
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
+    return {
+      ok: false as const,
+      message: err.response?.data?.message || "Payment verification failed.",
+    };
+  }
+}
+
+export async function createStudentProfile(data: {
+  day: string;
+  month: string;
+  year: number;
+  gender: string;
+  employment_status: string;
+  address: string;
+  state: string;
+  city: string;
+  photo: File;
+}) {
+  try {
+    const token = getStoredAuthToken();
+
+    const formData = new FormData();
+    appendProfileFormData(formData, {
+      dob: formatProfileDob(data.day, data.month, data.year),
+      gender: formatProfileGender(data.gender),
+      employment_status: formatProfileEmploymentStatus(data.employment_status),
+      address: data.address,
+      state: data.state,
+      city: data.city,
+      photo: data.photo,
+    });
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/profiles/uploads`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      message?: string;
+      response?: {
+        data?: {
+          message?: string;
+          errors?: Array<{ message?: string; path?: string }>;
+        };
+      };
+    };
+
+    const validationMessages =
+      err.response?.data?.errors
+        ?.map((item) => item.message)
+        .filter((message): message is string => Boolean(message?.trim())) ?? [];
+
+    return {
+      ok: false as const,
+      message:
+        validationMessages.join(". ") ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to create profile.",
+    };
+  }
+}
+
+export async function getStaffList(
+  page = 1,
+  limit = 10,
+  search = "",
+  status = "",
+  role?: "admin" | "tutor" | "trainer",
+  course = "",
+) {
+  try {
+    const token = getStoredAuthToken();
+
+    const params: Record<string, string | number> = { page, limit };
+
+    if (role) params.role = role;
+
+    if (search) params.search = search;
+    if (status && status !== "All") params.status = status;
+    if (course && course !== "All") params.course = course;
+
+    const res = await axios.get(`${API_BASE_URL}/api/v1/admins/staff`, {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch staff list.",
+    };
+  }
+}
+
+export async function getStudentList(
+  page = 1,
+  limit = 10,
+  search = "",
+  status = "",
+  role = "",
+  course = "",
+) {
+  try {
+    const token = getStoredAuthToken();
+
+    const params: Record<string, any> = { page, limit };
+
+    if (search) params.search = search;
+    if (status && status !== "All") params.status = status;
+    if (role && role !== "All") params.role = role;
+    if (course && course !== "All") params.course = course;
+
+    const res = await axios.get(`${API_BASE_URL}/api/v1/admins/students`, {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch student list.",
+    };
+  }
+}
+
+export async function getAssessmentsByProgram(
+  programId: string,
+  page = 1,
+  limit = 8,
+  status = "",
+  search = "",
+) {
+  try {
+    const token = getStoredAuthToken();
+    const trimmedProgramId = programId.trim();
+    if (!trimmedProgramId) {
+      return {
+        ok: false as const,
+        message: "Course id is required.",
+      };
+    }
+
+    const normalizedStatus = status.trim().toLowerCase();
+    const params: Record<string, string | number> = { page, limit };
+    if (
+      normalizedStatus &&
+      normalizedStatus !== "all" &&
+      normalizedStatus !== "all status" &&
+      normalizedStatus !== "all statuses"
+    ) {
+      params.status =
+        normalizedStatus === "archive" ? "archived" : normalizedStatus;
+    }
+    if (search.trim()) params.search = search.trim();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/staff/assessments/program/${trimmedProgramId}`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const body = res.data as Record<string, unknown> | null;
+    const payload =
+      body?.data && typeof body.data === "object" && !Array.isArray(body.data)
+        ? (body.data as Record<string, unknown>)
+        : (body ?? {});
+
+    const assessments = Array.isArray(payload.assessments)
+      ? payload.assessments
+      : Array.isArray(payload.items)
+        ? payload.items
+        : Array.isArray(payload)
+          ? payload
+          : [];
+
+    const paginationRaw =
+      payload.pagination && typeof payload.pagination === "object"
+        ? (payload.pagination as Record<string, unknown>)
+        : {};
+
+    const total =
+      typeof paginationRaw.total === "number"
+        ? paginationRaw.total
+        : assessments.length;
+    const totalPages =
+      typeof paginationRaw.totalPages === "number"
+        ? paginationRaw.totalPages
+        : total > 0
+          ? Math.max(1, Math.ceil(total / limit))
+          : 0;
+
+    return {
+      ok: true as const,
+      data: {
+        assessments,
+        pagination: {
+          page:
+            typeof paginationRaw.page === "number" ? paginationRaw.page : page,
+          limit:
+            typeof paginationRaw.limit === "number"
+              ? paginationRaw.limit
+              : limit,
+          offset:
+            typeof paginationRaw.offset === "number" ? paginationRaw.offset : 0,
+          total,
+          totalPages,
+          hasNextPage: Boolean(paginationRaw.hasNextPage),
+          hasPreviousPage: Boolean(paginationRaw.hasPreviousPage),
+        },
+      },
+      message:
+        typeof body?.message === "string"
+          ? body.message
+          : "Assessments fetched successfully.",
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch assessments.",
+    };
+  }
+}
+export async function getStaffAnalysis() {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/admins/staff/analysis`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message:
+        error.response?.data?.message || "Failed to fetch staff analysis.",
+    };
+  }
+}
+
+export async function getStudentDetails(userId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/admins/students/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch student list.",
+    };
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
+function readMeString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function mapStudentMeProgram(value: unknown) {
+  const row = asRecord(value);
+  if (!row) return null;
+
+  const id = readMeString(row.id ?? row._id);
+  if (!id) return null;
+
+  const cohortStartDate = readMeString(row.cohortStartDate ?? row.startDate);
+  const cohortEndDate = readMeString(row.cohortEndDate ?? row.endDate);
+
+  return {
+    id,
+    title: readMeString(row.title ?? row.name) || "Untitled course",
+    slug: readMeString(row.slug) || undefined,
+    description: readMeString(row.description) || undefined,
+    category: readMeString(row.category) || undefined,
+    programType: readMeString(row.programType) || undefined,
+    priceAmount:
+      typeof row.priceAmount === "number" ? row.priceAmount : undefined,
+    priceCurrency: readMeString(row.priceCurrency) || undefined,
+    cohortName: readMeString(row.cohortName) || undefined,
+    cohortCode: readMeString(row.cohortCode) || undefined,
+    cohortStartDate: cohortStartDate || undefined,
+    cohortEndDate: cohortEndDate || undefined,
+    startDate: cohortStartDate || undefined,
+    endDate: cohortEndDate || undefined,
+    capacity: typeof row.capacity === "number" ? row.capacity : undefined,
+    status: readMeString(row.status) || undefined,
+    assignedTutorIds: Array.isArray(row.assignedTutorIds)
+      ? row.assignedTutorIds.filter(
+          (id): id is string => typeof id === "string" && id.trim().length > 0,
+        )
+      : undefined,
+    duration: readMeString(row.duration) || undefined,
+    isLiveNow: Boolean(row.isLiveNow),
+    liveLesson: mapStudentMeLiveLesson(row.liveLesson),
   };
-  return { ok: true, user };
+}
+
+function mapStudentMeLiveLesson(value: unknown) {
+  const row = asRecord(value);
+  if (!row) return null;
+
+  const lessonId = readMeString(row.lessonId ?? row.id ?? row._id);
+  const programId = readMeString(row.programId);
+  if (!lessonId || !programId) return null;
+
+  return {
+    programId,
+    programTitle: readMeString(row.programTitle ?? row.courseName),
+    lessonId,
+    lessonTitle: readMeString(row.lessonTitle ?? row.title),
+    startsAt: readMeString(row.startsAt) || new Date().toISOString(),
+    durationMinutes:
+      typeof row.durationMinutes === "number" ? row.durationMinutes : undefined,
+    liveSessionUrl: readMeString(row.liveSessionUrl) || null,
+    zoomJoinUrl: readMeString(row.zoomJoinUrl) || null,
+  };
+}
+
+function parseStudentMePayload(raw: unknown) {
+  const root = asRecord(raw) ?? {};
+  const generalPrograms = Array.isArray(root.generalPrograms)
+    ? root.generalPrograms
+        .map(mapStudentMeProgram)
+        .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    : [];
+
+  const liveFromArray = Array.isArray(root.liveGeneralPrograms)
+    ? root.liveGeneralPrograms
+        .map(mapStudentMeLiveLesson)
+        .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    : [];
+
+  // Some responses only mark programs live on generalPrograms.isLiveNow / liveLesson.
+  const liveFromPrograms = generalPrograms
+    .map((program) => {
+      if (program.liveLesson) return program.liveLesson;
+      if (!program.isLiveNow) return null;
+      return null;
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  const liveByLessonId = new Map<string, (typeof liveFromArray)[number]>();
+  for (const item of [...liveFromArray, ...liveFromPrograms]) {
+    liveByLessonId.set(item.lessonId, item);
+  }
+  const liveGeneralPrograms = Array.from(liveByLessonId.values());
+  // Trust the API flag for live general sessions only.
+  const hasLiveGeneralProgram = root.hasLiveGeneralProgram === true;
+
+  return {
+    student: asRecord(root.student) as {
+      _id: string;
+      first_name?: string;
+      last_name?: string;
+      email?: string;
+      phone_number?: string;
+      role?: string;
+      status?: string;
+      isVerified?: boolean;
+      profileUploaded?: boolean;
+      program?: string;
+    } | null,
+    profile: root.profile ?? null,
+    program: mapStudentMeProgram(root.program),
+    generalPrograms,
+    liveGeneralPrograms: hasLiveGeneralProgram ? liveGeneralPrograms : [],
+    hasLiveGeneralProgram,
+  };
+}
+
+export async function getStudentPofile() {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(`${API_BASE_URL}/api/v1/students/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const payload =
+      res.data?.data && typeof res.data.data === "object"
+        ? res.data.data
+        : res.data;
+
+    return {
+      ok: true as const,
+      data: parseStudentMePayload(payload),
+      message: res.data?.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function updateStaffStatus(
+  userId: string,
+  status: "active" | "suspended" | "invited",
+) {
+  const token = getStoredAuthToken();
+
+  const res = await axios.patch(
+    `${API_BASE_URL}/api/v1/admins/staff/${userId}/status`,
+    { status },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return {
+    ok: true,
+    data: res.data.data,
+    message: res.data.message,
+  };
+}
+
+export async function updateStudentStatus(
+  userId: string,
+  status: "active" | "suspended",
+) {
+  const token = getStoredAuthToken();
+
+  const res = await axios.patch(
+    `${API_BASE_URL}/api/v1/admins/students/${userId}/status`,
+    { status },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return {
+    ok: true,
+    data: res.data.data,
+    message: res.data.message,
+  };
+}
+
+export async function assignRole({
+  programId,
+  tutorIds,
+}: {
+  programId: string;
+  tutorIds: string[];
+}) {
+  const token = getStoredAuthToken();
+
+  const res = await axios.patch(
+    `${API_BASE_URL}/api/v1/programs/${programId}/tutors`,
+    {
+      tutorIds,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return {
+    ok: true,
+    data: res.data.data,
+    message: res.data.message,
+  };
+}
+
+export async function createAssessment(data: {
+  program: string;
+  title: string;
+  module?: string;
+  instructions?: string;
+  dueDate?: string;
+  weight?: number;
+  submissionType?: "file" | "url";
+  submissionLink?: string;
+  referenceMaterialsMeta?: Array<{ name: string; type: string; url?: string }>;
+  files?: File[];
+  isDraft?: boolean;
+}) {
+  try {
+    const token = getStoredAuthToken();
+    const formData = new FormData();
+
+    formData.append("program", data.program);
+    formData.append("title", data.title);
+    if (data.module) formData.append("module", data.module);
+    formData.append("status", data.isDraft ? "draft" : "published");
+    if (data.instructions) formData.append("instructions", data.instructions);
+    if (data.dueDate) formData.append("dueDate", data.dueDate);
+    if (data.weight !== undefined)
+      formData.append("weight", String(data.weight));
+    const submissionType =
+      data.submissionType ??
+      (data.files && data.files.length
+        ? "file"
+        : data.submissionLink
+          ? "url"
+          : "url");
+    formData.append("submissionType", submissionType);
+    if (data.referenceMaterialsMeta) {
+      formData.append(
+        "referenceMaterialsMeta",
+        JSON.stringify(data.referenceMaterialsMeta),
+      );
+    }
+    if (data.files?.length) {
+      data.files.forEach((file) => formData.append("referenceMaterials", file));
+    }
+
+    if (data.submissionLink) {
+      formData.append("submissionLink", data.submissionLink);
+    }
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/staff/assessments/create`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to create assessment.",
+    };
+  }
+}
+
+export async function getClassroomModules(programId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/tutors/programs/${programId}/classroom/modules`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch modules.",
+    };
+  }
+}
+
+export async function getAssessmentById(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch assessment.",
+    };
+  }
+}
+
+export async function getStudentassignments(programId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/program/${programId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getStudentAssessmentById(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/${assessmentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch assessment.",
+    };
+  }
+}
+
+export async function archiveAssessment(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/archive`,
+      { assessmentId },
+
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return { ok: true as const, message: res.data.message };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to archive assessment.",
+    };
+  }
+}
+
+export async function updateAssessment(
+  assessmentId: string,
+  data: {
+    title?: string;
+    module?: string;
+    instructions?: string;
+    submissionType?: "file" | "url";
+    submissionLink?: string;
+    dueDate?: string;
+    weight?: number;
+    files?: File[];
+  },
+) {
+  try {
+    const token = getStoredAuthToken();
+    const formData = new FormData();
+
+    if (data.title) formData.append("title", data.title);
+    if (data.module) formData.append("module", data.module);
+    if (data.instructions) formData.append("instructions", data.instructions);
+    if (data.submissionType)
+      formData.append("submissionType", data.submissionType);
+    if (data.submissionLink)
+      formData.append("submissionLink", data.submissionLink);
+    if (data.dueDate) formData.append("dueDate", data.dueDate);
+    if (data.weight !== undefined)
+      formData.append("weight", String(data.weight));
+    if (data.files?.length) {
+      data.files.forEach((file) => formData.append("referenceMaterials", file));
+    }
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/publish`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to update assessment.",
+    };
+  }
 }
 
 export const SESSION_STORAGE_KEY = "ssu_session";
@@ -96,7 +1297,7 @@ export const SESSION_STORAGE_KEY = "ssu_session";
 export function readSession(): AuthUser | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = readPortalSessionRaw();
     if (!raw) return null;
     return JSON.parse(raw) as AuthUser;
   } catch {
@@ -104,11 +1305,193 @@ export function readSession(): AuthUser | null {
   }
 }
 
+export async function submitAssessment(
+  assessmentId: string,
+  data: {
+    submissionType: "file" | "link";
+    file?: File;
+    submissionLink?: string;
+    comment?: string;
+  },
+) {
+  try {
+    const token = getStoredAuthToken();
+    const formData = new FormData();
+
+    formData.append("submissionType", data.submissionType);
+    if (data.file) formData.append("file", data.file);
+    if (data.submissionLink)
+      formData.append("submissionLink", data.submissionLink);
+    if (data.comment) formData.append("comment", data.comment);
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/students/assessments/submit/${assessmentId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to submit assessment.",
+    };
+  }
+}
+
+export async function undoAssessmentSubmission(submissionId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.delete(
+      `${API_BASE_URL}/api/v1/students/assessments/undo/${submissionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return { ok: true as const, message: res.data.message };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to undo submission.",
+    };
+  }
+}
+
+export async function gradeAssessmentSubmission(
+  submissionId: string,
+  studentId: string,
+  data: {
+    score: number;
+    feedback?: string;
+  },
+) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/staff/assessments/grade/${submissionId}/${studentId}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to grade submission.",
+    };
+  }
+}
+
+export async function getMySubmissions() {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/submissions`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to fetch submissions.",
+    };
+  }
+}
+
+export async function getStudentOverallProgress(programId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/v1/students/assessments/overall/${programId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message,
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message:
+        error.response?.data?.message || "Failed to fetch overall progress.",
+    };
+  }
+}
+
+export async function getAdminDashboard() {
+  const token = getStoredAuthToken();
+
+  const { data } = await axios.get(`${API_BASE_URL}/api/v1/admins/dashboard`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data.data;
+}
+
+export function isStudentAuthenticated(): boolean {
+  if (typeof window === "undefined") return false;
+  const session = readSession();
+  const token = getStoredAuthToken();
+  return Boolean(session?.email && token);
+}
+
+export function clearStudentAuth(): void {
+  if (typeof window === "undefined") return;
+  writeSession(null);
+  clearPortalAuthStorage();
+  localStorage.removeItem("reset-email");
+  clearProfileSetupDismissed();
+}
+
 export function writeSession(user: AuthUser | null): void {
   if (typeof window === "undefined") return;
   if (!user) {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+    writePortalSessionRaw(null);
+    writePortalTokenRaw(null);
     return;
   }
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+  writePortalSessionRaw(JSON.stringify(user));
+  if (user.accessToken) {
+    writePortalTokenRaw(user.accessToken);
+  }
 }

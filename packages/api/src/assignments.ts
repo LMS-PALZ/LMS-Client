@@ -1,15 +1,12 @@
 import type { AssignmentListItem } from "@ssu/types";
-import { mockAssignments } from "./mock/data";
-
-function delay<T>(value: T, ms = 200): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), ms));
-}
+import { studentDashboardApi } from "./student-dashboard";
 
 export const assignmentsApi = {
-  listForStudent: async (): Promise<AssignmentListItem[]> =>
-    delay(mockAssignments),
+  listForStudent: async (): Promise<AssignmentListItem[]> => {
+    return studentDashboardApi.getAssignments();
+  },
   getById: async (id: string): Promise<AssignmentListItem | null> => {
-    const a = mockAssignments.find((x) => x.id === id) ?? null;
-    return delay(a);
+    const list = await studentDashboardApi.getAssignments();
+    return list.find((item) => item.id === id) ?? null;
   },
 };

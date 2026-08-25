@@ -13,10 +13,12 @@
   },
   "scripts": {
     "lint": "oxlint src --deny-warnings",
+    "typecheck": "tsc --noEmit",
     "test": "echo skip"
   },
   "dependencies": {
-    "@ssu/types": "file:../types"
+    "@ssu/types": "file:../types",
+    "axios": "^1.7.9"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

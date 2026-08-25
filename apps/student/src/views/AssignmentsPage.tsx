@@ -1,105 +1,103 @@
 "use client";
 
-import { useStudentAssignments } from "@ssu/queries";
-import {
-  AlertBanner,
-  AssignmentCard,
-  Badge,
-  Button,
-  EmptyState,
-  PageHeader,
-  Skeleton,
-} from "@ssu/ui";
-import { ClipboardList } from "lucide-react";
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { cn } from "@ssu/utils";
+import { CalendarDays, NotebookText, SquareCheckBig } from "lucide-react";
+import { EmptyState } from "@ssu/ui";
+import { Megaphone } from "lucide-react";
 
-type Filter = "all" | "not-started" | "submitted" | "graded" | "overdue";
+export interface Assignment {
+  id: number;
+  title: string;
+  topic: string;
+  score: number;
+  date: string;
+  due?: boolean;
+}
 
-export function AssignmentsPage() {
-  const [filter, setFilter] = useState<Filter>("all");
-  const q = useStudentAssignments();
+export interface AssignmentsProps {
+  assignments?: Assignment[];
+  title?: string;
+  showViewMore?: boolean;
+  className?: string;
+  onViewMore?: () => void;
+}
 
-  const grouped = useMemo(() => {
-    const data = q.data ?? [];
-    const filtered =
-      filter === "all"
-        ? data
-        : data.filter((a) =>
-            filter === "not-started"
-              ? a.status === "not-started"
-              : a.status === filter,
-          );
-    const map = new Map<string, typeof data>();
-    for (const a of filtered) {
-      const list = map.get(a.courseName) ?? [];
-      list.push(a);
-      map.set(a.courseName, list);
-    }
-    return map;
-  }, [q.data, filter]);
-
+export function Assignments({
+  assignments = [],
+  title = "Assignments",
+  showViewMore = true,
+  className,
+  onViewMore,
+}: AssignmentsProps) {
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Assignments"
-        breadcrumbs={[{ label: "Student" }, { label: "Assignments" }]}
-      />
-      {q.isError && (
-        <AlertBanner variant="error">Could not load assignments.</AlertBanner>
-      )}
-      <div className="flex flex-wrap gap-2">
-        {(
-          ["all", "not-started", "submitted", "graded", "overdue"] as const
-        ).map((f) => (
-          <Button
-            key={f}
+    <section
+      className={cn("mt-10 rounded-[28px] bg-[#FCFCFC] p-4 md:p-6", className)}
+    >
+      <div className="mb-6 flex items-center gap-4">
+        <h2 className="text-[17px] font-semibold text-[#1D1D1D]">{title}</h2>
+
+        {showViewMore && (
+          <button
             type="button"
-            variant={filter === f ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setFilter(f)}
+            onClick={onViewMore}
+            className="text-[14px] font-medium text-[#4B7F52] transition hover:opacity-80"
           >
-            {f === "all" ? "All" : f.replace("-", " ")}
-          </Button>
-        ))}
+            View more
+          </button>
+        )}
       </div>
-      {q.isLoading ? (
-        <Skeleton className="h-40 w-full rounded-xl" />
-      ) : !q.data?.length ? (
-        <EmptyState icon={ClipboardList} title="No assignments" />
+
+      {assignments.length === 0 ? (
+        <EmptyState
+          icon={Megaphone}
+          title="You don’t have any assignment yet"
+          description="When you do, they’ll show up here"
+        />
       ) : (
-        <div className="space-y-8">
-          {[...grouped.entries()].map(([course, rows]) => (
-            <section key={course}>
-              <div className="mb-2 flex items-center gap-2">
-                <h2 className="text-h3 text-neutral-900">{course}</h2>
-                <Badge variant="default">{rows.length}</Badge>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {assignments.map((assignment) => (
+            <div
+              key={assignment.id}
+              className="rounded-[18px] bg-[#F7F7F7] p-5"
+            >
+              <h3 className="text-[15px] font-medium leading-[24px] text-[#1D1D1D]">
+                {assignment.title}
+              </h3>
+
+              <div className="my-5 h-[1px] w-full bg-[#E5E7EB]" />
+
+              {/* Topic */}
+              <div className="flex items-center gap-2 text-[#6B7280]">
+                <NotebookText size={14} />
+
+                <span className="text-[14px]">{assignment.topic}</span>
               </div>
-              <ul className="space-y-3">
-                {rows.map((a) => (
-                  <li key={a.id}>
-                    <AssignmentCard
-                      title={a.title}
-                      courseName={a.courseName}
-                      dueAt={a.dueAt}
-                      overdue={a.status === "overdue"}
-                      statusVariant={
-                        a.status === "not-started" ? "not-started" : a.status
-                      }
-                      statusLabel={a.status.replace("-", " ")}
-                      action={
-                        <Button variant="primary" size="sm" asChild>
-                          <Link href={`/assignments/${a.id}`}>Open</Link>
-                        </Button>
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
+
+              <div className="mt-3 flex items-center gap-2 text-[#6B7280]">
+                <SquareCheckBig size={14} />
+
+                <span className="text-[14px]">{assignment.score}</span>
+              </div>
+
+              <div className="mt-3 flex items-center gap-3">
+                <div className="flex items-center gap-2 text-[#6B7280]">
+                  <CalendarDays size={14} />
+
+                  <span className="text-[14px]">{assignment.date}</span>
+                </div>
+
+                {assignment.due && (
+                  <div className="rounded-full bg-[#FFD9D4] px-3 py-1 text-[12px] font-medium text-[#D14B3D]">
+                    Due
+                  </div>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
+
+export default Assignments;

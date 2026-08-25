@@ -22,6 +22,7 @@
     --sidebar-width: 240px;
     --sidebar-width-collapsed: 64px;
     --header-height: 64px;
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   }
 
   * {

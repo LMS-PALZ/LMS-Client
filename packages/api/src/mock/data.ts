@@ -2,7 +2,7 @@ import type {
   AssignmentListItem,
   CourseSummary,
   LiveSessionItem,
-  NotificationDto,
+  StudentStat,
 } from "@ssu/types";
 
 export const mockCourses: CourseSummary[] = [
@@ -23,9 +23,26 @@ export const mockCourses: CourseSummary[] = [
 export const mockSessions: LiveSessionItem[] = [
   {
     id: "s1",
-    title: "Live Q&A",
-    courseName: "Web Foundations",
+    title: "Responsive Layouts with CSS Grid & Flexbox",
+    courseName: "HTML & CSS Foundations",
     startsAt: new Date(Date.now() + 3600000).toISOString(),
+    isLive: true,
+    meetingUrl: "https://meet.google.com/nfk-vzbi-yhm",
+    description:
+      "Live workshop on semantic HTML, Flexbox, and CSS Grid for responsive landing pages.",
+  },
+  {
+    id: "s2",
+    title: "React Components & useState",
+    courseName: "React & Component Design",
+    startsAt: new Date(Date.now() + 86400000 * 2).toISOString(),
+    isLive: false,
+  },
+  {
+    id: "s3",
+    title: "REST APIs & Deployment Walkthrough",
+    courseName: "APIs, Auth & Deployment",
+    startsAt: new Date(Date.now() + 86400000 * 3).toISOString(),
     isLive: false,
   },
 ];
@@ -33,11 +50,30 @@ export const mockSessions: LiveSessionItem[] = [
 export const mockAssignments: AssignmentListItem[] = [
   {
     id: "a1",
-    title: "Module 1 reflection",
+    title: "Build a Responsive Landing Page",
     courseId: "c1",
-    courseName: "Web Foundations",
+    courseName: "HTML & CSS Foundations",
+    moduleLabel: "Layout & Responsive CSS",
     dueAt: new Date(Date.now() + 86400000).toISOString(),
     status: "not-started",
+  },
+  {
+    id: "a3",
+    title: "Component Library Mini-Project",
+    courseId: "c1",
+    courseName: "React & Component Design",
+    moduleLabel: "React Fundamentals",
+    dueAt: new Date(Date.now() + 86400000).toISOString(),
+    status: "not-started",
+  },
+  {
+    id: "a4",
+    title: "Interactive Form with Validation",
+    courseId: "c1",
+    courseName: "JavaScript & the DOM",
+    moduleLabel: "DOM & Events",
+    dueAt: new Date(Date.now() - 3600000).toISOString(),
+    status: "overdue",
   },
   {
     id: "a2",
@@ -49,11 +85,27 @@ export const mockAssignments: AssignmentListItem[] = [
   },
 ];
 
-export const mockNotifications: NotificationDto[] = [
+import type {} from "@ssu/types";
+
+export const studentStats: StudentStat[] = [
   {
-    id: "n1",
-    message: "Your submission was graded.",
-    createdAt: new Date().toISOString(),
-    read: false,
+    id: "1",
+    title: "Total enrolled",
+    value: 427,
+    description: "Across 5 program",
+  },
+
+  {
+    id: "2",
+    title: "Active this week",
+    value: 364,
+    description: "85% of all students",
+  },
+
+  {
+    id: "3",
+    title: "Flagged Students",
+    value: 4,
+    description: "Missed 3+ live classes",
   },
 ];

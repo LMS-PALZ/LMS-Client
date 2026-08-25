@@ -1,5 +1,5 @@
-import { CoursesPage } from "@/views/CoursesPage";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <CoursesPage />;
+  redirect("/classroom");
 }

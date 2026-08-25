@@ -10,10 +10,17 @@
     "build": "next build",
     "start": "next start -p 5175",
     "lint": "oxlint src --deny-warnings --react-plugin --jest-plugin",
+    "typecheck": "tsc --noEmit",
     "test": "jest"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@hookform/resolvers": "^3.9.1",
+    "@netlify/plugin-nextjs": "^5.9.0",
     "@ssu/api": "file:../../packages/api",
     "@ssu/config": "file:../../packages/config",
     "@ssu/queries": "file:../../packages/queries",

@@ -2,27 +2,43 @@
 
 import {
   DashboardLayout,
-  NavigationSidebar,
-  type NavigationSidebarItem,
+  StudentSidebar,
+  useSidebarCollapsed,
+  HeaderBar,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
+import { useSession } from "@ssu/queries";
+import { recordAuditEvent } from "@/lib/audit-log";
 import {
-  BookOpen,
   CalendarDays,
-  ClipboardList,
-  LayoutDashboard,
+  NotebookText,
+  GraduationCap,
+  HelpCircle,
+  House,
+  User,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { HeaderBar } from "../components/HeaderBar";
+import { ProfileSetupProvider } from "@/contexts/ProfileSetupContext";
+import { getStudentPageTitle } from "@/lib/studentRoutes";
 
-const items: NavigationSidebarItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/assignments", label: "Assignments", icon: ClipboardList },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
+const mainItems = [
+  { href: "/home", label: "Home", icon: House },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ];
+
+const learningItems = [
+  { href: "/classroom", label: "My Classroom", icon: GraduationCap },
+  { href: "/assessments", label: "Assessment", icon: NotebookText },
+];
+
+const supportItem = {
+  href: "/support",
+  label: "Support",
+  icon: HelpCircle,
+};
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   return (
@@ -32,26 +48,54 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   );
 }
 
-export function StudentLayout({ children }: { children: ReactNode }) {
+function StudentSidebarWrapper() {
   const pathname = usePathname();
+  const { toggle } = useSidebarCollapsed();
 
   return (
-    <DashboardLayout
-      sidebar={
-        <NavigationSidebar
-          pathname={pathname}
-          items={items}
-          LinkComponent={RouterLink}
-          header={
-            <span className="text-white font-bold text-h4 truncate px-1">
-              SSU Student
-            </span>
-          }
-        />
-      }
-      header={<HeaderBar />}
-    >
-      {children}
-    </DashboardLayout>
+    <StudentSidebar
+      pathname={pathname}
+      mainItems={mainItems}
+      learningItems={learningItems}
+      supportItem={supportItem}
+      logoSrc="/firstlogo.png"
+      LinkComponent={RouterLink}
+      onToggleCollapse={toggle}
+    />
+  );
+}
+
+export function StudentLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
+  const { data: user } = useSession();
+
+  const handleBeforeLogout = async () => {
+    if (user) {
+      await recordAuditEvent("sign_out", user);
+    }
+  };
+
+  return (
+    <ProfileSetupProvider>
+      <DashboardLayout
+        variant="student"
+        fullWidthMain={isSessionPage}
+        sidebar={<StudentSidebarWrapper />}
+        header={
+          <HeaderBar
+            pageTitle={getStudentPageTitle(pathname)}
+            onBeforeLogout={handleBeforeLogout}
+            menuItems={[
+              { label: "Account", href: "/profile", icon: User },
+              { label: "Certificate", href: "/certificate", icon: Award },
+              { label: "Support", href: "/support", icon: HelpCircle },
+            ]}
+          />
+        }
+      >
+        {children}
+      </DashboardLayout>
+    </ProfileSetupProvider>
   );
 }

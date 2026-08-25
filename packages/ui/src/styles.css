@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --color-brand-green: #0c693a;
+    --color-brand-green: #0d6939;
     --color-brand-green-light: #39b44b;
     --color-brand-amber: #f49221;
     --color-surface: #ffffff;
@@ -12,7 +12,7 @@
     --color-surface-overlay: #f1f5f9;
     --color-border: #e2e8f0;
     --color-border-strong: #cbd5e1;
-    --color-text-primary: #0f172a;
+    --color-text-primary: #f8f9fa;
     --color-text-secondary: #475569;
     --color-text-muted: #94a3b8;
     --color-text-on-dark: #ffffff;
@@ -22,7 +22,7 @@
     --sidebar-width: 240px;
     --sidebar-width-collapsed: 64px;
     --header-height: 64px;
-    --font-sans: system-ui, sans-serif;
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   }
 
   * {

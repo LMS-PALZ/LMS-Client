@@ -1,5 +1,9 @@
-import { ClassroomPage } from "@/views/ClassroomPage";
+"use client";
 
-export default function Page() {
-  return <ClassroomPage />;
+import { useClassroomCourse } from "@/contexts/ClassroomCourseContext";
+import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
+
+export default function ClassroomSessionOverviewPage() {
+  const { course } = useClassroomCourse();
+  return <ClassroomOverviewPage course={course} />;
 }

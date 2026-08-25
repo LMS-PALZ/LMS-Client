@@ -1,5 +1,7 @@
 export const sessionKey = ["session"] as const;
 
+export const studentProfileKey = ["student", "profile"] as const;
+
 export const courseKeys = {
   all: ["courses"] as const,
   enrolled: () => [...courseKeys.all, "enrolled"] as const,
@@ -15,6 +17,27 @@ export const assignmentKeys = {
 export const notificationKeys = {
   all: ["notifications"] as const,
   list: () => [...notificationKeys.all, "list"] as const,
+};
+
+export const adminProgramKeys = {
+  all: ["admin-programs"] as const,
+  list: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  }) => [...adminProgramKeys.all, "list", params ?? {}] as const,
+  detail: (id: string) => [...adminProgramKeys.all, "detail", id] as const,
+  applicants: (programId: string, params?: { page?: number; limit?: number }) =>
+    [...adminProgramKeys.all, "applicants", programId, params ?? {}] as const,
+};
+
+export const programClassroomKeys = {
+  all: ["program-classroom"] as const,
+  modules: (programId: string) =>
+    [...programClassroomKeys.all, "modules", programId] as const,
+  classroom: (programId: string) =>
+    [...programClassroomKeys.all, "classroom", programId] as const,
 };
 
 export const adminKeys = {

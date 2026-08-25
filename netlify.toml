@@ -1,0 +1,37 @@
+# Monorepo — one branch (`dev`), two Netlify sites.
+#
+# Both sites use THIS file. They differ by environment variables + UI publish path:
+#
+# STUDENT site (ssuhub* — e.g. ssuhubstg):
+#   UI Base / Package:  (both empty)
+#   UI Publish:         apps/student/.next
+#   Env var (optional): NETLIFY_APP=student
+#
+# ADMIN site (ssuadmin* — e.g. ssuadmin):
+#   UI Base / Package:  (both empty)
+#   UI Publish:         apps/admin/.next
+#   Env var (optional): NETLIFY_APP=admin
+
+[build]
+  command = "npm ci && bash scripts/netlify-build.sh"
+  # Publish path is set per site in the Netlify UI:
+  #   student → apps/student/.next
+  #   admin   → apps/admin/.next
+
+[build.environment]
+  NODE_VERSION = "24.14.0"
+  # Required on BOTH admin and student Netlify sites for in-app Zoom join:
+  # ZOOM_MEETING_SDK_CLIENT_ID
+  # ZOOM_MEETING_SDK_CLIENT_SECRET
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Cross-origin isolation enables SharedArrayBuffer, which Zoom needs for gallery
+# view. A nested iframe is only isolated when the top-level document is too, so
+# this applies app-wide. Keep in sync with each app's next.config.ts headers().
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "credentialless"

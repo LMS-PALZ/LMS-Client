@@ -1,0 +1,15 @@
+{
+  "name": "@ssu/store",
+  "version": "0.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

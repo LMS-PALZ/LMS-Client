@@ -7,10 +7,24 @@
   },
   "exports": {
     "./tailwind": "./tailwind/tailwind.config.ts",
-    "./tsconfig/base.json": "./tsconfig/base.json"
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./site-metadata": "./src/site-metadata.ts",
+    "./env": "./src/env.ts",
+    "./zoom-signature": "./src/zoom-signature.ts",
+    "./payment-callback": "./src/payment-callback.ts",
+    "./routes": "./src/routes/index.ts",
+    "./routes/student": "./src/routes/student.ts",
+    "./routes/admin": "./src/routes/admin.ts",
+    "./portal-paths": "./src/portal-paths.ts"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "jsrsasign": "^11.1.3"
   }
 }

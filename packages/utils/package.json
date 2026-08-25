@@ -12,6 +12,7 @@
   },
   "scripts": {
     "lint": "oxlint src --deny-warnings",
+    "typecheck": "tsc --noEmit",
     "test": "echo skip"
   },
   "dependencies": {

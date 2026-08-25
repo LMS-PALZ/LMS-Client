@@ -11,6 +11,7 @@ import {
   Input,
   Textarea,
 } from "@ssu/ui";
+import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
@@ -24,6 +25,7 @@ export function SubmissionForm({
   assignmentId: string;
   disabled?: boolean;
 }) {
+  const { ensureProfileForAction } = useProfileSetup();
   const [tab, setTab] = useState<Tab>("file");
   const [file, setFile] = useState<File | null>(null);
   const [done, setDone] = useState(false);
@@ -40,6 +42,7 @@ export function SubmissionForm({
   });
 
   const submitFile = async () => {
+    if (!ensureProfileForAction()) return;
     setError(null);
     if (!file) {
       setError("Choose a file first.");
@@ -50,6 +53,7 @@ export function SubmissionForm({
   };
 
   const onLink = linkForm.handleSubmit(async (values) => {
+    if (!ensureProfileForAction()) return;
     setError(null);
     await submissionsApi.submit({
       assignmentId,
@@ -60,6 +64,7 @@ export function SubmissionForm({
   });
 
   const onText = textForm.handleSubmit(async (values) => {
+    if (!ensureProfileForAction()) return;
     setError(null);
     await submissionsApi.submit({
       assignmentId,

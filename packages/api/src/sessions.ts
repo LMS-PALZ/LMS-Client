@@ -1,14 +1,12 @@
 import type { LiveSessionItem } from "@ssu/types";
-import { mockSessions } from "./mock/data";
-
-function delay<T>(value: T, ms = 200): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), ms));
-}
+import { studentDashboardApi } from "./student-dashboard";
 
 export const sessionsApi = {
-  listUpcoming: async (): Promise<LiveSessionItem[]> => delay(mockSessions),
+  listUpcoming: async (): Promise<LiveSessionItem[]> => {
+    return studentDashboardApi.getSessions();
+  },
   getById: async (sessionId: string): Promise<LiveSessionItem | null> => {
-    const s = mockSessions.find((x) => x.id === sessionId) ?? null;
-    return delay(s);
+    const sessions = await studentDashboardApi.getSessions();
+    return sessions.find((session) => session.id === sessionId) ?? null;
   },
 };

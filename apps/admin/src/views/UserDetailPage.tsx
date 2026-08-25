@@ -1,7 +1,14 @@
 "use client";
 
+import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminUser } from "@ssu/queries";
-import { AlertBanner, Badge, Button, PageHeader, Skeleton } from "@ssu/ui";
+import {
+  AlertBanner,
+  Badge,
+  Button,
+  DetailPageSkeleton,
+  PageHeader,
+} from "@ssu/ui";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -9,7 +16,7 @@ export function UserDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : "";
   const q = useAdminUser(id);
-  if (q.isLoading) return <Skeleton className="h-40 w-full rounded-xl" />;
+  if (q.isLoading) return <DetailPageSkeleton />;
   if (q.isError || !q.data)
     return <AlertBanner variant="error">User not found.</AlertBanner>;
   const u = q.data;
@@ -17,10 +24,13 @@ export function UserDetailPage() {
     <div className="space-y-6">
       <PageHeader
         title={`${u.firstName} ${u.lastName}`}
-        breadcrumbs={[{ label: "Users", href: "/users" }, { label: u.email }]}
+        breadcrumbs={[
+          { label: "Users", href: adminPath("/users") },
+          { label: u.email },
+        ]}
         action={
           <Button variant="secondary" size="sm" asChild>
-            <Link href="/users">Back</Link>
+            <Link href={adminPath("/users")}>Back</Link>
           </Button>
         }
       />

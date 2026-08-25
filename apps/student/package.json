@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start -p 5173",
     "lint": "oxlint src --deny-warnings --react-plugin --jest-plugin",
+    "typecheck": "tsc --noEmit",
     "test": "jest"
   },
   "dependencies": {
@@ -19,10 +20,12 @@
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@hookform/resolvers": "^3.9.1",
+    "@netlify/plugin-nextjs": "^5.9.0",
     "@ssu/api": "file:../../packages/api",
     "@ssu/config": "file:../../packages/config",
     "@ssu/queries": "file:../../packages/queries",
     "@ssu/schema": "file:../../packages/schema",
+    "@ssu/store": "file:../../packages/store",
     "@ssu/types": "file:../../packages/types",
     "@ssu/ui": "file:../../packages/ui",
     "@ssu/utils": "file:../../packages/utils",
@@ -32,6 +35,7 @@
     "next": "^16.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.5",
     "react-hook-form": "^7.54.2",
     "zod": "^3.24.1"
   },

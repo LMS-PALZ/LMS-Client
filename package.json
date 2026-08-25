@@ -1,6 +1,8 @@
 {
   "name": "ssu-lms",
+  "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.13.0",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -8,21 +10,34 @@
   "scripts": {
     "dev": "npm run dev -w @ssu/student",
     "dev:student": "npm run dev -w @ssu/student",
-    "dev:tutor": "npm run dev -w @ssu/tutor",
     "dev:admin": "npm run dev -w @ssu/admin",
-    "build": "npm run build -ws --if-present",
-    "lint": "oxlint . --deny-warnings --react-plugin --jest-plugin",
-    "typecheck": "tsc --noEmit -p packages/types/tsconfig.json && tsc --noEmit -p packages/utils/tsconfig.json && tsc --noEmit -p packages/schema/tsconfig.json && tsc --noEmit -p packages/api/tsconfig.json && tsc --noEmit -p packages/queries/tsconfig.json && tsc --noEmit -p packages/ui/tsconfig.json && tsc --noEmit -p apps/student/tsconfig.json && tsc --noEmit -p apps/tutor/tsconfig.json && tsc --noEmit -p apps/admin/tsconfig.json",
-    "verify": "npm run lint && npm run typecheck && npm run test --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "build": "turbo run build",
+    "build:student": "turbo run build --filter=@ssu/student",
+    "build:admin": "turbo run build --filter=@ssu/admin",
+    "build:qa": "turbo run build --filter=@ssu/admin --filter=@ssu/student",
+    "lint": "turbo run lint && oxlint . --deny-warnings --react-plugin --jest-plugin",
+    "typecheck": "turbo run typecheck",
+    "verify": "npm run lint && npm run typecheck && npm run test",
+    "test": "turbo run test",
     "storybook": "npm run storybook -w @ssu/ui",
     "prepare": "husky"
   },
+  "dependencies": {
+    "@netlify/plugin-nextjs": "^5.9.0",
+    "axios": "^1.16.0",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.14.0",
+    "react-icons": "^5.6.0"
+  },
   "devDependencies": {
+    "@next/env": "^16.3.0",
+    "@types/jsrsasign": "^10.5.15",
+    "@types/node": "^25.7.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
     "oxlint": "^1.61.0",
     "prettier": "^3.4.2",
+    "turbo": "^2.5.4",
     "typescript": "^5.7.2"
   },
   "lint-staged": {
@@ -32,9 +47,6 @@
     "apps/student/**/*.{ts,tsx}": [
       "oxlint --fix --deny-warnings --react-plugin --jest-plugin"
     ],
-    "apps/tutor/**/*.{ts,tsx}": [
-      "oxlint --fix --deny-warnings --react-plugin --jest-plugin"
-    ],
     "apps/admin/**/*.{ts,tsx}": [
       "oxlint --fix --deny-warnings --react-plugin --jest-plugin"
     ],
@@ -42,7 +54,6 @@
       "oxlint --fix --deny-warnings --react-plugin --vitest-plugin"
     ]
   },
-  "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=24.14.0"
   }

@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AuthUser } from "@ssu/types";
-import { readSession, writeSession } from "@ssu/api";
+import { clearStudentAuth, readSession, writeSession } from "@ssu/api";
+import { useSignupStore } from "@ssu/store";
 import { useSyncExternalStore } from "react";
-import { sessionKey } from "./keys";
+import { notificationKeys, sessionKey, studentProfileKey } from "./keys";
+import { mutationToast } from "./notify";
 
-/** True only after client hydration so server HTML matches the first client paint (localStorage is unreadable on the server). */
 function useIsClient() {
   return useSyncExternalStore(
     () => () => {},
@@ -25,7 +26,6 @@ export function useSession() {
 
   return {
     ...query,
-    /** True until the browser has hydrated and the session query has finished its initial fetch. */
     isLoading: !isClient || query.isLoading,
   };
 }
@@ -33,9 +33,13 @@ export function useSession() {
 export function useLogout() {
   const qc = useQueryClient();
   return () => {
-    writeSession(null);
+    clearStudentAuth();
+    useSignupStore.getState().clearUser();
+    qc.setQueryData(sessionKey, null);
     void qc.invalidateQueries({ queryKey: sessionKey });
-    void qc.setQueryData(sessionKey, null);
+    void qc.invalidateQueries({ queryKey: studentProfileKey });
+    void qc.invalidateQueries({ queryKey: notificationKeys.all });
+    mutationToast.info("You have been logged out");
   };
 }
 

@@ -19,15 +19,23 @@ export function formatDate(
   return new Intl.DateTimeFormat(undefined, options).format(d);
 }
 
+export function formatDateDDMMYYYY(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 export function truncate(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
   return `${str.slice(0, Math.max(0, maxLength - 1))}…`;
 }
 
-export function getInitials(firstName: string, lastName: string): string {
-  const a = firstName.trim().charAt(0);
-  const b = lastName.trim().charAt(0);
-  return `${a}${b}`.toUpperCase() || "?";
+export function getInitials(firstName?: string, lastName?: string): string {
+  const a = firstName?.trim()?.charAt(0) ?? "";
+  const b = lastName?.trim()?.charAt(0) ?? "";
+
+  return (a + b).toUpperCase() || "?";
 }
 
 const units = ["B", "KB", "MB", "GB"] as const;

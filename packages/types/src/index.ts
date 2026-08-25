@@ -1,9 +1,14 @@
-export type UserRole = "student" | "trainer" | "admin";
+export type StaffPortalRole = "super_admin" | "admin" | "tutor" | "trainer";
+export type UserRole = "students" | StaffPortalRole;
 
 export type UserStatus = "active" | "pending" | "suspended";
 
 export type AssignmentStatus =
   | "not-started"
+  | "published"
+  | "draft"
+  | "closed"
+  | "archive"
   | "submitted"
   | "graded"
   | "returned"
@@ -18,6 +23,7 @@ export interface AuthUser {
   lastName: string;
   role: UserRole;
   status: string;
+  accessToken: string;
 }
 
 export interface CourseSummary {
@@ -28,12 +34,68 @@ export interface CourseSummary {
   progressPercent: number;
 }
 
+export type SessionDisplayStatus = "live" | "upcoming" | "ended" | "countdown";
+
 export interface LiveSessionItem {
   id: string;
   title: string;
   courseName: string;
   startsAt: string;
   isLive: boolean;
+  endsAt?: string;
+  meetingUrl?: string;
+  description?: string;
+  /** Present when the session belongs to a non-primary (e.g. general) program. */
+  programId?: string;
+  zoomJoinUrl?: string;
+}
+
+export type {
+  StudentMe,
+  StudentMeLiveGeneralProgram,
+  StudentMeLiveLesson,
+  StudentMeProgram,
+  StudentMeStudent,
+} from "./student-me";
+
+export interface StudentProgress {
+  overallScorePercent: number;
+  enrolledProgramTitle: string;
+}
+
+export interface GoogleClassroomCourse {
+  id: string;
+  name: string;
+  section?: string;
+  description?: string;
+  courseState: string;
+  alternateLink?: string;
+}
+
+export interface GoogleClassroomCourseWork {
+  id: string;
+  courseId: string;
+  title: string;
+  dueAt?: string;
+  maxPoints?: number;
+  workType: string;
+  alternateLink?: string;
+}
+
+export interface CurriculumWeek {
+  id: string;
+  title: string;
+  subtitle?: string;
+  lessons: CurriculumLesson[];
+}
+
+export interface CurriculumLesson {
+  id: string;
+  title: string;
+  type: ModuleType;
+  scheduledAt?: string;
+  completed: boolean;
+  sessionId?: string;
 }
 
 export interface AssignmentListItem {
@@ -43,11 +105,213 @@ export interface AssignmentListItem {
   courseName: string;
   dueAt: string;
   status: AssignmentStatus;
+  moduleLabel?: string;
+  weightPercent?: number;
+  scoreDisplay?: string;
 }
+
+export type { AvailableProgram } from "./programs";
+export type {
+  AdminProgram,
+  AdminProgramListResponse,
+  CreateProgramPayload,
+  ProgramStatus,
+  UpdateProgramStatusPayload,
+} from "./admin-program";
+export type {
+  AdminTransaction,
+  AdminTransactionDetail,
+  AdminTransactionListMeta,
+  AdminTransactionListResult,
+  AdminTransactionPagination,
+  TransactionStatus,
+} from "./admin-transaction";
+export type {
+  ProgramApplicant,
+  ProgramApplicantStatus,
+  ProgramApplicantsResponse,
+} from "./program-applicant";
+export type {
+  ClassroomLessonResource,
+  ClassroomLessonType,
+  ProgramClassroomLesson,
+  ProgramClassroomModule,
+  ProgramClassroomSummary,
+  UpsertClassroomLessonPayload,
+  UpsertClassroomModulePayload,
+  UpsertProgramClassroomPayload,
+} from "./program-classroom";
 
 export interface NotificationDto {
   id: string;
   message: string;
   createdAt: string;
   read: boolean;
+  href?: string;
+  kind?: string;
+}
+
+export interface CustomSelectProps {
+  placeholder: string;
+  options: string[];
+  value: string;
+  className?: string;
+  onChange: (value: string) => void;
+  error?: string;
+  showErrorMessage?: boolean;
+}
+
+export interface NotificationItem {
+  id: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+  href?: string;
+  kind?: string;
+}
+
+export interface StudentProfile {
+  firstName: string;
+  lastName: string;
+  programTitle: string;
+  image: string;
+  status: "active" | "suspended";
+}
+
+export interface StudentInfo {
+  email: string;
+  phoneNumber: string;
+  dob: {
+    day: string;
+    month: string;
+    year: number;
+  };
+  address: string;
+  cohortName: string;
+  enrollmentDate: string;
+  idDocumentUrl?: string;
+}
+
+export interface ProgressData {
+  progressPercent: number;
+  completed: number;
+  total: number;
+  description?: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  title: string;
+  date: string;
+  week: string;
+  status: "present" | "absent";
+}
+
+export interface ProgressCardProps {
+  title: string;
+  data: ProgressData;
+}
+
+export type Status =
+  | "Good standing"
+  | "flagged"
+  | "access-revoked"
+  | "active"
+  | "invited"
+  | "suspended"
+  | "published";
+
+export interface Student {
+  id: string;
+  firstName: string;
+  lastName: string;
+  programTitle: string;
+  progressPercent: number;
+  attendance: {
+    display: string;
+  };
+  status: Status;
+}
+
+export interface StudentStat {
+  id: string;
+  title: string;
+  value: number;
+  description: string;
+}
+
+export interface StaffAssignment {
+  _id: string;
+  title: string;
+  programTitle?: string;
+  progressPercent?: number;
+  module: string;
+  weight: number;
+  dueDate: string;
+  submissions: {
+    submitted: number | string;
+    total: number | string;
+    graded?: number | string;
+    pendingReview?: number | string;
+  };
+  status: Status | string;
+}
+
+export interface StaffAssignmentsubmitted {
+  _id: string;
+  assessmentId: string;
+  programId: string;
+  studentId: {
+    _id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  profile: {
+    photo: {
+      url: string;
+    };
+  };
+  submissionType: "file" | "url";
+  file?: {
+    url: string;
+    originalName: string;
+    fileType: string;
+    fileSizeMb: number;
+  };
+  submissionLink?: string | null;
+  status: Status;
+  score: number | null;
+  feedback: string | null;
+  comment: string | null;
+  submittedAt: string;
+}
+
+export interface Trainers {
+  id: string;
+  name: string;
+  email?: string;
+  role?: string;
+  assignedProgram: string;
+  inviteAcceptedAt: string;
+  status: Status;
+}
+
+export interface Admins {
+  id: string;
+  name: string;
+  email?: string;
+  role: string;
+  inviteAcceptedAt: string;
+  status: Status;
+}
+
+export interface AssessmentSubmission {
+  id: string;
+  studentName: string;
+  avatar: string;
+  assessmentTitle: string;
+  submissionType: string;
+  submittedAt: string;
+  avatarUrl: string;
 }

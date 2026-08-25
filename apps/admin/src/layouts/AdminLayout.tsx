@@ -2,29 +2,19 @@
 
 import {
   DashboardLayout,
-  NavigationSidebar,
-  type NavigationSidebarItem,
+  useSidebarCollapsed,
+  AdminSidebar,
+  HeaderBar,
   type NavigationSidebarLinkProps,
 } from "@ssu/ui";
-import {
-  BookOpen,
-  LayoutDashboard,
-  Megaphone,
-  UserCheck,
-  Users,
-} from "lucide-react";
+import { useSession } from "@ssu/queries";
+import { recordAuditEvent } from "@/lib/audit-log";
+import { Settings, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { HeaderBar } from "../components/HeaderBar";
-
-const items: NavigationSidebarItem[] = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/trainers/pending", label: "Trainer approvals", icon: UserCheck },
-  { href: "/programs", label: "Programs", icon: BookOpen },
-  { href: "/announcements", label: "Announcements", icon: Megaphone },
-];
+import { getAdminPageTitle } from "@/lib/adminRoutes";
+import { getNavSectionsForRole } from "@/lib/admin-roles";
 
 function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   return (
@@ -34,23 +24,54 @@ function RouterLink({ href, className, children }: NavigationSidebarLinkProps) {
   );
 }
 
+function AdminSidebarWrapper() {
+  const pathname = usePathname();
+  const { toggle } = useSidebarCollapsed();
+  const { data: user } = useSession();
+  const { mainItems, teachingItems, toolsItems } = getNavSectionsForRole(
+    user?.role,
+  );
+
+  return (
+    <AdminSidebar
+      pathname={pathname}
+      mainItems={mainItems}
+      teachingItems={teachingItems}
+      toolsItems={toolsItems}
+      logoSrc="/firstlogo.png"
+      LinkComponent={RouterLink}
+      onToggleCollapse={toggle}
+    />
+  );
+}
+
 export function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isSessionPage = /^\/classroom\/[^/]+$/.test(pathname);
+  const { data: user } = useSession();
+
+  const handleBeforeLogout = async () => {
+    if (user) {
+      await recordAuditEvent("sign_out", user);
+    }
+  };
+
   return (
     <DashboardLayout
-      sidebar={
-        <NavigationSidebar
-          pathname={pathname}
-          items={items}
-          LinkComponent={RouterLink}
-          header={
-            <span className="text-white font-bold text-h4 truncate px-1">
-              SSU Admin
-            </span>
-          }
+      variant="admin"
+      fullWidthMain={isSessionPage}
+      sidebar={<AdminSidebarWrapper />}
+      header={
+        <HeaderBar
+          pageTitle={getAdminPageTitle(pathname)}
+          onBeforeLogout={handleBeforeLogout}
+          menuItems={[
+            { label: "Account", href: "/account", icon: Users },
+            { label: "Settings", href: "/settings", icon: Settings },
+            { label: "Support", href: "/support", icon: HelpCircle },
+          ]}
         />
       }
-      header={<HeaderBar />}
     >
       {children}
     </DashboardLayout>

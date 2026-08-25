@@ -1,19 +1,36 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UserRole } from "@ssu/types";
-import { loginDemo, writeSession } from "@ssu/api";
+import { adminlogin, login, writeSession, writePortalTokenRaw } from "@ssu/api";
 import { sessionKey } from "./keys";
+import { mutationToast } from "./notify";
 
-export function useLoginMutation(expectedRole: UserRole) {
+export type LoginPortal = "student" | "admin";
+
+export function useLoginMutation(portal: LoginPortal = "student") {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { email: string; password: string }) => {
-      const res = await loginDemo(input.email, input.password, expectedRole);
+      const res =
+        portal === "admin"
+          ? await adminlogin(input.email, input.password)
+          : await login(input.email, input.password);
+
+      if (!res.ok) {
+        const error = new Error(res.message) as Error & { code: string };
+        error.code = res.code;
+        throw error;
+      }
       return res;
     },
     onSuccess: (data) => {
-      if (!data.ok) return;
-      writeSession(data.user);
-      void qc.setQueryData(sessionKey, data.user);
+      writeSession(data.data);
+      if (data.data.accessToken) {
+        writePortalTokenRaw(data.data.accessToken);
+      }
+      void qc.setQueryData(sessionKey, data.data);
+    },
+
+    onError: (error: Error) => {
+      mutationToast.error(error.message ?? "Login failed. Please try again.");
     },
   });
 }
