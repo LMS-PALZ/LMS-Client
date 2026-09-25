@@ -4,7 +4,7 @@ import { DatePicker, FormField, Input, TimePicker } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import type { LiveSessionActivityFormProps } from "../../types/activity";
 import { activityFieldClassName } from "./activity-form-styles";
-import { UploadSection } from "./UploadSection";
+import { RecordingUrlField, ResourceLinksField } from "./UploadSection";
 
 export function LiveSessionActivityForm({
   title,
@@ -15,8 +15,11 @@ export function LiveSessionActivityForm({
   onSessionTimeChange,
   description,
   onDescriptionChange,
-  recordingUrl: _recordingUrl,
-  onRecordingUrlChange: _onRecordingUrlChange,
+  recordingUrl,
+  onRecordingUrlChange,
+  recordingUrlError,
+  resources,
+  onResourcesChange,
   titlePlaceholder = "Social Media Strategy: Viral Campaigns",
 }: LiveSessionActivityFormProps) {
   return (
@@ -71,8 +74,15 @@ export function LiveSessionActivityForm({
         </p>
       </div>
 
-      <UploadSection title="Add Recordings" />
-      <UploadSection title="Add Resources" />
+      <RecordingUrlField
+        url={recordingUrl}
+        onUrlChange={onRecordingUrlChange}
+        error={recordingUrlError}
+      />
+      <ResourceLinksField
+        resources={resources}
+        onResourcesChange={onResourcesChange}
+      />
     </>
   );
 }

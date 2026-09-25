@@ -48,6 +48,9 @@ export interface LiveSessionItem {
   /** Present when the session belongs to a non-primary (e.g. general) program. */
   programId?: string;
   zoomJoinUrl?: string;
+  lessonType?: string;
+  recordingUrl?: string;
+  durationMinutes?: number;
 }
 
 export type {

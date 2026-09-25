@@ -1,9 +1,11 @@
 import type {
+  ClassroomLessonResource,
   ClassroomLessonType,
   ProgramClassroomLesson,
   ProgramClassroomModule,
 } from "@ssu/types";
-import { combineDateAndTime, createId } from "./course-utils";
+import type { ActivityResourceDraft } from "../types/activity";
+import { combineDateAndTime, createId, isHttpUrl } from "./course-utils";
 
 export interface BuildLessonInput {
   existingLesson: ProgramClassroomLesson | null;
@@ -14,6 +16,28 @@ export interface BuildLessonInput {
   sessionTime: string | null;
   description: string;
   recordingUrl: string;
+  resources: ActivityResourceDraft[];
+}
+
+function toResourcePayload(
+  resources: ActivityResourceDraft[],
+): ClassroomLessonResource[] {
+  const payload: ClassroomLessonResource[] = [];
+
+  resources.forEach((resource, index) => {
+    const url = resource.url?.trim() ?? "";
+    if (!isHttpUrl(url)) return;
+    const id = resource.id?.trim();
+    payload.push({
+      ...(id && !id.startsWith("temp-") ? { id } : {}),
+      title: resource.title?.trim() || url,
+      url,
+      type: resource.type?.trim() || "link",
+      order: index + 1,
+    });
+  });
+
+  return payload;
 }
 
 export function buildLessonPayload(
@@ -39,6 +63,7 @@ export function buildLessonPayload(
     recordingUrl: isLiveSession
       ? input.recordingUrl.trim() || undefined
       : undefined,
+    resources: isLiveSession ? toResourcePayload(input.resources) : undefined,
   };
 }
 

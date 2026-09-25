@@ -1,9 +1,9 @@
 "use client";
 
-import { ClassroomRecordingPage } from "@/views/Classroom/ClassroomRecordingPage";
 import { useClassroomCourse } from "@/contexts/ClassroomCourseContext";
+import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
 
 export default function ClassroomSessionRecordingPage() {
   const { course } = useClassroomCourse();
-  return <ClassroomRecordingPage course={course} />;
+  return <ClassroomOverviewPage course={course} />;
 }

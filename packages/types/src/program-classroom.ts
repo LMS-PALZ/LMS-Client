@@ -12,6 +12,7 @@ export interface ClassroomLessonResource {
   url?: string;
   type?: string;
   content?: string | null;
+  order?: number;
 }
 
 export interface ProgramClassroomLesson {
@@ -75,6 +76,7 @@ export interface UpsertClassroomLessonPayload {
   liveSessionUrl?: string;
   startsAt?: string;
   recordingUrl?: string;
+  resources?: ClassroomLessonResource[];
 }
 
 export interface UpsertProgramClassroomPayload {

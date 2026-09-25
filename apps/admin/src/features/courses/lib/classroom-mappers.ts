@@ -73,6 +73,7 @@ export function buildUpsertClassroomPayload(
         durationMinutes: lesson.durationMinutes,
         startsAt: lesson.startsAt,
         recordingUrl: lesson.recordingUrl,
+        resources: lesson.resources,
       })),
     })),
   };

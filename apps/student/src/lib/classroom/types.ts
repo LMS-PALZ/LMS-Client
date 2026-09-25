@@ -29,6 +29,9 @@ export interface ClassroomLesson {
   completed?: boolean;
   description?: string;
   isLive?: boolean;
+  recordingUrl?: string;
+  meetUrl?: string;
+  sessionPhase?: SessionPhase;
 }
 
 export interface ClassroomWeek {
@@ -45,6 +48,7 @@ export interface ClassroomCourseDetail {
   courseLabel: string;
   syllabusCount: number;
   sessionPhase: SessionPhase;
+  sourceLessonType?: string;
   sessionId?: string;
   sessionLabel: string;
   sessionDuration?: string;

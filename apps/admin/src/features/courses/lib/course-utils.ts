@@ -3,6 +3,15 @@ import { formatDateDDMMYYYY } from "@ssu/utils";
 
 export { formatDateDDMMYYYY };
 
+export function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function parseDDMMYYYY(value: string): Date | null {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
   if (!match) return null;

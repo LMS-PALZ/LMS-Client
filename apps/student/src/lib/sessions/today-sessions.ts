@@ -20,6 +20,8 @@ export function filterTodayRemainingSessions(
     if (Number.isNaN(start.getTime())) return false;
     if (!isSameLocalDay(start, now)) return false;
 
+    if (session.lessonType === "recording") return true;
+
     if (session.isLive) return true;
 
     return start.getTime() > now.getTime();
@@ -40,17 +42,25 @@ export function findNextTodaySession(
   })[0];
 }
 
-/** Home dashboard: every class still on today's schedule, live first. */
+/** Home preview: live-now classes plus upcoming ones, at most three. Past classes stay off the list. */
 export function buildHomeSessionCards(
   sessions: LiveSessionItem[],
   now = new Date(),
 ): LiveSessionItem[] {
-  const todaySessions = filterTodayRemainingSessions(sessions, now);
+  const nowMs = now.getTime();
 
-  return [...todaySessions].sort((a, b) => {
-    if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
-    return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
-  });
+  return sessions
+    .filter((session) => {
+      if (session.isLive) return true;
+      if (!session.startsAt) return false;
+      const start = new Date(session.startsAt).getTime();
+      return !Number.isNaN(start) && start > nowMs;
+    })
+    .sort((a, b) => {
+      if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+      return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+    })
+    .slice(0, 3);
 }
 
 export function formatSessionDayLabel(iso: string, now = new Date()): string {
