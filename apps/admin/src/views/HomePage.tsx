@@ -8,7 +8,78 @@ import {
   AssessmentGradingTable,
   DataTableSkeleton,
 } from "@ssu/ui";
-import { useSession, useAdminDashboard } from "@ssu/queries";
+import { adminPath } from "@ssu/config/portal-paths";
+import { useSession, useAdminDashboard, useAdminCalendar } from "@ssu/queries";
+import { useRouter } from "next/navigation";
+
+type DashboardClass = {
+  programId?: string;
+  courseId?: string;
+  moduleId?: string;
+  lessonId?: string;
+  id?: string;
+  title?: string;
+  programName?: string;
+};
+
+type CalendarClass = {
+  href: string;
+  lessonTitle: string;
+  programTitle: string;
+  sessionPhase: string;
+};
+
+function normalizeLabel(value?: string) {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function labelsMatch(left?: string, right?: string) {
+  const a = normalizeLabel(left);
+  const b = normalizeLabel(right);
+  if (!a || !b) return false;
+  return a === b || a.includes(b) || b.includes(a);
+}
+
+function classDetailHref(
+  item: DashboardClass | null | undefined,
+): string | null {
+  if (!item) return null;
+  const programId = item.programId || item.courseId;
+  const lessonId = item.lessonId || item.id;
+  if (!programId || !item.moduleId || !lessonId) return null;
+  return adminPath(
+    `/courses/${programId}/modules/${item.moduleId}/lessons/${lessonId}`,
+  );
+}
+
+function matchClassHref(
+  events: CalendarClass[] | undefined,
+  item: DashboardClass | null | undefined,
+  preferLive = false,
+): string | null {
+  if (!item || !events?.length) return null;
+
+  const matches = events.filter(
+    (event) =>
+      labelsMatch(event.lessonTitle, item.title) &&
+      labelsMatch(event.programTitle, item.programName),
+  );
+  const chosen =
+    (preferLive
+      ? matches.find((event) => event.sessionPhase === "live")
+      : undefined) ?? matches[0];
+  if (chosen) return chosen.href;
+
+  if (!preferLive) return null;
+
+  const liveEvents = events.filter((event) => event.sessionPhase === "live");
+  if (liveEvents.length === 1) return liveEvents[0].href;
+
+  const byTitle = events.filter((event) =>
+    labelsMatch(event.lessonTitle, item.title),
+  );
+  return byTitle.length === 1 ? byTitle[0].href : null;
+}
 
 function greeting(first: string) {
   const h = new Date().getHours();
@@ -18,8 +89,10 @@ function greeting(first: string) {
 }
 
 export function HomePage() {
+  const router = useRouter();
   const { data: user } = useSession();
   const { data, isLoading } = useAdminDashboard();
+  const calendar = useAdminCalendar();
   const stats = data?.stats;
   const pendingAssessments = data?.pendingAssessments?.items;
   const total = data?.pendingAssessments?.total;
@@ -28,6 +101,26 @@ export function HomePage() {
   const displayFirstName = user?.firstName ?? "";
 
   const showGreetingSkeleton = !user;
+
+  async function openClass(
+    item: DashboardClass | null | undefined,
+    preferLive = false,
+  ) {
+    const directHref = classDetailHref(item);
+    if (directHref) {
+      router.push(directHref);
+      return;
+    }
+
+    let events = calendar.data?.events;
+    if (!events) {
+      const result = await calendar.refetch();
+      events = result.data?.events;
+    }
+
+    const href = matchClassHref(events, item, preferLive);
+    if (href) router.push(href);
+  }
 
   return (
     <div className="space-y-2">
@@ -82,6 +175,9 @@ export function HomePage() {
             date={liveclass?.date}
             programName={liveclass?.programName}
             zoomJoinUrl={liveclass?.zoomJoinUrl}
+            onOpen={() => {
+              void openClass(liveclass, true);
+            }}
           />
         )}
 
@@ -96,7 +192,13 @@ export function HomePage() {
             {data?.upcomingClasses
               ?.slice(0, 3)
               .map((item: any, index: number) => (
-                <UpcomingClassCard key={index} {...item} />
+                <UpcomingClassCard
+                  key={index}
+                  {...item}
+                  onOpen={() => {
+                    void openClass(item);
+                  }}
+                />
               ))}
           </div>
         </section>

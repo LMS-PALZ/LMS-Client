@@ -1,24 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
-import {
-  useAdminProgram,
-  useProgramClassroomModules,
-  useSession,
-} from "@ssu/queries";
+import { useAdminProgram, useProgramClassroomModules } from "@ssu/queries";
 import { AlertBanner, Button } from "@ssu/ui";
-import {
-  ArrowLeft,
-  Check,
-  Copy,
-  ExternalLink,
-  Radio,
-  Video,
-} from "lucide-react";
-import { ZoomLiveEmbed } from "@/components/zoom/ZoomLiveEmbed";
+import { toVideoEmbedUrl } from "@ssu/utils";
+import { ArrowLeft, Check, Copy, Radio, Video } from "lucide-react";
 import { AdminCourseDetailSkeleton } from "@/components/skeletons";
 import {
   formatLessonSchedule,
@@ -37,8 +25,6 @@ export function CourseLessonDetailPage({
   moduleId,
   lessonId,
 }: CourseLessonDetailPageProps) {
-  const router = useRouter();
-  const { data: user } = useSession();
   const {
     data: program,
     isLoading: isProgramLoading,
@@ -51,7 +37,8 @@ export function CourseLessonDetailPage({
     isError: isModulesError,
     error: modulesError,
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
-  const [isJoined, setIsJoined] = useState(false);
+  const [isWatching, setIsWatching] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const module = useMemo(
@@ -66,14 +53,17 @@ export function CourseLessonDetailPage({
 
   const meetUrl = lesson ? resolveLessonMeetUrl(lesson) : "";
   const meetingNumber = lesson ? resolveLessonMeetingNumber(lesson) : "";
-  const hostName =
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() ||
-    user?.email ||
-    "Host";
 
   const courseHref = adminPath(`/courses/${courseId}`);
   const isLiveSession = lesson?.lessonType === "live_session";
-  const canJoinInApp = Boolean(meetUrl || meetingNumber);
+  const recordingUrl = lesson?.recordingUrl?.trim() ?? "";
+  const recordingEmbedUrl = recordingUrl ? toVideoEmbedUrl(recordingUrl) : "";
+
+  useEffect(() => {
+    if (!isWatching) return;
+    setIsVideoLoading(true);
+  }, [isWatching, recordingEmbedUrl]);
+  const canJoinZoom = Boolean(meetUrl) && !recordingUrl;
 
   if ((isProgramLoading || isModulesLoading) && !lesson) {
     return <AdminCourseDetailSkeleton />;
@@ -222,18 +212,31 @@ export function CourseLessonDetailPage({
           ) : null}
         </dl>
 
-        {isLiveSession && (
+        {recordingUrl ? (
+          <div className="mt-6">
+            <Button
+              type="button"
+              onClick={() => setIsWatching(true)}
+              className="inline-flex items-center gap-2"
+            >
+              <Video className="h-4 w-4" />
+              Watch live class
+            </Button>
+          </div>
+        ) : null}
+
+        {isLiveSession && canJoinZoom ? (
           <div className="mt-6 flex flex-wrap items-center gap-4">
-            {canJoinInApp && !isJoined ? (
-              <Button
-                type="button"
-                onClick={() => setIsJoined(true)}
-                className="inline-flex items-center gap-2"
-              >
-                <Video className="h-4 w-4" />
-                Join classroom
-              </Button>
-            ) : null}
+            <Button
+              type="button"
+              onClick={() =>
+                window.open(meetUrl, "_blank", "noopener,noreferrer")
+              }
+              className="inline-flex items-center gap-2"
+            >
+              <Video className="h-4 w-4" />
+              Join live session
+            </Button>
             {meetUrl ? (
               <button
                 type="button"
@@ -262,46 +265,37 @@ export function CourseLessonDetailPage({
               </button>
             ) : null}
           </div>
-        )}
+        ) : null}
       </div>
 
-      {isLiveSession && isJoined && canJoinInApp ? (
-        <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] shadow-sm">
-          <ZoomLiveEmbed
-            meetUrl={meetUrl || `https://zoom.us/j/${meetingNumber}`}
-            meetingNumber={meetingNumber || undefined}
-            displayName={hostName}
-            role={0}
-            onLeave={() => {
-              setIsJoined(false);
-              router.push(courseHref);
-            }}
+      {isWatching && recordingEmbedUrl ? (
+        <div className="relative aspect-video w-full max-w-[880px] overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-[#1D1D1D] shadow-sm">
+          {isVideoLoading ? (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+              <p className="text-[14px] font-medium text-white">
+                Please wait...
+              </p>
+            </div>
+          ) : null}
+          <iframe
+            {...({ credentialless: "" } as Record<string, string>)}
+            title="Class recording"
+            src={recordingEmbedUrl}
+            onLoad={() => setIsVideoLoading(false)}
+            className={`absolute inset-0 h-full w-full border-0 ${isVideoLoading ? "opacity-0" : ""}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
           />
         </div>
       ) : null}
 
-      {isLiveSession && !canJoinInApp ? (
+      {isLiveSession && !recordingUrl && !canJoinZoom ? (
         <AlertBanner variant="warning">
           This live session does not have a Zoom link yet. Once the backend
           provisions the meeting, you can join it here.
         </AlertBanner>
-      ) : null}
-
-      {lesson.recordingUrl ? (
-        <div className="rounded-[16px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-          <h2 className="text-[16px] font-semibold text-[#1D1D1D]">
-            Recording
-          </h2>
-          <a
-            href={lesson.recordingUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 inline-flex items-center gap-2 text-[14px] text-[#4C7D5B] hover:underline"
-          >
-            Open recording
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </div>
       ) : null}
 
       {(lesson.resources?.length ?? 0) > 0 ? (

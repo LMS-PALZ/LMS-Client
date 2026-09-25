@@ -8,6 +8,7 @@ interface LiveClassBannerProps {
   date: string;
   programName: string;
   zoomJoinUrl?: string;
+  onOpen?: () => void;
 }
 
 export function LiveClassBanner({
@@ -15,16 +16,12 @@ export function LiveClassBanner({
   time,
   date,
   programName,
-  zoomJoinUrl,
+  onOpen,
 }: LiveClassBannerProps) {
   return (
     <div
-      onClick={() => {
-        if (zoomJoinUrl) {
-          window.open(zoomJoinUrl, "_self");
-        }
-      }}
-      className="flex w-full items-center justify-between rounded-2xl  bg-[#E6F3E8] px-3 py-3"
+      onClick={() => onOpen?.()}
+      className="flex w-full cursor-pointer items-center justify-between rounded-2xl bg-[#E6F3E8] px-3 py-3"
     >
       <section className="flex items-center">
         <span className="flex  items-center  gap-2  rounded-full  bg-[#FFE3E3]  px-4  py-1 text-sm  font-medium text-[#C92A2A]">
