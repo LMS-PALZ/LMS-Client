@@ -37,5 +37,12 @@ export function usecreateAssessmentMutation() {
       }
       void qc.invalidateQueries({ queryKey: ["assessments"] });
     },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Failed to create assessment.",
+      );
+    },
   });
 }

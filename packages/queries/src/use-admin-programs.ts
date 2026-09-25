@@ -1,6 +1,7 @@
 import {
   assignAdminProgramTutors,
   createAdminProgram,
+  deleteAdminProgram,
   getAdminProgram,
   listPortalPrograms,
   updateAdminProgramStatus,
@@ -125,6 +126,22 @@ export function useUpdateProgramStatusMutation() {
     onSuccess: (data) => {
       void qc.invalidateQueries({ queryKey: adminProgramKeys.all });
       void qc.invalidateQueries({ queryKey: adminProgramKeys.detail(data.id) });
+    },
+  });
+}
+
+export function useDeleteProgramMutation() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (programId: string) => {
+      const res = await deleteAdminProgram(programId);
+      if (!res.ok) throw new Error(res.message);
+      return { programId, message: res.message };
+    },
+    onSuccess: (data) => {
+      qc.removeQueries({ queryKey: adminProgramKeys.detail(data.programId) });
+      void qc.invalidateQueries({ queryKey: adminProgramKeys.all });
     },
   });
 }

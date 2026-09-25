@@ -1,7 +1,12 @@
 "use client";
 
 import { Button, AlertBanner, CustomSelect } from "@ssu/ui";
-import { useAssignroleMutation, usePrograms } from "@ssu/queries";
+import {
+  getErrorMessage,
+  mutationToast,
+  useAssignroleMutation,
+  usePrograms,
+} from "@ssu/queries";
 import { useState } from "react";
 
 interface AssignroleProps {
@@ -33,7 +38,9 @@ export function Assignrole({ tutorId, onClose, onSuccess }: AssignroleProps) {
       });
 
       onSuccess();
-    } catch {}
+    } catch (error) {
+      mutationToast.error(getErrorMessage(error, "Failed to assign program."));
+    }
   };
 
   return (

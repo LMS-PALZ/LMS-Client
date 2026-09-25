@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
+  getErrorMessage,
+  mutationToast,
   useAdminProgram,
+  useDeleteProgramMutation,
   useProgramClassroomModules,
   useTutorStaff,
   useUpdateProgramStatusMutation,
@@ -17,6 +20,7 @@ import {
   CourseDetailTabs,
   CourseStudentsTab,
   CourseModulesTab,
+  DeleteCourseModal,
 } from "@/features/courses/components";
 import { AdminCourseDetailSkeleton } from "@/components/skeletons";
 import type { CourseDetailTab } from "@/features/courses/types";
@@ -45,6 +49,7 @@ function resolveInstructorLabel(
 export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<CourseDetailTab>("students");
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const {
     data: program,
     isLoading: isProgramLoading,
@@ -59,6 +64,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
   const { data: tutorStaff = [] } = useTutorStaff();
   const updateStatus = useUpdateProgramStatusMutation();
+  const deleteCourse = useDeleteProgramMutation();
 
   const course = useMemo(
     () => (program ? mapProgramToCourse(program) : null),
@@ -89,8 +95,28 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
         programId: program.id,
         status: nextStatus,
       });
-    } catch {
-      // Error shown via mutation state.
+      mutationToast.success(
+        nextStatus === "published"
+          ? "Course published."
+          : "Course unpublished.",
+      );
+    } catch (error) {
+      mutationToast.error(
+        getErrorMessage(error, "Failed to update course status."),
+      );
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!program || deleteCourse.isPending) return;
+    try {
+      const result = await deleteCourse.mutateAsync(program.id);
+      setDeleteOpen(false);
+      mutationToast.success(result.message || "Course deleted.");
+      router.push(adminPath("/courses"));
+    } catch (error) {
+      setDeleteOpen(false);
+      mutationToast.error(getErrorMessage(error, "Failed to delete course."));
     }
   };
 
@@ -128,17 +154,21 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
         </AlertBanner>
       )}
 
+      {deleteCourse.isError && (
+        <AlertBanner variant="error">
+          {deleteCourse.error instanceof Error
+            ? deleteCourse.error.message
+            : "Failed to delete course."}
+        </AlertBanner>
+      )}
+
       <CourseDetailHeader
         program={program}
         instructorLabel={instructorLabel}
         onEdit={() => router.push(adminPath(`/courses/${courseId}/curriculum`))}
         onTogglePublish={() => void handleTogglePublish()}
-        onDelete={() => {
-          window.alert(
-            "Course deletion is not available yet. Contact support if you need to remove this course.",
-          );
-        }}
-        isUpdating={updateStatus.isPending}
+        onDelete={() => setDeleteOpen(true)}
+        isUpdating={updateStatus.isPending || deleteCourse.isPending}
       />
 
       <div className="rounded-[18px] border border-[#EEF2F6] bg-white px-6 py-6">
@@ -168,6 +198,14 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
           )}
         </div>
       </div>
+
+      <DeleteCourseModal
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={() => void handleDelete()}
+        isDeleting={deleteCourse.isPending}
+        courseTitle={program.title}
+      />
     </section>
   );
 }

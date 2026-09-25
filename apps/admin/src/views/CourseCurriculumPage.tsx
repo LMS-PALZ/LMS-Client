@@ -9,6 +9,7 @@ import {
   useProgramClassroomModules,
   useUpdateProgramStatusMutation,
   useUpsertProgramClassroomMutation,
+  getErrorMessage,
   mutationToast,
 } from "@ssu/queries";
 import type { ProgramClassroomModule } from "@ssu/types";
@@ -82,8 +83,8 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
       await updateStatus.mutateAsync({ programId: program.id, status });
       setSuccessVariant(status);
       setSuccessOpen(true);
-    } catch {
-      // Error surfaced via mutation state below.
+    } catch (error) {
+      mutationToast.error(getErrorMessage(error, "Failed to update course."));
     }
   };
 

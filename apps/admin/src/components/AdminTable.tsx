@@ -7,7 +7,11 @@ import { useMemo, useState } from "react";
 import { EllipsisVertical } from "lucide-react";
 import { StatusDialog } from "@/components/StatusDialog";
 import { useAdminModal } from "@ssu/ui";
-import { useUpdateStaffStatusMutation } from "@ssu/queries";
+import {
+  getErrorMessage,
+  mutationToast,
+  useUpdateStaffStatusMutation,
+} from "@ssu/queries";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -102,10 +106,17 @@ export function AdminTable({
         confirmLabel={actionLabel}
         onCancel={closeModal}
         onConfirm={async () => {
-          await updateStaffStatus.mutateAsync({
-            userId: trainer.id,
-            status: nextStatus,
-          });
+          try {
+            await updateStaffStatus.mutateAsync({
+              userId: trainer.id,
+              status: nextStatus,
+            });
+          } catch (error) {
+            mutationToast.error(
+              getErrorMessage(error, "Failed to update staff status."),
+            );
+            return;
+          }
 
           openModal(
             "",

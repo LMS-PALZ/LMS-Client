@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { Button, Input, AlertBanner, Spinner } from "@ssu/ui";
 import { ExternalLink, Link2, FileText } from "lucide-react";
-import { useGradeSubmissionMutation } from "@ssu/queries";
+import {
+  getErrorMessage,
+  mutationToast,
+  useGradeSubmissionMutation,
+} from "@ssu/queries";
 
 interface Props {
   assessmentId: string;
@@ -65,8 +69,13 @@ export function GradeSubmissionForm({
         score: Number(score),
         feedback: feedback || undefined,
       });
+      mutationToast.success("Submission graded.");
       onClose();
-    } catch {}
+    } catch (error) {
+      mutationToast.error(
+        getErrorMessage(error, "Failed to grade submission."),
+      );
+    }
   };
 
   return (

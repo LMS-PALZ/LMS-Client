@@ -18,5 +18,12 @@ export function useUpdateAssessmentMutation(programId: string) {
       toast.success("Assessment updated successfully");
       void qc.invalidateQueries({ queryKey: ["assessments", programId] });
     },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Failed to update assessment.",
+      );
+    },
   });
 }

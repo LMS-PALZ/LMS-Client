@@ -236,12 +236,28 @@ function extractProgram(payload: unknown): AdminProgram | null {
   return normalizeProgram(root);
 }
 
+function readBackendErrorMessage(error: unknown): string {
+  if (!error || typeof error !== "object") return "";
+
+  const data = (error as { response?: { data?: unknown } }).response?.data;
+  if (typeof data === "string") return data.trim();
+  if (!data || typeof data !== "object") return "";
+
+  const message = (data as { message?: unknown }).message;
+  if (typeof message === "string") return message.trim();
+  if (Array.isArray(message)) {
+    return message
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return "";
+}
+
 function getErrorMessage(error: unknown, fallback: string): string {
-  const err = error as {
-    response?: { data?: { message?: string } };
-    message?: string;
-  };
-  return err.response?.data?.message || err.message || fallback;
+  return readBackendErrorMessage(error) || fallback;
 }
 
 function isMissingRouteError(error: unknown): boolean {
@@ -539,6 +555,36 @@ export async function updateAdminProgramStatus(
     return {
       ok: false as const,
       message: getErrorMessage(error, "Failed to update course status."),
+    };
+  }
+}
+
+export async function deleteAdminProgram(programId: string) {
+  try {
+    const trimmedId = programId.trim();
+    if (!trimmedId) {
+      return {
+        ok: false as const,
+        message: "Course not found.",
+      };
+    }
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/programs/${trimmedId}/status`,
+      { status: "archived" },
+      { headers: authHeaders() },
+    );
+
+    return {
+      ok: true as const,
+      message:
+        readString((res.data as { message?: string }).message) ||
+        "Course deleted.",
+    };
+  } catch (error: unknown) {
+    return {
+      ok: false as const,
+      message: getErrorMessage(error, "Failed to delete course."),
     };
   }
 }
