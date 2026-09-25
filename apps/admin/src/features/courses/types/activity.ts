@@ -1,4 +1,5 @@
 import type {
+  ClassroomLessonResource,
   ClassroomLessonType,
   ProgramClassroomLesson,
   ProgramClassroomModule,
@@ -8,7 +9,12 @@ import type { ReactNode } from "react";
 
 export type ModuleAccordionMode = "view" | "edit";
 
-export type UploadSourceMode = "device" | "url";
+export type UploadSourceMode = "url";
+
+export type ActivityResourceDraft = Pick<
+  ClassroomLessonResource,
+  "id" | "title" | "url" | "type"
+>;
 
 export interface ActivityTypeOption {
   id: ClassroomLessonType;
@@ -71,6 +77,9 @@ export interface LiveSessionActivityFormProps {
   onDescriptionChange: (value: string) => void;
   recordingUrl: string;
   onRecordingUrlChange: (value: string) => void;
+  recordingUrlError?: string;
+  resources: ActivityResourceDraft[];
+  onResourcesChange: (value: ActivityResourceDraft[]) => void;
   titlePlaceholder?: string;
 }
 
@@ -82,4 +91,5 @@ export interface ActivityFormState {
   sessionTime: string | null;
   description: string;
   recordingUrl: string;
+  resources: ActivityResourceDraft[];
 }

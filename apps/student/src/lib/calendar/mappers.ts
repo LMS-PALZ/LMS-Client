@@ -1,5 +1,6 @@
 import type { StudentClassroomData } from "@ssu/api";
 import type { AssignmentListItem } from "@ssu/types";
+import { classroomSessionHref } from "@/lib/classroom/recording-embed";
 import type { StudentCalendarEvent } from "./types";
 import { resolveLessonSessionPhase } from "./session-phase";
 
@@ -9,8 +10,11 @@ function addMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60_000);
 }
 
-function getCalendarSessionHref(lessonId: string): string {
-  return `/classroom/${lessonId}`;
+function getCalendarSessionHref(
+  lessonId: string,
+  recordingUrl?: string,
+): string {
+  return classroomSessionHref({ lessonId, recordingUrl });
 }
 
 export function buildCalendarEvents(
@@ -43,7 +47,7 @@ export function buildCalendarEvents(
         title: phase === "live" ? `${lesson.title} · Live` : lesson.title,
         start: start.toISOString(),
         end: end.toISOString(),
-        href: getCalendarSessionHref(lesson.id),
+        href: getCalendarSessionHref(lesson.id, lesson.recordingUrl),
         sessionPhase: phase,
         kind: "class-session",
         courseTitle: programTitle,

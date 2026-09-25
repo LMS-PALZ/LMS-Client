@@ -17,12 +17,16 @@ import {
   Circle,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { type ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { formatSessionTime } from "@/lib/assignment-display";
 import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
+import {
+  classroomSessionHref,
+  toVideoEmbedUrl,
+} from "@/lib/classroom/recording-embed";
 import type {
   ClassroomCourseDetail,
   ClassroomWeek,
@@ -54,7 +58,11 @@ function ClassroomCourseLayoutShellInner({
 }: ClassroomCourseLayoutShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { recordingEmbedUrl, clearRecording } = useClassroomPlayback();
+  const [joinRequested, setJoinRequested] = useState(
+    () => searchParams.get("join") === "1",
+  );
 
   const [openWeeks, setOpenWeeks] = useState(
     () => new Set(weeks.filter((week) => week.expanded).map((week) => week.id)),
@@ -91,13 +99,6 @@ function ClassroomCourseLayoutShellInner({
           : pathname === `/courses/${course.id}`,
       },
       {
-        label: "Recording",
-        href: sessionBase
-          ? `${sessionBase}/recording`
-          : `/courses/${course.id}/recording`,
-        active: pathname.endsWith("/recording"),
-      },
-      {
         label: "Resources",
         href: sessionBase
           ? `${sessionBase}/resources`
@@ -122,8 +123,16 @@ function ClassroomCourseLayoutShellInner({
 
   const liveVideo = resolveLiveVideoForCourse(course, meetUrl);
 
+  const classEnded = course.sessionPhase === "ended";
+  const lessonRecordingUrl = toVideoEmbedUrl(course.recordingEmbedUrl ?? "");
+  const hasRecording = Boolean(lessonRecordingUrl);
+  const meetingOpen =
+    !hasRecording && !classEnded && (liveActive || joinRequested);
+
   let mediaMode: ClassroomMediaMode = "upcoming-placeholder";
-  if (liveActive) {
+  if (hasRecording) {
+    mediaMode = "recording-embed";
+  } else if (meetingOpen) {
     mediaMode = "live-meet";
   } else if (course.sessionPhase === "ended" && recordingEmbedUrl) {
     mediaMode = "recording-embed";
@@ -131,13 +140,13 @@ function ClassroomCourseLayoutShellInner({
     mediaMode = "ended-placeholder";
   }
 
-  const statusLabel = recordingEmbedUrl
-    ? "RECORDING"
+  const statusLabel = hasRecording
+    ? "RECORDED CLASS"
     : liveActive
       ? "LIVE SESSION"
       : course.sessionLabel;
 
-  const statusDotClass = recordingEmbedUrl
+  const statusDotClass = hasRecording
     ? "bg-[#436E53]"
     : liveActive
       ? "bg-[#D14B3D]"
@@ -148,18 +157,23 @@ function ClassroomCourseLayoutShellInner({
     course.sessionDuration ||
     "";
 
-  function joinLiveLesson(lesson: ClassroomLesson) {
-    const query = programId
-      ? `?programId=${encodeURIComponent(programId)}`
-      : "";
-    const href = `/classroom/${lesson.id}${query}`;
+  function openLesson(lesson: ClassroomLesson) {
+    const recorded = Boolean(lesson.recordingUrl?.trim());
+    if (!recorded && lesson.sessionPhase === "ended") return;
 
     if (pathname.startsWith(`/classroom/${lesson.id}`)) {
+      if (!recorded) setJoinRequested(true);
       setSelectedLesson(null);
       return;
     }
 
-    router.push(href);
+    router.push(
+      classroomSessionHref({
+        lessonId: lesson.id,
+        programId,
+        recordingUrl: lesson.recordingUrl,
+      }),
+    );
   }
 
   return (
@@ -193,23 +207,47 @@ function ClassroomCourseLayoutShellInner({
                   </p>
                 </div>
               )}
-              {selectedLesson.type === "live" && selectedLesson.isLive ? (
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                  <LiveIndicator
-                    label="LIVE SESSION"
-                    size="sm"
-                    tone="classroom"
-                    uppercase
-                  />
+              {selectedLesson.recordingUrl ? (
+                <div className="mt-6">
                   <button
                     type="button"
-                    onClick={() => joinLiveLesson(selectedLesson)}
+                    onClick={() => openLesson(selectedLesson)}
                     className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
                   >
-                    Join Session
+                    Watch live class
                     <ChevronRight size={16} />
                   </button>
                 </div>
+              ) : null}
+              {!selectedLesson.recordingUrl &&
+              selectedLesson.type === "live" &&
+              selectedLesson.sessionPhase !== "ended" ? (
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                  {selectedLesson.isLive ? (
+                    <LiveIndicator
+                      label="LIVE SESSION"
+                      size="sm"
+                      tone="classroom"
+                      uppercase
+                    />
+                  ) : (
+                    <span />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => openLesson(selectedLesson)}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
+                  >
+                    Join live session
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              ) : null}
+              {selectedLesson.type === "live" &&
+              selectedLesson.sessionPhase === "ended" ? (
+                <p className="mt-6 text-[14px] font-medium text-[#6B7280]">
+                  This class has ended
+                </p>
               ) : null}
             </div>
           </>
@@ -218,7 +256,7 @@ function ClassroomCourseLayoutShellInner({
             <GoBack fallbackHref={backFallbackHref} />
 
             <div className="mt-8 inline-flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
-              {liveActive ? (
+              {liveActive && !hasRecording ? (
                 <LiveIndicator
                   label="LIVE SESSION"
                   size="md"
@@ -249,7 +287,11 @@ function ClassroomCourseLayoutShellInner({
                 meetUrl={liveVideo.meetUrl}
                 meetingNumber={meetingNumber}
                 displayName={displayName}
-                recordingEmbedUrl={recordingEmbedUrl}
+                recordingEmbedUrl={
+                  mediaMode === "recording-embed" && lessonRecordingUrl
+                    ? lessonRecordingUrl
+                    : recordingEmbedUrl
+                }
                 onLeaveMeeting={() => router.push(backFallbackHref)}
               />
             </div>
@@ -259,7 +301,7 @@ function ClassroomCourseLayoutShellInner({
             </h1>
 
             <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-3">
-              <div className="flex w-full max-w-[300px] flex-row items-center justify-between rounded-[12px] bg-[#ECF0F7] p-2">
+              <div className="flex w-fit flex-row items-center gap-2 rounded-[12px] bg-[#ECF0F7] p-2">
                 {navTabs.map((tab) => (
                   <Link
                     key={tab.href}

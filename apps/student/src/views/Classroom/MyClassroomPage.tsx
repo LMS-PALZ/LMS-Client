@@ -1,6 +1,8 @@
 "use client";
 
 import { useProfileSetup } from "@/contexts/ProfileSetupContext";
+import { resolveLessonSessionPhase } from "@/lib/calendar/session-phase";
+import { classroomSessionHref } from "@/lib/classroom/recording-embed";
 import { findNextTodaySession } from "@/lib/sessions/today-sessions";
 import { mapClassroomLessonsToSessions } from "@ssu/api";
 import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
@@ -60,12 +62,19 @@ export function MyClassroomPage() {
   const isLoading =
     isProfileLoading || (Boolean(activeProgramId) && isClassroomLoading);
 
-  const handleJoinSession = (sessionId: string, sessionProgramId?: string) => {
+  const handleOpenClass = (
+    sessionId: string,
+    sessionProgramId?: string,
+    recordingUrl?: string,
+  ) => {
     if (!ensureProfileForAction()) return;
-    const query = sessionProgramId
-      ? `?programId=${encodeURIComponent(sessionProgramId)}`
-      : "";
-    router.push(`/classroom/${sessionId}${query}`);
+    router.push(
+      classroomSessionHref({
+        lessonId: sessionId,
+        programId: sessionProgramId,
+        recordingUrl,
+      }),
+    );
   };
 
   const nextSession = useMemo(() => {
@@ -126,6 +135,13 @@ export function MyClassroomPage() {
   const program = data?.program ?? selectedProgramFromList ?? enrolledProgram;
   const modules = data?.classroom?.modules ?? [];
   const isLive = Boolean(nextSession?.isLive);
+  const sessionEnded = nextSession
+    ? resolveLessonSessionPhase(
+        nextSession.startsAt,
+        nextSession.durationMinutes,
+        nextSession.isLive,
+      ) === "ended"
+    : false;
   const hasModules = modules.length > 0;
   const hasTodaySession = Boolean(nextSession);
 
@@ -228,25 +244,36 @@ export function MyClassroomPage() {
                 </div>
 
                 <div className="mt-10 flex justify-end">
-                  {isLive ? (
+                  {nextSession?.recordingUrl ? (
                     <button
                       type="button"
                       onClick={() =>
-                        handleJoinSession(
-                          nextSession!.id,
-                          nextSession?.programId,
+                        handleOpenClass(
+                          nextSession.id,
+                          nextSession.programId,
+                          nextSession.recordingUrl,
                         )
                       }
                       className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
                     >
-                      Join Session
+                      Watch live class
                       <ChevronRight size={16} />
                     </button>
-                  ) : (
+                  ) : sessionEnded ? (
                     <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
-                      Join Session
-                      <ChevronRight size={16} />
+                      This class has ended
                     </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenClass(nextSession!.id, nextSession?.programId)
+                      }
+                      className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
+                    >
+                      Join live session
+                      <ChevronRight size={16} />
+                    </button>
                   )}
                 </div>
               </>

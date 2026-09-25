@@ -2,68 +2,126 @@
 
 import { useState } from "react";
 import { Input } from "@ssu/ui";
-import { cn } from "@ssu/utils";
-import { FileText, Link2, UploadCloud } from "lucide-react";
-import type { UploadSourceMode } from "../../types/activity";
+import { Link2, X } from "lucide-react";
+import type { ActivityResourceDraft } from "../../types/activity";
+import { isHttpUrl } from "../../lib/course-utils";
 import { activityFieldClassName } from "./activity-form-styles";
 
-interface UploadSectionProps {
-  title: string;
+interface RecordingUrlFieldProps {
+  url: string;
+  onUrlChange: (value: string) => void;
+  error?: string;
 }
 
-export function UploadSection({ title }: UploadSectionProps) {
-  const [mode, setMode] = useState<UploadSourceMode>("device");
-  const [url, setUrl] = useState("");
+export function RecordingUrlField({
+  url,
+  onUrlChange,
+  error,
+}: RecordingUrlFieldProps) {
+  return (
+    <div className="space-y-3">
+      <p className="text-[14px] font-semibold text-[#1D1D1D]">Add Recordings</p>
+      <div className="inline-flex items-center gap-2 rounded-full border border-[#4C7D5B] bg-[#E8F3EC] px-4 py-1.5 text-[13px] font-medium text-[#4C7D5B]">
+        <Link2 className="h-4 w-4" />
+        From URL
+      </div>
+      <Input
+        value={url}
+        onChange={(event) => onUrlChange(event.target.value)}
+        placeholder="Paste recording URL"
+        className={activityFieldClassName}
+      />
+      {error ? <p className="text-[13px] text-[#C62828]">{error}</p> : null}
+    </div>
+  );
+}
+
+interface ResourceLinksFieldProps {
+  resources: ActivityResourceDraft[];
+  onResourcesChange: (value: ActivityResourceDraft[]) => void;
+}
+
+export function ResourceLinksField({
+  resources,
+  onResourcesChange,
+}: ResourceLinksFieldProps) {
+  const [draftUrl, setDraftUrl] = useState("");
+  const [error, setError] = useState("");
+
+  const addResource = () => {
+    const url = draftUrl.trim();
+    if (!url) return;
+    if (!isHttpUrl(url)) {
+      setError("Enter a valid http or https URL.");
+      return;
+    }
+    onResourcesChange([
+      ...resources,
+      {
+        id: `temp-resource-${crypto.randomUUID()}`,
+        title: url,
+        url,
+        type: "link",
+      },
+    ]);
+    setDraftUrl("");
+    setError("");
+  };
 
   return (
     <div className="space-y-3">
-      <p className="text-[14px] font-semibold text-[#1D1D1D]">{title}</p>
-      <div className="flex flex-wrap gap-2">
-        {(
-          [
-            { value: "device" as const, label: "From Device", icon: FileText },
-            { value: "url" as const, label: "From URL", icon: Link2 },
-          ] as const
-        ).map(({ value, label, icon: Icon }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setMode(value)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[13px] font-medium transition",
-              mode === value
-                ? "border-[#4C7D5B] bg-[#E8F3EC] text-[#4C7D5B]"
-                : "border-[#D7DFEA] bg-white text-[#64748B]",
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </button>
-        ))}
+      <p className="text-[14px] font-semibold text-[#1D1D1D]">Add Resources</p>
+      <div className="inline-flex items-center gap-2 rounded-full border border-[#4C7D5B] bg-[#E8F3EC] px-4 py-1.5 text-[13px] font-medium text-[#4C7D5B]">
+        <Link2 className="h-4 w-4" />
+        From URL
       </div>
 
-      {mode === "device" ? (
-        <label className="flex min-h-[132px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#D7DFEA] bg-[#FAFBFC] px-4 py-6 text-center">
-          <UploadCloud className="h-5 w-5 text-[#64748B]" />
-          <span className="text-[14px] text-[#64748B]">
-            Drop file here or{" "}
-            <span className="font-semibold text-[#4C7D5B]">
-              click to browse
-            </span>
-          </span>
-          <span className="text-[13px] text-[#94A3B8]">
-            You can upload files up to the maximum of 100 MB
-          </span>
-          <input type="file" className="hidden" />
-        </label>
-      ) : (
+      {resources.length > 0 ? (
+        <ul className="space-y-2">
+          {resources.map((resource, index) => (
+            <li
+              key={resource.id || resource.url || String(index)}
+              className="flex items-center justify-between gap-3 rounded-lg border border-[#D7DFEA] bg-white px-3 py-2"
+            >
+              <span className="truncate text-[13px] text-[#1D1D1D]">
+                {resource.url}
+              </span>
+              <button
+                type="button"
+                aria-label="Remove resource"
+                onClick={() =>
+                  onResourcesChange(
+                    resources.filter((_, itemIndex) => itemIndex !== index),
+                  )
+                }
+                className="text-[#64748B] transition hover:text-[#C62828]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Input
-          value={url}
-          onChange={(event) => setUrl(event.target.value)}
-          placeholder="Paste file URL"
+          value={draftUrl}
+          onChange={(event) => {
+            setDraftUrl(event.target.value);
+            if (error) setError("");
+          }}
+          placeholder="Paste resource URL"
           className={activityFieldClassName}
         />
-      )}
+        <button
+          type="button"
+          onClick={addResource}
+          className="h-11 shrink-0 rounded-lg bg-[#4C7D5B] px-4 text-[14px] font-medium text-white hover:bg-[#3d6549]"
+        >
+          Add
+        </button>
+      </div>
+      {error ? <p className="text-[13px] text-[#C62828]">{error}</p> : null}
     </div>
   );
 }

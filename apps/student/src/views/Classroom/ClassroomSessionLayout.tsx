@@ -9,8 +9,8 @@ import {
   useSession,
   useStudentclassroom,
 } from "@ssu/queries";
-import { EmptyState } from "@ssu/ui";
-import { Megaphone } from "lucide-react";
+import { AlertBanner, DashboardEmptyState } from "@ssu/ui";
+import { Video } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
@@ -71,8 +71,8 @@ export function ClassroomSessionLayout({
 
   if (!programId && !liveGeneralFallback) {
     return (
-      <EmptyState
-        icon={Megaphone}
+      <DashboardEmptyState
+        icon={Video}
         title="No enrolled course"
         description="Enroll in a program to access live sessions."
       />
@@ -81,17 +81,27 @@ export function ClassroomSessionLayout({
 
   if (classroomQuery.isLoading && !liveGeneralFallback) {
     return (
-      <div className="flex min-h-[240px] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#D4E2D8] border-t-[#4E845F]" />
+      <div className="flex min-h-[360px] items-center justify-center rounded-[18px] bg-[#1D1D1D]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
       </div>
+    );
+  }
+
+  if (classroomQuery.isError && !liveGeneralFallback) {
+    return (
+      <AlertBanner variant="error" title="Could not load this class">
+        {classroomQuery.error instanceof Error
+          ? classroomQuery.error.message
+          : "This class could not be loaded. Please try again."}
+      </AlertBanner>
     );
   }
 
   if (!classroomQuery.data && !liveGeneralFallback) {
     return (
-      <EmptyState
-        icon={Megaphone}
-        title="Session not found"
+      <DashboardEmptyState
+        icon={Video}
+        title="No class video yet"
         description="This class is not available right now."
       />
     );
@@ -108,6 +118,7 @@ export function ClassroomSessionLayout({
       courseLabel: liveGeneralFallback.programTitle || "Live",
       syllabusCount: 0,
       sessionPhase: "live",
+      sourceLessonType: "live_session",
       sessionId,
       sessionLabel: "Live",
       sessionDuration: liveGeneralFallback.durationMinutes
@@ -174,6 +185,9 @@ export function ClassroomSessionLayout({
     ...mapped.course,
     sessionId,
     sessionPhase,
+    sourceLessonType:
+      lesson?.lessonType ??
+      (liveGeneralFallback ? "live_session" : mapped.course.sourceLessonType),
     scheduledAt:
       lesson?.startsAt ??
       liveGeneralFallback?.startsAt ??
@@ -183,8 +197,7 @@ export function ClassroomSessionLayout({
       lesson?.title ??
       liveGeneralFallback?.lessonTitle ??
       mapped.course.recordingTitle,
-    recordingEmbedUrl:
-      lesson?.recordingUrl ?? mapped.course.recordingEmbedUrl ?? null,
+    recordingEmbedUrl: lesson?.recordingUrl || null,
     sessionDuration: lesson?.durationMinutes
       ? `${lesson.durationMinutes} mins`
       : liveGeneralFallback?.durationMinutes

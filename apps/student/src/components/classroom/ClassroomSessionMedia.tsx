@@ -1,12 +1,12 @@
 "use client";
 
-import { LiveIndicator } from "@ssu/ui";
+import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
+import { AlertBanner, DashboardEmptyState, LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import dynamic from "next/dynamic";
-import { CalendarClock, VideoOff } from "lucide-react";
-import type { ReactNode } from "react";
+import { Video } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { MeetingIframeEmbed } from "./MeetingIframeEmbed";
-import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
 
 const ZoomLiveEmbed = dynamic(
   () => import("./ZoomLiveEmbed").then((module) => module.ZoomLiveEmbed),
@@ -38,6 +38,84 @@ export interface ClassroomSessionMediaProps {
   recordingEmbedUrl?: string | null;
   className?: string;
   onLeaveMeeting?: () => void;
+}
+
+function VideoFrame({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-h-[360px] flex-col items-center justify-center rounded-[18px] border border-dashed border-[#C5D2E1] bg-[#F8FAFC] px-6 text-center",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function RecordingEmbed({
+  url,
+  className,
+}: {
+  url: string;
+  className?: string;
+}) {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+
+  useEffect(() => {
+    setStatus("loading");
+    const timer = window.setTimeout(() => {
+      setStatus((current) => (current === "loading" ? "error" : current));
+    }, 20000);
+    return () => window.clearTimeout(timer);
+  }, [url]);
+
+  if (status === "error") {
+    return (
+      <VideoFrame className={className}>
+        <AlertBanner variant="error" title="Could not load this class">
+          The class video did not load. Check your connection and try again.
+        </AlertBanner>
+      </VideoFrame>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative aspect-video w-full overflow-hidden rounded-[18px] bg-[#1D1D1D]",
+        className,
+      )}
+    >
+      {status === "loading" ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+        </div>
+      ) : null}
+      <iframe
+        {...CREDENTIALLESS}
+        title="Class recording"
+        src={url}
+        onLoad={() => setStatus("ready")}
+        onError={() => setStatus("error")}
+        className={cn(
+          "absolute inset-0 h-full w-full border-0",
+          status === "loading" && "opacity-0",
+        )}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+      />
+    </div>
+  );
 }
 
 function LiveMediaShell({
@@ -116,64 +194,41 @@ export function ClassroomSessionMedia({
     );
   }
 
-  if (mode === "recording-embed" && recordingEmbedUrl) {
-    return (
-      <div
-        className={cn(
-          "relative aspect-video w-full overflow-hidden rounded-[18px] bg-black",
-          className,
-        )}
-      >
-        <iframe
-          {...CREDENTIALLESS}
-          title="Class recording"
-          src={recordingEmbedUrl}
-          className="absolute inset-0 h-full w-full border-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allowFullScreen
-        />
-      </div>
-    );
+  if (mode === "recording-embed") {
+    if (!recordingEmbedUrl) {
+      return (
+        <VideoFrame className={className}>
+          <DashboardEmptyState
+            icon={Video}
+            title="No class video yet"
+            description="A recording for this class is not available yet."
+          />
+        </VideoFrame>
+      );
+    }
+
+    return <RecordingEmbed url={recordingEmbedUrl} className={className} />;
   }
 
   if (mode === "ended-placeholder") {
     return (
-      <div
-        className={cn(
-          "flex min-h-[360px] flex-col items-center justify-center rounded-[18px] border border-dashed border-[#C5D2E1] bg-[#F4F7FA] px-6 text-center",
-          className,
-        )}
-      >
-        <div className="rounded-full bg-[#ECF0F7] p-4">
-          <VideoOff className="h-8 w-8 text-[#7A8594]" />
-        </div>
-        <p className="mt-4 text-[18px] font-semibold text-[#1D1D1D]">
-          This class has ended
-        </p>
-        <p className="mt-2 max-w-md text-[14px] leading-6 text-[#6B7280]">
-          Open the Recording tab below to watch the session replay.
-        </p>
-      </div>
+      <VideoFrame className={className}>
+        <DashboardEmptyState
+          icon={Video}
+          title="This class has ended"
+          description="A recording for this class is not available yet."
+        />
+      </VideoFrame>
     );
   }
 
   return (
-    <div
-      className={cn(
-        "flex min-h-[360px] flex-col items-center justify-center rounded-[18px] border border-dashed border-[#C5D2E1] bg-[#F8FAFC] px-6 text-center",
-        className,
-      )}
-    >
-      <div className="rounded-full bg-[#ECF0F7] p-4">
-        <CalendarClock className="h-8 w-8 text-[#7A8594]" />
-      </div>
-      <p className="mt-4 text-[18px] font-semibold text-[#1D1D1D]">
-        Classroom appears here
-      </p>
-      <p className="mt-2 max-w-sm text-[14px] leading-6 text-[#6B7280]">
-        This session is scheduled for a later date. Join when the class is live.
-      </p>
-    </div>
+    <VideoFrame className={className}>
+      <DashboardEmptyState
+        icon={Video}
+        title="No class video yet"
+        description="This session does not have a recording or a live meeting link."
+      />
+    </VideoFrame>
   );
 }

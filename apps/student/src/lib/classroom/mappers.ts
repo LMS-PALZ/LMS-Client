@@ -94,14 +94,20 @@ export function mapClassroomResponse(data: any): {
     topic: module.title,
     expanded: false,
     lessons: module.lessons.map((lesson: any): ClassroomLesson => {
-      const type = lesson.lessonType === "live_session" ? "live" : "recorded";
-      const isLive =
-        type === "live" &&
-        resolveLessonSessionPhase(
-          lesson.startsAt,
-          lesson.durationMinutes,
-          lesson.isLiveNow,
-        ) === "live";
+      const type =
+        lesson.lessonType === "live_session"
+          ? "live"
+          : lesson.lessonType === "reading"
+            ? "reading"
+            : "recorded";
+      const sessionPhase =
+        type === "live"
+          ? resolveLessonSessionPhase(
+              lesson.startsAt,
+              lesson.durationMinutes,
+              lesson.isLiveNow,
+            )
+          : undefined;
 
       return {
         id: lesson.id,
@@ -110,7 +116,10 @@ export function mapClassroomResponse(data: any): {
         subtitle: formatLessonDuration(lesson.durationMinutes),
         completed: false,
         description: lesson.overview ?? lesson.summary,
-        isLive,
+        isLive: sessionPhase === "live",
+        recordingUrl: lesson.recordingUrl,
+        meetUrl: lesson.zoomJoinUrl || lesson.liveSessionUrl || "",
+        sessionPhase,
       };
     }),
   }));

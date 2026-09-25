@@ -1,12 +1,12 @@
 "use client";
 
 import { CoursePageClient } from "@/views/Classroom/CoursePageClient";
-import { ClassroomRecordingPage } from "@/views/Classroom/ClassroomRecordingPage";
+import { ClassroomOverviewPage } from "@/views/Classroom/ClassroomOverviewPage";
 
 export default function Page() {
   return (
     <CoursePageClient
-      render={(course) => <ClassroomRecordingPage course={course} />}
+      render={(course) => <ClassroomOverviewPage course={course} />}
     />
   );
 }

@@ -25,6 +25,7 @@ import {
   assignmentCardProps,
   formatSessionTime,
 } from "@/lib/assignment-display";
+import { classroomSessionHref } from "@/lib/classroom/recording-embed";
 import {
   buildHomeSessionCards,
   formatSessionDayLabel,
@@ -89,11 +90,14 @@ export function HomePage() {
   const programTitle =
     progress.data?.enrolledProgramTitle || program?.title || "your course";
 
-  const joinSession = (session: (typeof sessionList)[number]) => {
-    const programQuery = session.programId
-      ? `?programId=${encodeURIComponent(session.programId)}`
-      : "";
-    router.push(`/classroom/${session.id}${programQuery}`);
+  const openClass = (session: (typeof sessionList)[number]) => {
+    router.push(
+      classroomSessionHref({
+        lessonId: session.id,
+        programId: session.programId,
+        recordingUrl: session.recordingUrl,
+      }),
+    );
   };
 
   return (
@@ -131,20 +135,14 @@ export function HomePage() {
             time: formatSessionTime(s.startsAt),
             date: formatSessionDayLabel(s.startsAt),
             status: s.isLive ? ("live" as const) : ("upcoming" as const),
-            action: s.isLive ? (
+            action: (
               <button
                 type="button"
-                onClick={() => {
-                  joinSession(s);
-                }}
+                onClick={() => openClass(s)}
                 className="font-semibold text-[#4E845F] hover:underline"
               >
-                Join session &gt;
+                {s.recordingUrl ? "Watch live class >" : "Join live session >"}
               </button>
-            ) : (
-              <span className="font-semibold text-neutral-300">
-                Join session &gt;
-              </span>
             ),
           }))}
         />

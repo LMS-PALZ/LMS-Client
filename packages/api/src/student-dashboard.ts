@@ -13,22 +13,8 @@ import {
 } from "./student-assessments";
 import { getStudentClassroom } from "./student-classroom";
 
-function readIsoDate(value: unknown): Date | null {
-  if (typeof value !== "string" || value.trim() === "") return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function isLessonLive(
-  startsAt: string | undefined,
-  isLiveNow?: boolean,
-): boolean {
-  if (isLiveNow) return true;
-  const start = readIsoDate(startsAt);
-  if (!start) return false;
-  const now = Date.now();
-  const end = start.getTime() + 2 * 60 * 60 * 1000;
-  return now >= start.getTime() && now <= end;
+function isLessonLive(isLiveNow?: boolean): boolean {
+  return Boolean(isLiveNow);
 }
 
 export function mapClassroomLessonsToSessions(
@@ -38,7 +24,11 @@ export function mapClassroomLessonsToSessions(
   const lessons = modules.flatMap((module) => module.lessons ?? []);
 
   return lessons
-    .filter((lesson) => lesson.lessonType === "live_session")
+    .filter(
+      (lesson) =>
+        lesson.lessonType === "live_session" ||
+        lesson.lessonType === "recording",
+    )
     .map((lesson) => {
       const startsAt = lesson.startsAt ?? "";
       const extended = lesson as ProgramClassroomLesson & {
@@ -48,10 +38,18 @@ export function mapClassroomLessonsToSessions(
         id: lesson.id,
         title: lesson.title,
         courseName: programTitle,
-        startsAt: startsAt || new Date().toISOString(),
-        isLive: isLessonLive(startsAt, extended.isLiveNow),
-        meetingUrl: lesson.liveSessionUrl,
+        startsAt:
+          startsAt ||
+          (lesson.lessonType === "live_session"
+            ? new Date().toISOString()
+            : ""),
+        isLive: isLessonLive(extended.isLiveNow),
+        meetingUrl: lesson.zoomJoinUrl || lesson.liveSessionUrl,
+        zoomJoinUrl: lesson.zoomJoinUrl,
         description: lesson.overview ?? lesson.summary,
+        lessonType: lesson.lessonType,
+        recordingUrl: lesson.recordingUrl,
+        durationMinutes: lesson.durationMinutes,
       };
     })
     .filter((lesson) => lesson.id && lesson.title)

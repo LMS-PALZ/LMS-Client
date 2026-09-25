@@ -24,9 +24,11 @@ import {
 } from "@/features/courses/lib/activity-mappers";
 import { buildUpsertClassroomPayload } from "@/features/courses/lib/classroom-mappers";
 import {
+  isHttpUrl,
   parseDDMMYYYY,
   splitStartsAt,
 } from "@/features/courses/lib/course-utils";
+import type { ActivityResourceDraft } from "@/features/courses/types/activity";
 
 interface CourseActivityPageProps {
   courseId: string;
@@ -81,20 +83,43 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
   const [recordingUrl, setRecordingUrl] = useState(
     existingLesson?.recordingUrl ?? "",
   );
+  const [recordingUrlError, setRecordingUrlError] = useState("");
+  const [resources, setResources] = useState<ActivityResourceDraft[]>(
+    () =>
+      existingLesson?.resources
+        ?.filter((resource) => resource.url)
+        .map((resource) => ({
+          id: resource.id,
+          title: resource.title,
+          url: resource.url,
+          type: resource.type,
+        })) ?? [],
+  );
 
   const isSaving = upsertClassroom.isPending;
   const isLiveSession = activityType === "live_session";
 
+  const recordingUrlIsValid =
+    !isLiveSession ||
+    recordingUrl.trim().length === 0 ||
+    isHttpUrl(recordingUrl);
   const canSave =
     title.trim().length > 0 &&
     Boolean(targetModule) &&
     !isSaving &&
+    recordingUrlIsValid &&
     (!isLiveSession || description.trim().length > 0);
 
   const backHref = adminPath(`/courses/${courseId}/curriculum`);
 
   const handleSave = async () => {
     if (!program || !targetModule || !canSave) return;
+
+    if (isLiveSession && recordingUrl.trim() && !isHttpUrl(recordingUrl)) {
+      setRecordingUrlError("Enter a valid http or https URL.");
+      return;
+    }
+    setRecordingUrlError("");
 
     const nextLesson = buildLessonPayload({
       existingLesson,
@@ -105,6 +130,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       sessionTime,
       description,
       recordingUrl,
+      resources,
     });
 
     const nextModules = upsertLessonInModules(
@@ -224,7 +250,17 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
             description={description}
             onDescriptionChange={setDescription}
             recordingUrl={recordingUrl}
-            onRecordingUrlChange={setRecordingUrl}
+            onRecordingUrlChange={(value) => {
+              setRecordingUrl(value);
+              if (value.trim().length === 0 || isHttpUrl(value)) {
+                setRecordingUrlError("");
+              } else {
+                setRecordingUrlError("Enter a valid http or https URL.");
+              }
+            }}
+            recordingUrlError={recordingUrlError}
+            resources={resources}
+            onResourcesChange={setResources}
             titlePlaceholder={program.title}
           />
         ) : (
