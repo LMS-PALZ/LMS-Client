@@ -53,16 +53,24 @@ export function mapClassroomResponse(data: any): {
     duration: lesson.durationMinutes,
   }));
 
+  const liveRecordingUrl =
+    typeof liveLesson?.recordingUrl === "string"
+      ? liveLesson.recordingUrl.trim()
+      : "";
+
   const course: ClassroomCourseDetail = {
     id: classroom.id,
     title: classroom.title,
     courseLabel: program.cohortName,
     syllabusCount: data.summary.totalLessons,
-    sessionPhase: liveLesson?.isLiveNow ? "live" : "upcoming",
+    sessionPhase:
+      liveRecordingUrl || !liveLesson?.isLiveNow ? "upcoming" : "live",
     sessionId: liveLesson?.id,
     sessionLabel: program.cohortCode,
     sessionDuration: formatLessonDuration(liveLesson?.durationMinutes),
-    meetUrl: liveLesson?.zoomJoinUrl || liveLesson?.liveSessionUrl || "",
+    meetUrl: liveRecordingUrl
+      ? ""
+      : liveLesson?.zoomJoinUrl || liveLesson?.liveSessionUrl || "",
     scheduledAt: liveStartsAt ?? undefined,
     liveVideoProvider: "zoom",
     description: classroom.description,
@@ -71,7 +79,11 @@ export function mapClassroomResponse(data: any): {
     recordingSummary: "",
 
     recordingTitle: recordings[0]?.title,
-    recordingEmbedUrl: recordings[0]?.recordingUrl ?? null,
+    recordingEmbedUrl:
+      liveRecordingUrl ||
+      recordings.find((item: { recordingUrl?: string }) => item.recordingUrl)
+        ?.recordingUrl ||
+      null,
 
     recordings,
 

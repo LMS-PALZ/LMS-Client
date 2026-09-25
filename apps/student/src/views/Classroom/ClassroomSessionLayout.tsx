@@ -173,21 +173,23 @@ export function ClassroomSessionLayout({
     lesson?.durationMinutes ?? liveGeneralFallback?.durationMinutes,
     extendedLesson?.isLiveNow || Boolean(liveGeneralFallback),
   );
-  const isLive = sessionPhase === "live";
-  const meetUrl =
+  const recordingUrl = lesson?.recordingUrl?.trim() || "";
+  const zoomUrl =
     lesson?.zoomJoinUrl ||
     lesson?.liveSessionUrl ||
     liveGeneralFallback?.zoomJoinUrl ||
     liveGeneralFallback?.liveSessionUrl ||
     mapped.course.meetUrl;
+  const meetUrl = recordingUrl ? "" : zoomUrl;
+  const isLive = recordingUrl ? false : sessionPhase === "live";
   const meetingNumber = (lesson?.zoomMeetingId ?? "").replace(/\D/g, "");
   const course = {
     ...mapped.course,
     sessionId,
-    sessionPhase,
     sourceLessonType:
       lesson?.lessonType ??
       (liveGeneralFallback ? "live_session" : mapped.course.sourceLessonType),
+    sessionPhase: recordingUrl ? "upcoming" : sessionPhase,
     scheduledAt:
       lesson?.startsAt ??
       liveGeneralFallback?.startsAt ??
@@ -197,7 +199,7 @@ export function ClassroomSessionLayout({
       lesson?.title ??
       liveGeneralFallback?.lessonTitle ??
       mapped.course.recordingTitle,
-    recordingEmbedUrl: lesson?.recordingUrl || null,
+    recordingEmbedUrl: recordingUrl || null,
     sessionDuration: lesson?.durationMinutes
       ? `${lesson.durationMinutes} mins`
       : liveGeneralFallback?.durationMinutes
