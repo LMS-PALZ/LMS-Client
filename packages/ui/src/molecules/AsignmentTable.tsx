@@ -5,7 +5,11 @@ import type { StaffAssignment } from "@ssu/types";
 import { useRouter } from "next/navigation";
 import { EllipsisVertical } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useArchiveAssessmentMutation } from "@ssu/queries";
+import {
+  getErrorMessage,
+  mutationToast,
+  useArchiveAssessmentMutation,
+} from "@ssu/queries";
 import { StatusBadge } from "../atoms/StatusBadge";
 import { DataTable } from "../organisms/DataTable";
 
@@ -74,8 +78,11 @@ function ActionDropdown({
     setOpen(false);
     try {
       await archive.mutateAsync(assessment._id);
+      mutationToast.success("Assessment deleted.");
     } catch (error: unknown) {
-      console.error(error instanceof Error ? error.message : error);
+      mutationToast.error(
+        getErrorMessage(error, "Failed to delete assessment."),
+      );
     }
   };
 

@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
-import { useCreateProgramMutation, useSession } from "@ssu/queries";
+import {
+  getErrorMessage,
+  mutationToast,
+  useCreateProgramMutation,
+  useSession,
+} from "@ssu/queries";
 import { AlertBanner } from "@ssu/ui";
 import {
   CourseBasicForm,
@@ -65,8 +70,8 @@ export function CourseBuilderPage() {
       });
       setSuccessVariant(status);
       setSuccessOpen(true);
-    } catch {
-      // Error surfaced via mutation state below.
+    } catch (error) {
+      mutationToast.error(getErrorMessage(error, "Failed to save course."));
     }
   };
 

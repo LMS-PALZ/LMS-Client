@@ -62,7 +62,10 @@ export function CoursesPage() {
   );
 
   const courses = useMemo(
-    () => (data?.items ?? []).map(mapProgramToCourse),
+    () =>
+      (data?.items ?? [])
+        .filter((program) => program.status.toLowerCase() !== "archived")
+        .map(mapProgramToCourse),
     [data?.items],
   );
 

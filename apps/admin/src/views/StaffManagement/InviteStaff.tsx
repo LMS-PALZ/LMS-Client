@@ -1,7 +1,11 @@
 "use client";
 
 import { CustomSelect, Input, FormField, Button, AlertBanner } from "@ssu/ui";
-import { useInviteStaffMutation } from "@ssu/queries";
+import {
+  getErrorMessage,
+  mutationToast,
+  useInviteStaffMutation,
+} from "@ssu/queries";
 import { inviteStaffSchema } from "@ssu/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -44,7 +48,9 @@ export function InviteStaff({ onClose, onSuccess }: InviteStaffProps) {
       });
 
       onSuccess(values.email);
-    } catch {}
+    } catch (error) {
+      mutationToast.error(getErrorMessage(error, "Failed to invite staff."));
+    }
   });
 
   return (
