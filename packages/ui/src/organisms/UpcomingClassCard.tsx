@@ -5,6 +5,7 @@ interface UpcomingClassCardProps {
   time: string;
   date: string;
   programName: string;
+  onOpen?: () => void;
 }
 
 function formatDate(dateString: string) {
@@ -20,9 +21,14 @@ export function UpcomingClassCard({
   time,
   date,
   programName,
+  onOpen,
 }: UpcomingClassCardProps) {
   return (
-    <button className="flex w-full items-center rounded-2xl border border-[#E5E7EB] bg-white px-3 py-3">
+    <button
+      type="button"
+      onClick={() => onOpen?.()}
+      className="flex w-full items-center rounded-2xl border border-[#E5E7EB] bg-white px-3 py-3"
+    >
       <span className="rounded-full bg-[#DBEAFE] px-3 py-1 text-[12px] text-[#2563EB]">
         Upcoming
       </span>

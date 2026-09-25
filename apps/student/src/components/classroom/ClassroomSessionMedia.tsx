@@ -1,24 +1,9 @@
 "use client";
 
-import { parseMeetingTarget } from "@/lib/classroom/meeting-url";
-import { AlertBanner, DashboardEmptyState, LiveIndicator } from "@ssu/ui";
+import { AlertBanner, DashboardEmptyState } from "@ssu/ui";
 import { cn } from "@ssu/utils";
-import dynamic from "next/dynamic";
 import { Video } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import { MeetingIframeEmbed } from "./MeetingIframeEmbed";
-
-const ZoomLiveEmbed = dynamic(
-  () => import("./ZoomLiveEmbed").then((module) => module.ZoomLiveEmbed),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex aspect-[4/3] max-h-[85vh] min-h-[420px] items-center justify-center rounded-[18px] bg-[#242424]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-      </div>
-    ),
-  },
-);
 
 // The app is cross-origin isolated (COEP) for Zoom, which blocks third-party
 // iframes unless they opt in. Loading them credentialless keeps them working.
@@ -96,8 +81,9 @@ function RecordingEmbed({
       )}
     >
       {status === "loading" ? (
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+          <p className="text-[14px] font-medium text-white">Please wait...</p>
         </div>
       ) : null}
       <iframe
@@ -118,79 +104,54 @@ function RecordingEmbed({
   );
 }
 
-function LiveMediaShell({
-  children,
+function openMeetingWindow(url: string) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function LiveMeetingLaunch({
+  meetUrl,
   className,
 }: {
-  children: ReactNode;
+  meetUrl: string;
   className?: string;
 }) {
   return (
-    <div className={cn("relative", className)}>
-      {children}
-      <LiveIndicator
-        label="LIVE"
-        size="sm"
-        tone="overlay"
-        uppercase
-        className="pointer-events-none absolute left-3 top-3 z-10"
+    <VideoFrame className={className}>
+      <DashboardEmptyState
+        icon={Video}
+        title="Join the live class"
+        description="The Zoom meeting opens in a new window so you can join outside this app."
       />
-    </div>
+      <button
+        type="button"
+        onClick={() => openMeetingWindow(meetUrl)}
+        className="mt-4 inline-flex items-center rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
+      >
+        Join live session
+      </button>
+    </VideoFrame>
   );
 }
 
 export function ClassroomSessionMedia({
   mode,
   meetUrl,
-  meetingNumber,
-  displayName,
   recordingEmbedUrl,
   className,
-  onLeaveMeeting,
 }: ClassroomSessionMediaProps) {
   if (mode === "live-meet") {
-    const meetingTarget = meetUrl ? parseMeetingTarget(meetUrl) : null;
-
-    if (
-      meetingTarget?.kind === "zoom" ||
-      (meetUrl && /zoom\.(us|com)/i.test(meetUrl))
-    ) {
-      return (
-        <ZoomLiveEmbed
-          meetUrl={meetUrl!}
-          meetingNumber={meetingNumber}
-          displayName={displayName}
-          className={className}
-          onLeave={onLeaveMeeting}
-        />
-      );
-    }
-
     if (meetUrl) {
-      return (
-        <LiveMediaShell className={className}>
-          <MeetingIframeEmbed meetUrl={meetUrl} />
-        </LiveMediaShell>
-      );
+      return <LiveMeetingLaunch meetUrl={meetUrl} className={className} />;
     }
 
     return (
-      <LiveMediaShell className={className}>
-        <div
-          className={cn(
-            "flex min-h-[360px] flex-col items-center justify-center rounded-[18px] bg-[#F4F7FA] px-6 text-center",
-            className,
-          )}
-        >
-          <p className="text-[18px] font-semibold text-[#1D1D1D]">
-            Meeting link not available
-          </p>
-          <p className="mt-2 max-w-md text-[14px] leading-6 text-[#6B7280]">
-            This session is live, but no join link was provided. Please contact
-            your instructor or check back shortly.
-          </p>
-        </div>
-      </LiveMediaShell>
+      <VideoFrame className={className}>
+        <DashboardEmptyState
+          icon={Video}
+          title="Meeting link not available"
+          description="This session is live, but no join link was provided. Please contact your instructor or check back shortly."
+        />
+      </VideoFrame>
     );
   }
 

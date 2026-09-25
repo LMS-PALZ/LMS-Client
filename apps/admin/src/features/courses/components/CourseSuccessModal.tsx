@@ -20,6 +20,7 @@ export function CourseSuccessModal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-[20px] bg-white shadow-modal focus:outline-none">
+          <Dialog.Title className="sr-only">Success</Dialog.Title>
           <Dialog.Close
             className="absolute right-4 top-4 rounded-lg p-2 text-[#94A3B8] transition hover:bg-[#F7F9FB] hover:text-[#1D1D1D]"
             aria-label="Close"

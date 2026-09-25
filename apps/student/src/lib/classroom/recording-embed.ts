@@ -1,34 +1,4 @@
-export function toVideoEmbedUrl(url: string): string {
-  const trimmed = url.trim();
-  if (!trimmed) return "";
-
-  try {
-    const parsed = new URL(trimmed);
-    const host = parsed.hostname.replace(/^www\./, "");
-
-    if (host === "youtu.be") {
-      const id = parsed.pathname.split("/").filter(Boolean)[0];
-      return id ? `https://www.youtube.com/embed/${id}` : trimmed;
-    }
-
-    if (host === "youtube.com" || host === "m.youtube.com") {
-      if (parsed.pathname.startsWith("/embed/")) return trimmed;
-      const fromQuery = parsed.searchParams.get("v");
-      const fromPath = parsed.pathname.split("/").filter(Boolean).at(-1);
-      const id = fromQuery || fromPath;
-      return id ? `https://www.youtube.com/embed/${id}` : trimmed;
-    }
-
-    if (host === "vimeo.com") {
-      const id = parsed.pathname.split("/").filter(Boolean)[0];
-      return id ? `https://player.vimeo.com/video/${id}` : trimmed;
-    }
-  } catch {
-    return trimmed;
-  }
-
-  return trimmed;
-}
+export { toVideoEmbedUrl } from "@ssu/utils";
 
 export function classroomSessionHref(options: {
   lessonId: string;
