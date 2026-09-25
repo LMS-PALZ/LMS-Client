@@ -44,16 +44,28 @@ export function CourseLayoutClient({ moduleId, children }: Props) {
   const currentModule = data.classroom.modules.find(
     (module) => module.id === moduleId,
   );
-  const meetUrl = currentModule?.lessons?.[0]?.liveSessionUrl ?? "";
+  const lesson = currentModule?.lessons?.[0];
+  const recordingUrl = lesson?.recordingUrl?.trim() ?? "";
+  const meetUrl = recordingUrl
+    ? ""
+    : lesson?.zoomJoinUrl || lesson?.liveSessionUrl || "";
+  const courseForShell = recordingUrl
+    ? {
+        ...course,
+        recordingEmbedUrl: recordingUrl,
+        meetUrl: "",
+        sessionPhase: "upcoming" as const,
+      }
+    : course;
 
   return (
     <ClassroomCourseLayoutShell
-      course={course}
+      course={courseForShell}
       weeks={allWeeks}
       meetUrl={meetUrl}
       backFallbackHref="/classroom"
       programId={programId}
-      isLive={course.sessionPhase === "live"}
+      isLive={!recordingUrl && course.sessionPhase === "live"}
     >
       {children}
     </ClassroomCourseLayoutShell>
