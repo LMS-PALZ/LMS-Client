@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@ssu/types": "file:../types",
+    "@ssu/utils": "file:../utils",
     "axios": "^1.7.9"
   },
   "devDependencies": {

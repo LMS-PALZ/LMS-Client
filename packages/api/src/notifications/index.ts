@@ -11,28 +11,18 @@ import { getStudentClassroom } from "../student-classroom";
 import { mapClassroomLessonsToSessions } from "../student-dashboard";
 import { getStoredAuthToken } from "../student-login";
 import { buildClassNotifications } from "./build-class-notifications";
+import {
+  isAdminStaffRole,
+  isTutorOnlyRole,
+  shouldScopeProgramsToTutor,
+} from "@ssu/utils";
 
 function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function isTutorRole(role: string | undefined): boolean {
-  const normalized = (role ?? "").toLowerCase().trim();
-  return (
-    normalized === "tutor" ||
-    normalized === "trainer" ||
-    normalized === "instructor"
-  );
-}
-
 function isStaffRole(role: string | undefined): boolean {
-  const normalized = (role ?? "").toLowerCase().trim();
-  return (
-    normalized === "admin" ||
-    normalized === "super_admin" ||
-    normalized === "superadmin" ||
-    isTutorRole(normalized)
-  );
+  return isAdminStaffRole(role) || isTutorOnlyRole(role);
 }
 
 const MAX_STAFF_NOTIFICATIONS = 20;
@@ -137,7 +127,7 @@ async function listStaffNotifications(): Promise<NotificationDto[]> {
   const programsRes = await listAdminPrograms({ page: 1, limit: 100 });
   if (!programsRes.ok) return [];
 
-  const isTutor = isTutorRole(session.role);
+  const isTutor = shouldScopeProgramsToTutor(session.role);
   const programs = isTutor
     ? filterProgramsForTutor(programsRes.data.items, {
         id: session.id,

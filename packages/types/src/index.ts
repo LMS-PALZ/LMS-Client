@@ -177,22 +177,43 @@ export interface StudentProfile {
   firstName: string;
   lastName: string;
   programTitle: string;
-  image: string;
-  status: "active" | "suspended";
+  image?: string;
+  status: "active" | "suspended" | string;
+}
+
+export interface StudentOverallCompletion {
+  week: number;
+  totalWeeks: number;
 }
 
 export interface StudentInfo {
   email: string;
   phoneNumber: string;
-  dob: {
-    day: string;
-    month: string;
-    year: number;
-  };
-  address: string;
   cohortName: string;
   enrollmentDate: string;
+  progressPercent?: number;
+  overallCompletion?: StudentOverallCompletion;
+  cumulativeScore?: number;
   idDocumentUrl?: string;
+}
+
+/** Full admin student detail payload from GET /admins/students/:id */
+export interface AdminStudentDetails {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  program?: string;
+  programTitle: string;
+  cohortName: string;
+  enrollmentDate: string;
+  status: "active" | "suspended" | string;
+  progressPercent: number;
+  overallCompletion: StudentOverallCompletion;
+  cumulativeScore: number;
+  sessionAttendance: AttendanceRecord[];
+  image?: string;
 }
 
 export interface ProgressData {
@@ -202,12 +223,14 @@ export interface ProgressData {
   description?: string;
 }
 
+export type AttendanceStatus = "present" | "absent" | "not_recorded";
+
 export interface AttendanceRecord {
-  id: string;
+  id?: string;
   title: string;
   date: string;
   week: string;
-  status: "present" | "absent";
+  status: AttendanceStatus;
 }
 
 export interface ProgressCardProps {
@@ -317,4 +340,6 @@ export interface AssessmentSubmission {
   submissionType: string;
   submittedAt: string;
   avatarUrl: string;
+  status?: string;
+  submissionId?: string;
 }

@@ -7,20 +7,22 @@ import { findNextTodaySession } from "@/lib/sessions/today-sessions";
 import { mapClassroomLessonsToSessions } from "@ssu/api";
 import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
 import { DashboardEmptyState, LiveIndicator } from "@ssu/ui";
+import { cn, displayValue, EMPTY_DISPLAY } from "@ssu/utils";
 import {
   CalendarDays,
+  ChevronDown,
   ChevronRight,
+  Circle,
   Clock3,
   GraduationCap,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
-import { ClassroomCourseCard } from "./ClassroomCourseCard";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 function formatDate(dateStr?: string): string {
-  if (!dateStr) return "—";
+  if (!dateStr) return EMPTY_DISPLAY;
   const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return EMPTY_DISPLAY;
 
   const day = date.getDate();
   const month = date.toLocaleString("en-US", { month: "long" });
@@ -38,40 +40,69 @@ function formatDate(dateStr?: string): string {
   return `${day}${suffix} ${month}, ${year}`;
 }
 
+function lessonActionLabel(lesson: {
+  recordingUrl?: string;
+  lessonType?: string;
+  startsAt?: string;
+  durationMinutes?: number;
+  isLiveNow?: boolean;
+}): string | null {
+  const hasRecording = Boolean(lesson.recordingUrl?.trim());
+  const phase = resolveLessonSessionPhase(
+    lesson.startsAt,
+    lesson.durationMinutes,
+    lesson.isLiveNow,
+  );
+
+  if (hasRecording) {
+    if (phase === "live") return "Watch live class";
+    return "Watch recording";
+  }
+
+  if (lesson.lessonType === "live_session") {
+    if (phase === "ended") return null;
+    if (phase === "live") return "Join live session";
+    return "View class";
+  }
+
+  return "Open lesson";
+}
+
 export function MyClassroomPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { ensureProfileForAction } = useProfileSetup();
   const {
     programId: enrolledProgramId,
     program: enrolledProgram,
-    generalPrograms,
     liveGeneralPrograms,
     hasLiveGeneralProgram,
     isLoading: isProfileLoading,
   } = useEnrolledProgram();
 
-  const selectedProgramId = searchParams.get("programId")?.trim() ?? "";
-  const selectedProgramFromList =
-    generalPrograms.find((item) => item.id === selectedProgramId) ?? null;
-  const activeProgramId = selectedProgramId || enrolledProgramId;
-
   const { data, isLoading: isClassroomLoading } =
-    useStudentclassroom(activeProgramId);
+    useStudentclassroom(enrolledProgramId);
+
+  const modules = data?.classroom?.modules ?? [];
+  const [openModules, setOpenModules] = useState<Set<string>>(new Set());
+  const firstModuleId = modules[0]?.id;
+
+  useEffect(() => {
+    if (!firstModuleId) return;
+    setOpenModules((prev) => {
+      if (prev.size > 0) return prev;
+      return new Set([firstModuleId]);
+    });
+  }, [firstModuleId]);
 
   const isLoading =
-    isProfileLoading || (Boolean(activeProgramId) && isClassroomLoading);
+    isProfileLoading || (Boolean(enrolledProgramId) && isClassroomLoading);
 
-  const handleOpenClass = (
-    sessionId: string,
-    sessionProgramId?: string,
-    recordingUrl?: string,
-  ) => {
+  const handleOpenLesson = (lessonId: string, recordingUrl?: string) => {
     if (!ensureProfileForAction()) return;
     router.push(
       classroomSessionHref({
-        lessonId: sessionId,
-        programId: sessionProgramId,
+        lessonId,
+        programId: enrolledProgramId,
         recordingUrl,
       }),
     );
@@ -81,13 +112,10 @@ export function MyClassroomPage() {
     const enrolledSessions = data
       ? mapClassroomLessonsToSessions(
           data.classroom.modules,
-          data.program.title ||
-            selectedProgramFromList?.title ||
-            enrolledProgram?.title ||
-            "",
+          data.program.title || enrolledProgram?.title || "",
         ).map((session) => ({
           ...session,
-          programId: activeProgramId,
+          programId: enrolledProgramId,
         }))
       : [];
 
@@ -106,12 +134,11 @@ export function MyClassroomPage() {
 
     return findNextTodaySession([...enrolledSessions, ...liveExtra]);
   }, [
-    activeProgramId,
     data,
     enrolledProgram?.title,
+    enrolledProgramId,
     hasLiveGeneralProgram,
     liveGeneralPrograms,
-    selectedProgramFromList?.title,
   ]);
 
   if (isLoading) {
@@ -122,7 +149,7 @@ export function MyClassroomPage() {
     );
   }
 
-  if (!enrolledProgramId && generalPrograms.length === 0) {
+  if (!enrolledProgramId) {
     return (
       <DashboardEmptyState
         icon={GraduationCap}
@@ -132,8 +159,7 @@ export function MyClassroomPage() {
     );
   }
 
-  const program = data?.program ?? selectedProgramFromList ?? enrolledProgram;
-  const modules = data?.classroom?.modules ?? [];
+  const program = data?.program ?? enrolledProgram;
   const isLive = Boolean(nextSession?.isLive);
   const sessionEnded = nextSession
     ? resolveLessonSessionPhase(
@@ -145,203 +171,269 @@ export function MyClassroomPage() {
   const hasModules = modules.length > 0;
   const hasTodaySession = Boolean(nextSession);
 
+  const toggleModule = (moduleId: string) => {
+    setOpenModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(moduleId)) next.delete(moduleId);
+      else next.add(moduleId);
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-5">
-      {enrolledProgramId || selectedProgramId || hasTodaySession ? (
-        <section className="grid gap-4 xl:grid-cols-[1.8fr_0.95fr]">
-          {enrolledProgramId || selectedProgramId ? (
-            <div className="rounded-[18px] bg-[#EEF9ED] p-6">
-              <div className="inline-flex rounded-full bg-white px-2 py-1 text-[9px] font-medium text-[#7A8594]">
-                Enrolled
+      <section className="grid gap-4 xl:grid-cols-[1.8fr_0.95fr]">
+        <div className="rounded-[18px] bg-[#EEF9ED] p-6">
+          <div className="inline-flex rounded-full bg-white px-2 py-1 text-[9px] font-medium text-[#7A8594]">
+            Enrolled
+          </div>
+
+          <h1 className="mt-2 text-[18px] font-bold text-[#1D1D1D] md:text-[20px]">
+            {program?.title || "Your course"}
+          </h1>
+
+          <p className="mt-2 text-[15px] leading-7 text-[#495057]">
+            {program?.description ||
+              "Course details will appear here once your classroom is published."}
+          </p>
+
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div>
+              <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
+                <Clock3 className="h-3 w-3" />
+                <span>Duration</span>
               </div>
-
-              <h1 className="mt-2 text-[18px] font-bold text-[#1D1D1D] md:text-[20px]">
-                {program?.title || "Your course"}
-              </h1>
-
-              <p className="mt-2 text-[15px] leading-7 text-[#495057]">
-                {program?.description ||
-                  "Course details will appear here once your classroom is published."}
+              <p className="mt-1 text-[13px] text-[#6B7280]">
+                {displayValue(program?.duration)}
               </p>
+            </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div>
-                  <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
-                    <Clock3 className="h-3 w-3" />
-                    <span>Duration</span>
-                  </div>
-                  <p className="mt-1 text-[13px] text-[#6B7280]">
-                    {program?.duration || "—"}
-                  </p>
+            <div>
+              <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
+                <CalendarDays className="h-3 w-3" />
+                <span>Start Date</span>
+              </div>
+              <p className="mt-1 text-[13px] text-[#6B7280]">
+                {formatDate(program?.startDate)}
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
+                <CalendarDays className="h-3 w-3" />
+                <span>End Date</span>
+              </div>
+              <p className="mt-1 text-[13px] text-[#6B7280]">
+                {formatDate(program?.endDate)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-[18px] border border-[#EEF2F6] bg-white p-5 md:p-4">
+          {!hasTodaySession ? (
+            <DashboardEmptyState
+              icon={GraduationCap}
+              title="No class scheduled for today"
+              description="Your next live session will appear here when one is scheduled for today."
+            />
+          ) : (
+            <>
+              {isLive ? (
+                <LiveIndicator label="Live" size="md" tone="classroom" />
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-[#E8F4FC] px-3 py-1.5 text-[13px] font-semibold text-[#2B6CB0]">
+                  Upcoming
+                </span>
+              )}
+
+              <h2 className="mt-5 text-[16px] font-medium leading-9 text-[#1D1D1D]">
+                {nextSession?.title}
+              </h2>
+
+              <div className="mt-3 flex items-center gap-5 text-[16px] text-[#6B7280]">
+                <div className="flex items-center gap-2">
+                  <Clock3 size={12} />
+                  <span className="text-[12px]">
+                    {nextSession?.startsAt
+                      ? new Date(nextSession.startsAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "—"}
+                  </span>
                 </div>
 
-                <div>
-                  <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
-                    <CalendarDays className="h-3 w-3" />
-                    <span>Start Date</span>
-                  </div>
-                  <p className="mt-1 text-[13px] text-[#6B7280]">
-                    {formatDate(program?.startDate)}
-                  </p>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 text-[13px] font-medium text-[#4A4F59]">
-                    <CalendarDays className="h-3 w-3" />
-                    <span>End Date</span>
-                  </div>
-                  <p className="mt-1 text-[13px] text-[#6B7280]">
-                    {formatDate(program?.endDate)}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <CalendarDays size={12} />
+                  <span className="text-[12px]">Today</span>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div />
-          )}
 
-          <div className="rounded-[18px] border border-[#EEF2F6] bg-white p-5 md:p-4">
-            {!hasTodaySession ? (
-              <DashboardEmptyState
-                icon={GraduationCap}
-                title="No class scheduled for today"
-                description="Your next live session will appear here when one is scheduled for today."
-              />
-            ) : (
-              <>
-                {isLive ? (
-                  <LiveIndicator label="Live" size="md" tone="classroom" />
-                ) : (
-                  <span className="inline-flex items-center rounded-full bg-[#E8F4FC] px-3 py-1.5 text-[13px] font-semibold text-[#2B6CB0]">
-                    Upcoming
+              <div className="mt-10 flex justify-end">
+                {nextSession?.recordingUrl ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleOpenLesson(nextSession.id, nextSession.recordingUrl)
+                    }
+                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
+                  >
+                    Watch live class
+                    <ChevronRight size={16} />
+                  </button>
+                ) : sessionEnded ? (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
+                    This class has ended
                   </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenLesson(nextSession!.id)}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
+                  >
+                    Join live session
+                    <ChevronRight size={16} />
+                  </button>
                 )}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
 
-                <h2 className="mt-5 text-[16px] font-medium leading-9 text-[#1D1D1D]">
-                  {nextSession?.title}
-                </h2>
+      <section className="rounded-[18px] border border-[#EEF2F6] bg-white p-4 md:p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <h2 className="text-[18px] font-semibold text-[#1D1D1D]">
+            Curriculum
+          </h2>
+          <span className="text-[#D2D8E2]">|</span>
+          <span className="text-[13px] text-[#7A8594]">
+            {modules.length} {modules.length === 1 ? "module" : "modules"}
+          </span>
+        </div>
 
-                <div className="mt-3 flex items-center gap-5 text-[16px] text-[#6B7280]">
-                  <div className="flex items-center gap-2">
-                    <Clock3 size={12} />
-                    <span className="text-[12px]">
-                      {nextSession?.startsAt
-                        ? new Date(nextSession.startsAt).toLocaleTimeString(
-                            [],
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )
-                        : "—"}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <CalendarDays size={12} />
-                    <span className="text-[12px]">Today</span>
-                  </div>
-                </div>
-
-                <div className="mt-10 flex justify-end">
-                  {nextSession?.recordingUrl ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleOpenClass(
-                          nextSession.id,
-                          nextSession.programId,
-                          nextSession.recordingUrl,
-                        )
-                      }
-                      className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
-                    >
-                      Watch live class
-                      <ChevronRight size={16} />
-                    </button>
-                  ) : sessionEnded ? (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
-                      This class has ended
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleOpenClass(nextSession!.id, nextSession?.programId)
-                      }
-                      className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
-                    >
-                      Join live session
-                      <ChevronRight size={16} />
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-      ) : null}
-
-      {generalPrograms.length > 0 ? (
-        <section>
-          <div className="mb-6 flex items-center gap-2">
-            <h2 className="text-[18px] font-semibold text-[#1D1D1D]">
-              Courses
-            </h2>
-            <span className="text-[#D2D8E2]">|</span>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {generalPrograms.map((item) => {
-              const liveFromList = hasLiveGeneralProgram
-                ? liveGeneralPrograms.find((live) => live.programId === item.id)
-                : undefined;
-              const lessonId =
-                liveFromList?.lessonId ??
-                (item.isLiveNow && item.liveLesson?.lessonId
-                  ? item.liveLesson.lessonId
-                  : undefined);
-              const href = lessonId
-                ? `/classroom/${lessonId}?programId=${encodeURIComponent(item.id)}`
-                : `/classroom?programId=${encodeURIComponent(item.id)}`;
+        {!hasModules ? (
+          <DashboardEmptyState
+            icon={GraduationCap}
+            title="No modules available yet"
+            description="Your course modules will appear here once they are published."
+          />
+        ) : (
+          <div className="space-y-3">
+            {modules.map((module, index) => {
+              const expanded = openModules.has(module.id);
+              const lessons = module.lessons ?? [];
+              const weekLabel =
+                module.weekLabel || `Week ${module.order || index + 1}`;
 
               return (
-                <ClassroomCourseCard
-                  key={item.id}
-                  course={{ id: item.id, title: item.title }}
-                  href={href}
-                  subtitle={item.cohortName || item.description}
-                  meta={item.duration}
-                />
+                <div
+                  key={module.id}
+                  className="rounded-[10px] border border-[#EEF2F6] bg-[#FAFBFD]"
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleModule(module.id)}
+                    className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left"
+                  >
+                    <div>
+                      <p className="text-[12px] font-bold text-[#7A8594]">
+                        {weekLabel}
+                      </p>
+                      <p className="mt-1 text-[15px] font-medium text-[#1D1D1D]">
+                        {module.title}
+                      </p>
+                      <p className="mt-1 text-[12px] text-[#6B7280]">
+                        {lessons.length}{" "}
+                        {lessons.length === 1 ? "lesson" : "lessons"}
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        "mt-1 h-5 w-5 shrink-0 text-[#2F3540] transition-transform",
+                        expanded && "rotate-180",
+                      )}
+                    />
+                  </button>
+
+                  {expanded ? (
+                    <div className="space-y-1 border-t border-[#EEF2F6] px-2 py-2">
+                      {lessons.length === 0 ? (
+                        <p className="px-3 py-2 text-[13px] text-[#6B7280]">
+                          No lessons in this module yet.
+                        </p>
+                      ) : (
+                        lessons.map((lesson) => {
+                          const action = lessonActionLabel(lesson);
+                          const phase = resolveLessonSessionPhase(
+                            lesson.startsAt,
+                            lesson.durationMinutes,
+                            lesson.isLiveNow,
+                          );
+                          const disabled =
+                            !lesson.recordingUrl?.trim() &&
+                            lesson.lessonType === "live_session" &&
+                            phase === "ended";
+
+                          return (
+                            <button
+                              key={lesson.id}
+                              type="button"
+                              disabled={disabled}
+                              onClick={() => {
+                                if (disabled) return;
+                                handleOpenLesson(
+                                  lesson.id,
+                                  lesson.recordingUrl,
+                                );
+                              }}
+                              className={cn(
+                                "flex w-full items-center justify-between gap-3 rounded-[8px] px-3 py-2.5 text-left transition",
+                                disabled
+                                  ? "cursor-not-allowed opacity-60"
+                                  : "hover:bg-white",
+                              )}
+                            >
+                              <div className="flex min-w-0 items-start gap-3">
+                                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-[#C5D2E1]" />
+                                <div className="min-w-0">
+                                  <p className="truncate text-[14px] font-medium text-[#1D1D1D]">
+                                    {lesson.title}
+                                  </p>
+                                  {lesson.isLiveNow ? (
+                                    <p className="mt-0.5 text-[12px] font-medium text-[#C92A2A]">
+                                      Live now
+                                    </p>
+                                  ) : disabled ? (
+                                    <p className="mt-0.5 text-[12px] text-[#6B7280]">
+                                      Class ended
+                                    </p>
+                                  ) : lesson.recordingUrl ? (
+                                    <p className="mt-0.5 text-[12px] text-[#6B7280]">
+                                      Recording available
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </div>
+                              {action ? (
+                                <span className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-[#4E845F]">
+                                  {action}
+                                  <ChevronRight className="h-3.5 w-3.5" />
+                                </span>
+                              ) : null}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  ) : null}
+                </div>
               );
             })}
           </div>
-        </section>
-      ) : null}
-
-      {activeProgramId ? (
-        <section>
-          <div className="mb-6 flex items-center gap-2">
-            <h2 className="text-[18px] font-semibold text-[#1D1D1D]">
-              Modules
-            </h2>
-            <span className="text-[#D2D8E2]">|</span>
-          </div>
-
-          {!hasModules ? (
-            <DashboardEmptyState
-              icon={GraduationCap}
-              title="No modules available yet"
-              description="Your course modules will appear here once they are published."
-            />
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {modules.map((module) => (
-                <ClassroomCourseCard key={module.id} course={module} />
-              ))}
-            </div>
-          )}
-        </section>
-      ) : null}
+        )}
+      </section>
     </div>
   );
 }

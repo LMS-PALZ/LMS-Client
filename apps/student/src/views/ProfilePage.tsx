@@ -3,6 +3,7 @@
 import { useSession, useStudentProfile } from "@ssu/queries";
 import { isStudentProfileComplete } from "@ssu/api";
 import { AlertBanner, CardSkeleton, PageHeader } from "@ssu/ui";
+import { displayName, displayValue, EMPTY_DISPLAY } from "@ssu/utils";
 
 export function ProfilePage() {
   const { data: user } = useSession();
@@ -29,13 +30,15 @@ export function ProfilePage() {
               <div>
                 <dt className="text-neutral-500">Name</dt>
                 <dd className="font-medium text-neutral-900">
-                  {user ? `${user.firstName} ${user.lastName}`.trim() : "-"}
+                  {user
+                    ? displayName(user.firstName, user.lastName)
+                    : EMPTY_DISPLAY}
                 </dd>
               </div>
               <div>
                 <dt className="text-neutral-500">Email</dt>
                 <dd className="font-medium text-neutral-900">
-                  {user?.email ?? "-"}
+                  {displayValue(user?.email)}
                 </dd>
               </div>
             </dl>
@@ -55,35 +58,40 @@ export function ProfilePage() {
                 <div>
                   <dt className="text-neutral-500">Gender</dt>
                   <dd className="font-medium capitalize text-neutral-900">
-                    {profile?.gender?.replace(/_/g, " ") ?? "-"}
+                    {displayValue(profile?.gender?.replace(/_/g, " "))}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-neutral-500">Employment</dt>
                   <dd className="font-medium capitalize text-neutral-900">
-                    {profile?.employment_status?.replace(/_/g, " ") ?? "-"}
+                    {displayValue(
+                      profile?.employment_status?.replace(/_/g, " "),
+                    )}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-neutral-500">Date of birth</dt>
                   <dd className="font-medium text-neutral-900">
-                    {profile?.dob
+                    {profile?.dob?.day &&
+                    profile?.dob?.month &&
+                    profile?.dob?.year
                       ? `${profile.dob.day}/${profile.dob.month}/${profile.dob.year}`
-                      : "-"}
+                      : EMPTY_DISPLAY}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-neutral-500">Location</dt>
                   <dd className="font-medium text-neutral-900">
                     {[profile?.city, profile?.state]
+                      .map((part) => displayValue(part, ""))
                       .filter(Boolean)
-                      .join(", ") || "-"}
+                      .join(", ") || EMPTY_DISPLAY}
                   </dd>
                 </div>
                 <div className="sm:col-span-2">
                   <dt className="text-neutral-500">Address</dt>
                   <dd className="font-medium text-neutral-900">
-                    {profile?.address ?? "-"}
+                    {displayValue(profile?.address)}
                   </dd>
                 </div>
               </dl>

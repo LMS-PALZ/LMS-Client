@@ -12,6 +12,7 @@ import {
   mutationToast,
   useUpdateStaffStatusMutation,
 } from "@ssu/queries";
+import { displayValue, EMPTY_DISPLAY } from "@ssu/utils";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -65,7 +66,10 @@ interface TrainersTableProps {
 }
 
 function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
+  if (!dateString?.trim()) return EMPTY_DISPLAY;
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return EMPTY_DISPLAY;
+  return date.toLocaleDateString("en-US", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -184,7 +188,7 @@ export function TrainerTable({
             >
               {initials}
             </span>
-            <span>{name}</span>
+            <span>{displayValue(name)}</span>
           </div>
         );
       },
@@ -194,7 +198,9 @@ export function TrainerTable({
       header: "Assigned Course",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.assignedProgram}</span>
+          <span className="text-sm">
+            {displayValue(row.original.assignedProgram)}
+          </span>
         </div>
       ),
     },

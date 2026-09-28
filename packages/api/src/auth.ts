@@ -629,7 +629,8 @@ export async function getStudentList(
   search = "",
   status = "",
   role = "",
-  course = "",
+  program = "",
+  programId = "",
 ) {
   try {
     const token = getStoredAuthToken();
@@ -637,9 +638,18 @@ export async function getStudentList(
     const params: Record<string, any> = { page, limit };
 
     if (search) params.search = search;
-    if (status && status !== "All") params.status = status;
+    if (status && status !== "All" && !status.toLowerCase().startsWith("all")) {
+      params.status = status.toLowerCase();
+    }
     if (role && role !== "All") params.role = role;
-    if (course && course !== "All") params.course = course;
+
+    // Swagger: `program` filters by enrolled program label (title/slug).
+    const trimmedProgram = program.trim();
+    if (trimmedProgram) params.program = trimmedProgram;
+
+    // Some deployments also accept programId.
+    const trimmedProgramId = programId.trim();
+    if (trimmedProgramId) params.programId = trimmedProgramId;
 
     const res = await axios.get(`${API_BASE_URL}/api/v1/admins/students`, {
       params,
@@ -648,9 +658,57 @@ export async function getStudentList(
       },
     });
 
+    const payload = res.data?.data ?? res.data;
+    const items = Array.isArray(payload?.items)
+      ? payload.items.map((row: Record<string, unknown>) => {
+          const programValue =
+            row.programTitle ?? row.program ?? row.programName ?? row.programs;
+          let programLabel = "";
+          if (typeof programValue === "string") {
+            programLabel = programValue.trim();
+          } else if (Array.isArray(programValue)) {
+            programLabel = programValue
+              .map((entry) => {
+                if (typeof entry === "string") return entry.trim();
+                if (entry && typeof entry === "object") {
+                  const record = entry as Record<string, unknown>;
+                  return String(
+                    record.title ?? record.name ?? record.slug ?? "",
+                  ).trim();
+                }
+                return "";
+              })
+              .filter(Boolean)
+              .join(", ");
+          } else if (programValue && typeof programValue === "object") {
+            const record = programValue as Record<string, unknown>;
+            programLabel = String(
+              record.title ?? record.name ?? record.slug ?? "",
+            ).trim();
+          }
+
+          return {
+            ...row,
+            id: String(row.id ?? row._id ?? ""),
+            firstName: String(row.firstName ?? row.first_name ?? ""),
+            lastName: String(row.lastName ?? row.last_name ?? ""),
+            programTitle: programLabel,
+            progressPercent: Number(row.progressPercent ?? row.progress ?? 0),
+            attendance:
+              row.attendance && typeof row.attendance === "object"
+                ? row.attendance
+                : { display: "—" },
+            status: String(row.status ?? "active"),
+          };
+        })
+      : [];
+
     return {
       ok: true as const,
-      data: res.data.data,
+      data: {
+        ...payload,
+        items,
+      },
       message: res.data.message,
     };
   } catch (error: any) {
@@ -789,6 +847,102 @@ export async function getStaffAnalysis() {
   }
 }
 
+function mapAttendanceStatus(
+  value: unknown,
+): "present" | "absent" | "not_recorded" {
+  const raw = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  if (raw === "present" || raw === "attended") return "present";
+  if (raw === "absent" || raw === "missed") return "absent";
+  return "not_recorded";
+}
+
+function formatAttendanceDate(value: unknown): string {
+  const raw = typeof value === "string" ? value.trim() : "";
+  if (!raw) return "";
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  return date.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function mapSessionAttendance(value: unknown) {
+  if (!Array.isArray(value)) return [];
+
+  return value.map((row, index) => {
+    const item =
+      row && typeof row === "object" && !Array.isArray(row)
+        ? (row as Record<string, unknown>)
+        : {};
+
+    const startsAt =
+      typeof item.startsAt === "string"
+        ? item.startsAt
+        : typeof item.date === "string"
+          ? item.date
+          : "";
+
+    return {
+      id:
+        typeof item.id === "string"
+          ? item.id
+          : `${index}-${String(item.title ?? "session")}`,
+      title: typeof item.title === "string" ? item.title : "",
+      date: formatAttendanceDate(startsAt),
+      week: typeof item.week === "string" ? item.week : "",
+      status: mapAttendanceStatus(item.attendance ?? item.status),
+    };
+  });
+}
+
+function mapAdminStudentDetails(raw: unknown) {
+  const row =
+    raw && typeof raw === "object" && !Array.isArray(raw)
+      ? (raw as Record<string, unknown>)
+      : {};
+
+  const completion =
+    row.overallCompletion &&
+    typeof row.overallCompletion === "object" &&
+    !Array.isArray(row.overallCompletion)
+      ? (row.overallCompletion as Record<string, unknown>)
+      : {};
+
+  const week =
+    typeof completion.week === "number"
+      ? completion.week
+      : Number(completion.week ?? 0) || 0;
+  const totalWeeks =
+    typeof completion.totalWeeks === "number"
+      ? completion.totalWeeks
+      : Number(completion.totalWeeks ?? 0) || 0;
+
+  return {
+    id: String(row.id ?? ""),
+    firstName: typeof row.firstName === "string" ? row.firstName : "",
+    lastName: typeof row.lastName === "string" ? row.lastName : "",
+    email: typeof row.email === "string" ? row.email : "",
+    phoneNumber: typeof row.phoneNumber === "string" ? row.phoneNumber : "",
+    program: typeof row.program === "string" ? row.program : undefined,
+    programTitle: typeof row.programTitle === "string" ? row.programTitle : "",
+    cohortName: typeof row.cohortName === "string" ? row.cohortName : "",
+    enrollmentDate:
+      typeof row.enrollmentDate === "string" ? row.enrollmentDate : "",
+    status: typeof row.status === "string" ? row.status : "active",
+    progressPercent: Number(row.progressPercent ?? 0) || 0,
+    overallCompletion: { week, totalWeeks },
+    cumulativeScore: Number(row.cumulativeScore ?? 0) || 0,
+    sessionAttendance: mapSessionAttendance(row.sessionAttendance),
+    image: typeof row.image === "string" ? row.image : undefined,
+  };
+}
+
 export async function getStudentDetails(userId: string) {
   try {
     const token = getStoredAuthToken();
@@ -804,7 +958,7 @@ export async function getStudentDetails(userId: string) {
 
     return {
       ok: true as const,
-      data: res.data.data,
+      data: mapAdminStudentDetails(res.data.data),
       message: res.data.message,
     };
   } catch (error: any) {
@@ -1220,8 +1374,7 @@ export async function archiveAssessment(assessmentId: string) {
 
     const res = await axios.patch(
       `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/archive`,
-      { assessmentId },
-
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -1234,6 +1387,61 @@ export async function archiveAssessment(assessmentId: string) {
     return {
       ok: false as const,
       message: error.response?.data?.message || "Failed to archive assessment.",
+    };
+  }
+}
+
+export async function publishAssessment(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/publish`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message || "Assessment published.",
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message: error.response?.data?.message || "Failed to publish assessment.",
+    };
+  }
+}
+
+export async function draftAssessment(assessmentId: string) {
+  try {
+    const token = getStoredAuthToken();
+
+    const res = await axios.patch(
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/draft`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data.data,
+      message: res.data.message || "Assessment moved to draft.",
+    };
+  } catch (error: any) {
+    return {
+      ok: false as const,
+      message:
+        error.response?.data?.message || "Failed to move assessment to draft.",
     };
   }
 }
@@ -1270,7 +1478,7 @@ export async function updateAssessment(
     }
 
     const res = await axios.patch(
-      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}/publish`,
+      `${API_BASE_URL}/api/v1/staff/assessments/${assessmentId}`,
       formData,
       {
         headers: {

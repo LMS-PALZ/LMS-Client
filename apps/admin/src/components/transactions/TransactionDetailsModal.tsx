@@ -3,7 +3,7 @@
 import type { AdminTransactionDetail } from "@ssu/types";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Skeleton } from "@ssu/ui";
-import { cn } from "@ssu/utils";
+import { cn, displayValue, EMPTY_DISPLAY } from "@ssu/utils";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
 import { TransactionStatusBadge } from "./TransactionStatusBadge";
@@ -17,9 +17,9 @@ function formatCurrency(amount: number, currency = "NGN") {
 }
 
 function formatDateTime(value?: string) {
-  if (!value) return "—";
+  if (!value) return EMPTY_DISPLAY;
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return EMPTY_DISPLAY;
   return date.toLocaleString("en-GB", {
     day: "numeric",
     month: "long",
@@ -141,21 +141,24 @@ export function TransactionDetailsModal({
                 </div>
 
                 <DetailSection title="Payer's information">
-                  <DetailRow label="Name" value={transaction.studentName} />
+                  <DetailRow
+                    label="Name"
+                    value={displayValue(transaction.studentName)}
+                  />
                   <DetailRow
                     label="Email"
-                    value={transaction.studentEmail || "—"}
+                    value={displayValue(transaction.studentEmail)}
                   />
                   <DetailRow
                     label="Phone number"
-                    value={transaction.studentPhone || "—"}
+                    value={displayValue(transaction.studentPhone)}
                   />
                 </DetailSection>
 
                 <DetailSection title="Transaction information">
                   <DetailRow
                     label="Transaction ID"
-                    value={transaction.transactionId}
+                    value={displayValue(transaction.transactionId)}
                   />
                   <DetailRow
                     label="Date"
@@ -163,14 +166,16 @@ export function TransactionDetailsModal({
                   />
                   <DetailRow
                     label="Payment method"
-                    value={
-                      transaction.paymentMethod !== "—"
-                        ? transaction.paymentMethod
-                        : "—"
-                    }
+                    value={displayValue(transaction.paymentMethod)}
                   />
-                  <DetailRow label="Type" value={transaction.type || "—"} />
-                  <DetailRow label="Item" value={transaction.item || "—"} />
+                  <DetailRow
+                    label="Type"
+                    value={displayValue(transaction.type)}
+                  />
+                  <DetailRow
+                    label="Item"
+                    value={displayValue(transaction.item)}
+                  />
                 </DetailSection>
               </div>
             ) : null}

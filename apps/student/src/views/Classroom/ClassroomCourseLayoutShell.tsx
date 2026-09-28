@@ -9,19 +9,13 @@ import {
 import { LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import { GoBack } from "@ssu/ui";
-import {
-  CheckCircle2,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Circle,
-} from "lucide-react";
+import { CheckCircle2, ChevronDown, Circle } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
-import { formatSessionTime } from "@/lib/assignment-display";
+import { formatSessionDate, formatSessionTime } from "@/lib/assignment-display";
 import { resolveLiveVideoForCourse } from "@/lib/classroom/live-video";
 import {
   classroomSessionHref,
@@ -66,10 +60,6 @@ function ClassroomCourseLayoutShellInner({
 
   const [openWeeks, setOpenWeeks] = useState(
     () => new Set(weeks.filter((week) => week.expanded).map((week) => week.id)),
-  );
-
-  const [selectedLesson, setSelectedLesson] = useState<ClassroomLesson | null>(
-    null,
   );
 
   const liveActive = isLive || course.sessionPhase === "live";
@@ -152,10 +142,15 @@ function ClassroomCourseLayoutShellInner({
       ? "bg-[#D14B3D]"
       : "bg-[#436E53]";
 
-  const sessionMeta =
-    (course.scheduledAt ? formatSessionTime(course.scheduledAt) : "") ||
-    course.sessionDuration ||
-    "";
+  const scheduledTime = course.scheduledAt
+    ? formatSessionTime(course.scheduledAt)
+    : "";
+  const scheduledDate = course.scheduledAt
+    ? formatSessionDate(course.scheduledAt)
+    : "";
+  const sessionMetaParts = hasRecording
+    ? [scheduledDate, scheduledTime].filter(Boolean)
+    : [scheduledTime || course.sessionDuration || ""].filter(Boolean);
 
   function openLesson(lesson: ClassroomLesson) {
     const recorded = Boolean(lesson.recordingUrl?.trim());
@@ -163,7 +158,6 @@ function ClassroomCourseLayoutShellInner({
 
     if (pathname.startsWith(`/classroom/${lesson.id}`)) {
       if (!recorded) setJoinRequested(true);
-      setSelectedLesson(null);
       return;
     }
 
@@ -179,148 +173,77 @@ function ClassroomCourseLayoutShellInner({
   return (
     <div className="grid gap-3 xl:grid-cols-[1.9fr_0.78fr]">
       <div className="flex flex-col rounded-[20px] bg-white p-2 md:p-8">
-        {selectedLesson ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setSelectedLesson(null)}
-              className="inline-flex items-center gap-2 text-[15px] font-bold text-[#4E845F] transition hover:opacity-80"
+        <GoBack fallbackHref={backFallbackHref} />
+
+        <div className="mt-8 inline-flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
+          {liveActive && hasRecording ? (
+            <>
+              <LiveIndicator label="Live now" size="md" tone="classroom" />
+              <span className="text-[#D1D5DB]">|</span>
+              <span className="font-medium text-[#6B7280]">{statusLabel}</span>
+            </>
+          ) : liveActive ? (
+            <LiveIndicator
+              label="LIVE SESSION"
+              size="md"
+              tone="classroom"
+              uppercase
+            />
+          ) : (
+            <>
+              <span className={cn("h-3 w-3 rounded-full", statusDotClass)} />
+              <span className="font-medium text-[#6B7280]">{statusLabel}</span>
+            </>
+          )}
+          {sessionMetaParts.map((part, index) => (
+            <span
+              key={`${part}-${index}`}
+              className="inline-flex items-center gap-2"
             >
-              <ChevronLeft className="h-5 w-5" />
-              Back
-            </button>
+              <span className="text-[#D1D5DB]">|</span>
+              <span>{part}</span>
+            </span>
+          ))}
+        </div>
 
-            <div className="mt-8">
-              <p className="text-[12px] font-medium text-[#7A8594]">Lesson</p>
-              <h1 className="mt-2 text-[22px] font-semibold text-[#1D1D1D] md:text-[24px]">
-                {selectedLesson.title}
-              </h1>
-              {selectedLesson.subtitle && (
-                <p className="mt-2 text-[15px] text-[#6B7280]">
-                  {selectedLesson.subtitle}
-                </p>
-              )}
-              {selectedLesson.description && (
-                <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-5">
-                  <p className="text-[15px] leading-7 text-[#495057]">
-                    {selectedLesson.description}
-                  </p>
-                </div>
-              )}
-              {selectedLesson.recordingUrl ? (
-                <div className="mt-6">
-                  <button
-                    type="button"
-                    onClick={() => openLesson(selectedLesson)}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
-                  >
-                    Watch live class
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              ) : null}
-              {!selectedLesson.recordingUrl &&
-              selectedLesson.type === "live" &&
-              selectedLesson.sessionPhase !== "ended" ? (
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                  {selectedLesson.isLive ? (
-                    <LiveIndicator
-                      label="LIVE SESSION"
-                      size="sm"
-                      tone="classroom"
-                      uppercase
-                    />
-                  ) : (
-                    <span />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => openLesson(selectedLesson)}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
-                  >
-                    Join live session
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              ) : null}
-              {selectedLesson.type === "live" &&
-              selectedLesson.sessionPhase === "ended" ? (
-                <p className="mt-6 text-[14px] font-medium text-[#6B7280]">
-                  This class has ended
-                </p>
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <>
-            <GoBack fallbackHref={backFallbackHref} />
+        <div className="mt-4">
+          <ClassroomSessionMedia
+            mode={mediaMode}
+            meetUrl={liveVideo.meetUrl}
+            meetingNumber={meetingNumber}
+            displayName={displayName}
+            recordingEmbedUrl={
+              mediaMode === "recording-embed" && lessonRecordingUrl
+                ? lessonRecordingUrl
+                : recordingEmbedUrl
+            }
+            onLeaveMeeting={() => router.push(backFallbackHref)}
+          />
+        </div>
 
-            <div className="mt-8 inline-flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
-              {liveActive && !hasRecording ? (
-                <LiveIndicator
-                  label="LIVE SESSION"
-                  size="md"
-                  tone="classroom"
-                  uppercase
-                />
-              ) : (
-                <>
-                  <span
-                    className={cn("h-3 w-3 rounded-full", statusDotClass)}
-                  />
-                  <span className="font-medium text-[#6B7280]">
-                    {statusLabel}
-                  </span>
-                </>
-              )}
-              {sessionMeta ? (
-                <>
-                  <span className="text-[#D1D5DB]">|</span>
-                  <span>{sessionMeta}</span>
-                </>
-              ) : null}
-            </div>
+        <h1 className="mt-4 text-[22px] font-semibold text-[#1D1D1D] md:text-[24px]">
+          {course.title}
+        </h1>
 
-            <div className="mt-4">
-              <ClassroomSessionMedia
-                mode={mediaMode}
-                meetUrl={liveVideo.meetUrl}
-                meetingNumber={meetingNumber}
-                displayName={displayName}
-                recordingEmbedUrl={
-                  mediaMode === "recording-embed" && lessonRecordingUrl
-                    ? lessonRecordingUrl
-                    : recordingEmbedUrl
-                }
-                onLeaveMeeting={() => router.push(backFallbackHref)}
-              />
-            </div>
-
-            <h1 className="mt-4 text-[22px] font-semibold text-[#1D1D1D] md:text-[24px]">
-              {course.title}
-            </h1>
-
-            <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-3">
-              <div className="flex w-fit flex-row items-center gap-2 rounded-[12px] bg-[#ECF0F7] p-2">
-                {navTabs.map((tab) => (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={cn(
-                      "rounded-[9px] px-3 py-1 text-[12px] font-medium transition",
-                      tab.active
-                        ? "border border-[#D4E2D8] bg-white text-[#4E845F]"
-                        : "text-[#2F3540] hover:bg-white",
-                    )}
-                  >
-                    {tab.label}
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-6">{children}</div>
-            </div>
-          </>
-        )}
+        <div className="mt-6 rounded-[18px] border border-[#ECF0F7] bg-[#FAFBFD] p-3">
+          <div className="flex w-fit flex-row items-center gap-2 rounded-[12px] bg-[#ECF0F7] p-2">
+            {navTabs.map((tab) => (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={cn(
+                  "rounded-[9px] px-3 py-1 text-[12px] font-medium transition",
+                  tab.active
+                    ? "border border-[#D4E2D8] bg-white text-[#4E845F]"
+                    : "text-[#2F3540] hover:bg-white",
+                )}
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6">{children}</div>
+        </div>
       </div>
 
       <aside className="rounded-[18px] bg-white p-3 md:p-4">
@@ -361,7 +284,7 @@ function ClassroomCourseLayoutShellInner({
                       <button
                         key={lesson.id}
                         type="button"
-                        onClick={() => setSelectedLesson(lesson)}
+                        onClick={() => openLesson(lesson)}
                         className="flex w-full items-start gap-3 text-left transition hover:opacity-80"
                       >
                         <div className="pt-1">

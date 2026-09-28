@@ -104,6 +104,42 @@ export function getInitials(firstName?: string, lastName?: string): string {
   return (a + b).toUpperCase() || "?";
 }
 
+/** Placeholder for empty dashboard fields (never show "undefined"). */
+export const EMPTY_DISPLAY = "-- -- --";
+
+/**
+ * Renders a safe display string for optional dashboard values.
+ * Treats null, undefined, empty/whitespace, and the literal "undefined"/"null" as empty.
+ */
+export function displayValue(
+  value: unknown,
+  fallback: string = EMPTY_DISPLAY,
+): string {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : fallback;
+  }
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value !== "string") return fallback;
+
+  const trimmed = value.trim();
+  if (!trimmed) return fallback;
+  if (/^(undefined|null)$/i.test(trimmed)) return fallback;
+  return trimmed;
+}
+
+/** Join name parts without producing "undefined undefined". */
+export function displayName(
+  firstName?: string | null,
+  lastName?: string | null,
+  fallback: string = EMPTY_DISPLAY,
+): string {
+  const parts = [firstName, lastName]
+    .map((part) => displayValue(part, ""))
+    .filter(Boolean);
+  return parts.length ? parts.join(" ") : fallback;
+}
+
 const units = ["B", "KB", "MB", "GB"] as const;
 
 export function formatFileSize(bytes: number): string {
@@ -116,3 +152,5 @@ export function formatFileSize(bytes: number): string {
   }
   return `${u === 0 ? n : n.toFixed(1)} ${units[u]}`;
 }
+
+export * from "./staff-roles";

@@ -1,5 +1,5 @@
 import type { ProgramApplicant } from "@ssu/types";
-import { cn } from "@ssu/utils";
+import { cn, displayValue } from "@ssu/utils";
 import {
   getAvatarColorFromId,
   getInitialsFromName,
@@ -43,14 +43,16 @@ export function StudentsTable({ applicants, cohortName }: StudentsTableProps) {
                     >
                       {getInitialsFromName(applicant.studentName)}
                     </div>
-                    <span className="font-medium">{applicant.studentName}</span>
+                    <span className="font-medium">
+                      {displayValue(applicant.studentName)}
+                    </span>
                   </div>
                 </td>
                 <td className="px-5 py-4">
                   <StudentStatusBadge status={status} />
                 </td>
                 <td className="px-5 py-4 text-[#6B7280]">
-                  {cohortName ?? "—"}
+                  {displayValue(cohortName)}
                 </td>
                 <td className="px-5 py-4 text-[#6B7280]">
                   {formatCourseListDate(applicant.createdAt)}

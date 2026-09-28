@@ -1,11 +1,14 @@
 "use client";
 
-import { useAssessmentById } from "@ssu/queries";
+import { useAssessmentById, useSession } from "@ssu/queries";
 import {
   StaffAssessmentDetails,
   useAdminModal,
   GradeSubmissionForm,
+  GoBack,
 } from "@ssu/ui";
+import { canGradeAssessments } from "@/lib/admin-roles";
+import { adminPath } from "@ssu/config/portal-paths";
 
 interface Props {
   assessmentId: string;
@@ -13,11 +16,17 @@ interface Props {
 
 export function AssessmentClient({ assessmentId }: Props) {
   const { data } = useAssessmentById(assessmentId);
+  const { data: user } = useSession();
   const { openModal, closeModal } = useAdminModal();
+  const canGrade = canGradeAssessments(user?.role);
 
   const handleViewSubmission = (submission: any) => {
     openModal(
-      "View Submission",
+      canGrade
+        ? String(submission.status ?? "").toLowerCase() === "graded"
+          ? "Regrade Submission"
+          : "Grade Submission"
+        : "View Submission",
       <GradeSubmissionForm
         assessmentId={assessmentId}
         submissionId={submission._id}
@@ -32,16 +41,20 @@ export function AssessmentClient({ assessmentId }: Props) {
         file={submission.file}
         submissionLink={submission.submissionLink}
         onClose={closeModal}
+        canGrade={canGrade}
       />,
     );
   };
 
-  console.log("Assessment data:", data);
-
   return (
-    <StaffAssessmentDetails
-      data={data}
-      onViewSubmission={handleViewSubmission}
-    />
+    <div className="space-y-4">
+      <GoBack fallbackHref={adminPath("/assessment")} />
+      <StaffAssessmentDetails
+        data={data}
+        onViewSubmission={handleViewSubmission}
+        canGrade={canGrade}
+        canManageAssessment={canGrade}
+      />
+    </div>
   );
 }

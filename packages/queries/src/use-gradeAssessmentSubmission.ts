@@ -26,6 +26,7 @@ export function useGradeSubmissionMutation(assessmentId: string) {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["assessment", assessmentId] });
+      void qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
       void qc.invalidateQueries({ queryKey: studentProgressKeys.all });
       void qc.invalidateQueries({ queryKey: ["student-overall-progress"] });
     },

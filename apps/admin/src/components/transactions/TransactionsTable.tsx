@@ -3,6 +3,7 @@
 import type { AdminTransaction } from "@ssu/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { Button } from "@ssu/ui";
 import { TransactionStatusBadge } from "./TransactionStatusBadge";
 
 function formatCurrency(amount: number, currency = "NGN") {
@@ -40,8 +41,6 @@ interface TransactionsTableProps {
   setSearch: (value: string) => void;
   status: string;
   setStatus: (value: string) => void;
-  dateFilter: string;
-  setDateFilter: (value: string) => void;
   setPage: (page: number) => void;
   onSelectTransaction: (transaction: AdminTransaction) => void;
 }
@@ -53,8 +52,6 @@ export function TransactionsTable({
   setSearch,
   status,
   setStatus,
-  dateFilter,
-  setDateFilter,
   setPage,
   onSelectTransaction,
 }: TransactionsTableProps) {
@@ -80,21 +77,9 @@ export function TransactionsTable({
           className="h-11 min-w-[160px] rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[14px] text-[#1D1D1D]"
         >
           <option>All statuses</option>
-          <option>success</option>
-          <option>failed</option>
-          <option>pending</option>
-          <option>cancelled</option>
-        </select>
-
-        <select
-          value={dateFilter}
-          onChange={(event) => setDateFilter(event.target.value)}
-          className="h-11 min-w-[140px] rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[14px] text-[#1D1D1D]"
-        >
-          <option>All time</option>
-          <option>Today</option>
-          <option>This week</option>
-          <option>This month</option>
+          <option value="successful">Successful</option>
+          <option value="failed">Failed</option>
+          <option value="pending">Pending</option>
         </select>
 
         <input
@@ -166,22 +151,26 @@ export function TransactionsTable({
             : "0 transactions"}
         </p>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             disabled={!pagination?.hasPreviousPage}
             onClick={() => setPage((pagination?.page ?? 1) - 1)}
-            className="rounded-full border border-[#E5E7EB] px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full"
           >
             Previous
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             disabled={!pagination?.hasNextPage}
             onClick={() => setPage((pagination?.page ?? 1) + 1)}
-            className="rounded-full border border-[#E5E7EB] px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full"
           >
             Next
-          </button>
+          </Button>
         </div>
       </div>
     </div>

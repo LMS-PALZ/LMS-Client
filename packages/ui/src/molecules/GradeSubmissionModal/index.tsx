@@ -28,6 +28,7 @@ interface Props {
   };
   submissionLink?: string | null;
   onClose: () => void;
+  canGrade?: boolean;
 }
 
 function formatDate(dateString: string) {
@@ -54,10 +55,12 @@ export function GradeSubmissionForm({
   file,
   submissionLink,
   onClose,
+  canGrade = true,
 }: Props) {
   const gradeMutation = useGradeSubmissionMutation(assessmentId);
   const [score, setScore] = useState(initialScore?.toString() ?? "");
   const [feedback, setFeedback] = useState(initialFeedback ?? "");
+  const isGraded = String(status ?? "").toLowerCase() === "graded";
 
   const handleSubmit = async () => {
     if (!score) return;
@@ -190,6 +193,7 @@ export function GradeSubmissionForm({
             placeholder="0"
             value={score}
             onChange={(e) => setScore(e.target.value)}
+            disabled={!canGrade}
             className="w-[100px] text-center"
           />
           <span className="text-[18px] font-medium text-[#1D1D1D]">
@@ -201,6 +205,11 @@ export function GradeSubmissionForm({
             Score cannot exceed {weight}
           </p>
         )}
+        {!canGrade ? (
+          <p className="mt-2 text-[13px] text-[#6B7280]">
+            Only tutors can grade or regrade submissions.
+          </p>
+        ) : null}
       </div>
 
       <div>
@@ -210,9 +219,10 @@ export function GradeSubmissionForm({
         <textarea
           rows={4}
           placeholder="Add feedback for the student..."
-          className="w-full resize-none rounded-[12px] border border-[#D7DFEC] p-3 text-[14px] outline-none focus:border-[#4E845F]"
+          className="w-full resize-none rounded-[12px] border border-[#D7DFEC] p-3 text-[14px] outline-none focus:border-[#4E845F] disabled:bg-[#F8FAFC]"
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
+          disabled={!canGrade}
         />
       </div>
 
@@ -224,27 +234,31 @@ export function GradeSubmissionForm({
           onClick={onClose}
           className="rounded-[30px]"
         >
-          Cancel
+          {canGrade ? "Cancel" : "Close"}
         </Button>
-        <Button
-          type="button"
-          variant="primary"
-          size="lg"
-          onClick={handleSubmit}
-          disabled={
-            gradeMutation.isPending ||
-            !score ||
-            Number(score) > weight ||
-            Number(score) < 0
-          }
-          className="rounded-[30px] text-[var(--color-surface)]"
-        >
-          {gradeMutation.isPending ? (
-            <Spinner className="h-5 w-5 animate-spin" />
-          ) : (
-            "Grade and Return"
-          )}
-        </Button>
+        {canGrade ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            onClick={handleSubmit}
+            disabled={
+              gradeMutation.isPending ||
+              !score ||
+              Number(score) > weight ||
+              Number(score) < 0
+            }
+            className="rounded-[30px] text-[var(--color-surface)]"
+          >
+            {gradeMutation.isPending ? (
+              <Spinner className="h-5 w-5 animate-spin" />
+            ) : isGraded ? (
+              "Regrade and Return"
+            ) : (
+              "Grade and Return"
+            )}
+          </Button>
+        ) : null}
       </div>
     </div>
   );

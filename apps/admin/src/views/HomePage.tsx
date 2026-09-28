@@ -5,12 +5,14 @@ import {
   GreetingTitleSkeleton,
   LiveClassBanner,
   UpcomingClassCard,
-  AssessmentGradingTable,
-  DataTableSkeleton,
+  Skeleton,
 } from "@ssu/ui";
 import { adminPath } from "@ssu/config/portal-paths";
 import { useSession, useAdminDashboard, useAdminCalendar } from "@ssu/queries";
+import { cn, displayValue } from "@ssu/utils";
+import { BookOpen, GraduationCap, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 
 type DashboardClass = {
   programId?: string;
@@ -83,9 +85,43 @@ function matchClassHref(
 
 function greeting(first: string) {
   const h = new Date().getHours();
-  if (h < 12) return `Good morning, ${first}`;
-  if (h < 18) return `Good afternoon, ${first}`;
-  return `Good evening, ${first}`;
+  const name = first.trim() || "there";
+  if (h < 12) return `Good morning, ${name}`;
+  if (h < 18) return `Good afternoon, ${name}`;
+  return `Good evening, ${name}`;
+}
+
+function StatCard({
+  label,
+  value,
+  icon,
+  accentClass,
+}: {
+  label: string;
+  value: string | number | undefined;
+  icon: ReactNode;
+  accentClass: string;
+}) {
+  return (
+    <div className="rounded-[20px] border border-[#E8EEE9] bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[13px] font-medium text-[#6B7280]">{label}</p>
+          <p className="mt-2 text-[28px] font-semibold tracking-tight text-[#1D1D1D]">
+            {displayValue(value, "0")}
+          </p>
+        </div>
+        <span
+          className={cn(
+            "inline-flex h-10 w-10 items-center justify-center rounded-full",
+            accentClass,
+          )}
+        >
+          {icon}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export function HomePage() {
@@ -94,12 +130,10 @@ export function HomePage() {
   const { data, isLoading } = useAdminDashboard();
   const calendar = useAdminCalendar();
   const stats = data?.stats;
-  const pendingAssessments = data?.pendingAssessments?.items;
-  const total = data?.pendingAssessments?.total;
   const liveclass = data?.liveClass;
+  const upcomingClasses = data?.upcomingClasses?.slice(0, 3) ?? [];
 
   const displayFirstName = user?.firstName ?? "";
-
   const showGreetingSkeleton = !user;
 
   async function openClass(
@@ -123,96 +157,107 @@ export function HomePage() {
   }
 
   return (
-    <div className="space-y-2">
-      {showGreetingSkeleton ? (
-        <GreetingTitleSkeleton />
-      ) : (
-        <GreetingTitle>{`${greeting(displayFirstName)}!`}</GreetingTitle>
-      )}
-
-      <div className="flex items-center justify-center pb-4">
-        <p className="text-[16px] text-[#6C757D] font-medium md:text-[18px]">
-          Welcome to your dashboard, lets do great work today
-        </p>
-      </div>
-
-      <div className="mt-8 rounded-[12px] bg-[#F0F5F1] px-6 py-8">
-        <div className="grid grid-cols-3 gap-6">
-          <div>
-            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
-              Active Programs
-            </h3>
-            <p className="text-[18px] font-semibold text-[#495057]">
-              {stats?.activePrograms}
-            </p>
+    <div className="space-y-8">
+      <section className="rounded-[24px] border border-[#E8EEE9] bg-[linear-gradient(180deg,#F7FBF8_0%,#FFFFFF_72%)] px-6 py-8 text-center sm:px-10">
+        {showGreetingSkeleton ? (
+          <div className="flex flex-col items-center gap-3">
+            <GreetingTitleSkeleton />
+            <Skeleton className="h-5 w-80 max-w-full rounded-lg" />
           </div>
-          <div>
-            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
-              Active Trainers
-            </h3>
-            <p className="text-[18px] font-semibold text-[#495057]">
-              {stats?.activeTrainers}
-            </p>
-          </div>
-          <div>
-            <h3 className="mb-1 text-[16px] font-medium text-[#6C757D]">
-              Active Students
-            </h3>
-            <p className="text-[18px] font-semibold text-[#495057]">
-              {stats?.activeStudents}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-8 pt-4">
-        {liveclass === null ? (
-          ""
         ) : (
+          <>
+            <GreetingTitle>{`${greeting(displayFirstName)}!`}</GreetingTitle>
+            <p className="mx-auto mt-3 max-w-xl text-[15px] leading-6 text-[#6B7280] sm:text-[16px]">
+              Welcome to your dashboard. Here&apos;s a quick look at your
+              platform today.
+            </p>
+          </>
+        )}
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-3">
+        {isLoading && !data ? (
+          Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-[112px] rounded-[20px]" />
+          ))
+        ) : (
+          <>
+            <StatCard
+              label="Active programs"
+              value={stats?.activePrograms}
+              accentClass="bg-[#E8F5EC] text-[#2F6B45]"
+              icon={<BookOpen className="h-5 w-5" aria-hidden />}
+            />
+            <StatCard
+              label="Active trainers"
+              value={stats?.activeTrainers}
+              accentClass="bg-[#EEF4FF] text-[#3B5BDB]"
+              icon={<GraduationCap className="h-5 w-5" aria-hidden />}
+            />
+            <StatCard
+              label="Active students"
+              value={stats?.activeStudents}
+              accentClass="bg-[#FFF4E5] text-[#B45309]"
+              icon={<Users className="h-5 w-5" aria-hidden />}
+            />
+          </>
+        )}
+      </section>
+
+      <section className="space-y-4">
+        {liveclass ? (
           <LiveClassBanner
-            title={liveclass?.title}
-            time={liveclass?.time}
-            date={liveclass?.date}
-            programName={liveclass?.programName}
-            zoomJoinUrl={liveclass?.zoomJoinUrl}
+            title={liveclass.title}
+            time={liveclass.time}
+            date={liveclass.date}
+            programName={liveclass.programName}
+            zoomJoinUrl={liveclass.zoomJoinUrl}
             onOpen={() => {
               void openClass(liveclass, true);
             }}
           />
-        )}
+        ) : null}
 
-        <div className="border-t border-[#ECECEC]" />
+        <div className="rounded-[24px] border border-[#E8EEE9] bg-white p-5 sm:p-6">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-[18px] font-semibold text-[#1D1D1D] sm:text-[20px]">
+                Upcoming live classes
+              </h2>
+              <p className="mt-1 text-[13px] text-[#6B7280]">
+                Next sessions across your programs
+              </p>
+            </div>
+          </div>
 
-        <section className="space-y-3 pb-5">
-          <h2 className="text-[20px] font-semibold text-[#202124]">
-            Upcoming live class
-          </h2>
-
-          <div className="space-y-3">
-            {data?.upcomingClasses
-              ?.slice(0, 3)
-              .map((item: any, index: number) => (
+          <div className="mt-5 space-y-3">
+            {isLoading && !data ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-14 rounded-2xl" />
+              ))
+            ) : upcomingClasses.length > 0 ? (
+              upcomingClasses.map((item: any, index: number) => (
                 <UpcomingClassCard
-                  key={index}
+                  key={item?.lessonId || item?.id || index}
                   {...item}
                   onOpen={() => {
                     void openClass(item);
                   }}
                 />
-              ))}
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-[#E5E7EB] bg-[#FAFBFC] px-4 py-8 text-center">
+                <p className="text-[14px] font-medium text-[#1D1D1D]">
+                  No upcoming live classes
+                </p>
+                <p className="mt-1 text-[13px] text-[#6B7280]">
+                  Scheduled sessions will show up here.
+                </p>
+              </div>
+            )}
           </div>
-        </section>
-      </div>
-
-      {isLoading && !data ? (
-        <DataTableSkeleton
-          rows={3}
-          columns={4}
-          className="border-0 bg-transparent p-0 shadow-none"
-        />
-      ) : (
-        <AssessmentGradingTable data={pendingAssessments ?? []} total={total} />
-      )}
+        </div>
+      </section>
     </div>
   );
 }

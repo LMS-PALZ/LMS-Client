@@ -168,9 +168,13 @@ function mapListResponse(
     asRecord(root.meta) ??
     null;
 
+  const totalAmount =
+    readNumber(data, "totalAmount", "total_amount") ||
+    readNumber(metaRecord ?? {}, "totalAmount", "total_amount");
   const totalRevenue =
     readNumber(data, "totalRevenue", "total_revenue") ||
-    readNumber(metaRecord ?? {}, "totalRevenue", "total_revenue");
+    readNumber(metaRecord ?? {}, "totalRevenue", "total_revenue") ||
+    totalAmount;
   const revenueThisMonth =
     readNumber(
       data,
@@ -188,13 +192,18 @@ function mapListResponse(
   const hasRevenueMeta =
     totalRevenue > 0 ||
     revenueThisMonth > 0 ||
+    totalAmount > 0 ||
     (metaRecord != null &&
       ("totalRevenue" in metaRecord ||
         "total_revenue" in metaRecord ||
+        "totalAmount" in metaRecord ||
+        "total_amount" in metaRecord ||
         "revenueThisMonth" in metaRecord ||
         "revenue_this_month" in metaRecord)) ||
     "totalRevenue" in data ||
-    "total_revenue" in data;
+    "total_revenue" in data ||
+    "totalAmount" in data ||
+    "total_amount" in data;
 
   return {
     items,
@@ -218,7 +227,6 @@ export interface ListAdminTransactionsParams {
   limit?: number;
   search?: string;
   status?: string;
-  dateFilter?: string;
 }
 
 export async function listAdminTransactions(
@@ -233,10 +241,11 @@ export async function listAdminTransactions(
 
     if (params.search?.trim()) query.search = params.search.trim();
     if (params.status && params.status !== "All statuses") {
-      query.status = params.status.toLowerCase();
-    }
-    if (params.dateFilter && params.dateFilter !== "All time") {
-      query.date = params.dateFilter.toLowerCase();
+      const normalized = params.status.toLowerCase().trim();
+      query.status =
+        normalized === "success" || normalized === "successful"
+          ? "successful"
+          : normalized;
     }
 
     const res = await axios.get(`${API_BASE_URL}/api/v1/admins/transactions`, {

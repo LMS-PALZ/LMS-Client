@@ -25,6 +25,7 @@
     "@ssu/config": "file:../config",
     "@ssu/store": "file:../store",
     "@ssu/types": "file:../types",
+    "@ssu/utils": "file:../utils",
     "sonner": "^2.0.7"
   },
   "devDependencies": {

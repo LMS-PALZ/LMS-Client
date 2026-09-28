@@ -12,7 +12,7 @@ import type {
   ProgramStatus,
 } from "@ssu/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { adminProgramKeys } from "./keys";
+import { adminProgramKeys, programClassroomKeys } from "./keys";
 
 export interface CreateProgramInput {
   payload: CreateProgramPayload;
@@ -141,7 +141,39 @@ export function useDeleteProgramMutation() {
     },
     onSuccess: (data) => {
       qc.removeQueries({ queryKey: adminProgramKeys.detail(data.programId) });
+      qc.removeQueries({
+        queryKey: programClassroomKeys.modules(data.programId),
+      });
+      qc.removeQueries({
+        queryKey: programClassroomKeys.classroom(data.programId),
+      });
+
+      // Remove deleted course from every cached list immediately.
+      qc.setQueriesData<AdminProgramListResponse>(
+        { queryKey: adminProgramKeys.all },
+        (current) => {
+          if (!current?.items) return current;
+          const items = current.items.filter(
+            (item) => item.id !== data.programId,
+          );
+          if (items.length === current.items.length) return current;
+          return {
+            ...current,
+            items,
+            pagination: {
+              ...current.pagination,
+              total: Math.max(
+                0,
+                (current.pagination.total ?? items.length) - 1,
+              ),
+            },
+          };
+        },
+      );
+
       void qc.invalidateQueries({ queryKey: adminProgramKeys.all });
+      void qc.invalidateQueries({ queryKey: ["admin-calendar"] });
+      void qc.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }

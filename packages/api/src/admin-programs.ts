@@ -92,7 +92,36 @@ function normalizeProgram(row: Record<string, unknown>): AdminProgram | null {
   };
 }
 
-/** Programs assigned to a tutor — matches flexible id shapes from API/login. */
+/** Backend soft-deletes courses as archived/deleted — never show them in lists. */
+export function isDeletedProgramStatus(status?: string | null): boolean {
+  const normalized = String(status ?? "")
+    .trim()
+    .toLowerCase();
+  return (
+    normalized === "archived" ||
+    normalized === "archive" ||
+    normalized === "deleted"
+  );
+}
+
+export function excludeDeletedPrograms<T extends { status?: string | null }>(
+  programs: T[],
+): T[] {
+  return programs.filter((program) => !isDeletedProgramStatus(program.status));
+}
+
+/** @deprecated Use isDeletedProgramStatus */
+export function isArchivedProgramStatus(status?: string | null): boolean {
+  return isDeletedProgramStatus(status);
+}
+
+/** @deprecated Use excludeDeletedPrograms */
+export function excludeArchivedPrograms<T extends { status?: string | null }>(
+  programs: T[],
+): T[] {
+  return excludeDeletedPrograms(programs);
+}
+
 export function filterProgramsForTutor(
   programs: AdminProgram[],
   tutorIdentity: { id?: string; email?: string; accessToken?: string },
@@ -302,9 +331,26 @@ export async function listAdminPrograms(params?: {
       headers: authHeaders(),
     });
 
-    const items = extractProgramRows(res.data);
+    const statusParam = params?.status?.trim() ?? "";
+    const explicitlyRequestingDeleted =
+      Boolean(statusParam) &&
+      statusParam !== "All statuses" &&
+      isDeletedProgramStatus(statusParam);
+
+    let items = extractProgramRows(res.data);
     const pagination = extractPagination(res.data);
-    pagination.total = pagination.total || items.length;
+
+    // Soft-deleted courses must not appear anywhere unless explicitly requested.
+    if (!explicitlyRequestingDeleted) {
+      const beforeCount = items.length;
+      items = excludeDeletedPrograms(items);
+      const removed = beforeCount - items.length;
+      pagination.total = pagination.total
+        ? Math.max(items.length, pagination.total - removed)
+        : items.length;
+    } else {
+      pagination.total = pagination.total || items.length;
+    }
 
     return {
       ok: true as const,
@@ -571,6 +617,7 @@ export async function deleteAdminProgram(programId: string) {
 
     const res = await axios.patch(
       `${API_BASE_URL}/api/v1/programs/${trimmedId}/status`,
+      // Backend soft-deletes via status; the app never surfaces these courses.
       { status: "archived" },
       { headers: authHeaders() },
     );
