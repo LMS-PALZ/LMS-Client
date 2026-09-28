@@ -23,7 +23,6 @@ export function TransactionsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All statuses");
-  const [dateFilter, setDateFilter] = useState("All time");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,21 +37,36 @@ export function TransactionsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [status, dateFilter]);
+  }, [status]);
 
   const { data, isLoading, isError, error } = useAdminTransactions({
     page,
     limit: 10,
     search: debouncedSearch,
     status,
-    dateFilter,
+  });
+
+  const revenueQuery = useAdminTransactions({
+    page: 1,
+    limit: 100,
+    status: "successful",
   });
 
   const detailQuery = useAdminTransactionDetail(selectedId);
 
-  const revenueAvailable = data?.meta != null;
-  const totalRevenue = data?.meta?.totalRevenue ?? 0;
-  const revenueThisMonth = data?.meta?.revenueThisMonth ?? 0;
+  const totalRevenue = useMemo(() => {
+    const metaRevenue = revenueQuery.data?.meta?.totalRevenue;
+    if (typeof metaRevenue === "number" && metaRevenue > 0) return metaRevenue;
+
+    return (revenueQuery.data?.items ?? [])
+      .filter((item) => item.status === "success")
+      .reduce((sum, item) => sum + (item.amount || 0), 0);
+  }, [revenueQuery.data]);
+
+  const revenueAvailable =
+    revenueQuery.data != null &&
+    (Boolean(revenueQuery.data.meta) || totalRevenue > 0);
+  const revenueThisMonth = revenueQuery.data?.meta?.revenueThisMonth ?? 0;
 
   const pagination = useMemo(
     () =>
@@ -140,8 +154,6 @@ export function TransactionsPage() {
             setSearch={setSearch}
             status={status}
             setStatus={setStatus}
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
             setPage={setPage}
             onSelectTransaction={handleSelectTransaction}
           />

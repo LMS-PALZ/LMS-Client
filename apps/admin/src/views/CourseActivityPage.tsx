@@ -10,7 +10,7 @@ import {
   mutationToast,
 } from "@ssu/queries";
 import type { ClassroomLessonType } from "@ssu/types";
-import { AlertBanner, Button } from "@ssu/ui";
+import { AlertBanner, Button, GoBack } from "@ssu/ui";
 import { CourseActivityShell } from "@/features/courses/components/CourseActivityShell";
 import { AdminActivityFormSkeleton } from "@/components/skeletons";
 import {
@@ -177,30 +177,28 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
   };
 
   if (isProgramLoading || isModulesLoading) {
-    return <AdminActivityFormSkeleton />;
+    return (
+      <section className="space-y-4">
+        <GoBack fallbackHref={backHref} />
+        <AdminActivityFormSkeleton />
+      </section>
+    );
   }
 
   if (!program || !targetModule) {
     return (
       <section className="space-y-6">
+        <GoBack fallbackHref={backHref} />
         <AlertBanner variant="error">
           Could not find the module for this activity.
         </AlertBanner>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() =>
-            router.push(adminPath(`/courses/${courseId}/curriculum`))
-          }
-        >
-          Back to curriculum
-        </Button>
       </section>
     );
   }
 
   return (
     <section className="mx-auto max-w-[1120px] space-y-6">
+      <GoBack fallbackHref={backHref} />
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-[24px] font-semibold text-[#1D1D1D]">
           Course Activity

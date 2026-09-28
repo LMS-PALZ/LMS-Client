@@ -181,7 +181,7 @@ export function ClassroomSessionLayout({
     liveGeneralFallback?.liveSessionUrl ||
     mapped.course.meetUrl;
   const meetUrl = recordingUrl ? "" : zoomUrl;
-  const isLive = recordingUrl ? false : sessionPhase === "live";
+  const isLive = sessionPhase === "live";
   const meetingNumber = (lesson?.zoomMeetingId ?? "").replace(/\D/g, "");
   const course = {
     ...mapped.course,
@@ -189,7 +189,7 @@ export function ClassroomSessionLayout({
     sourceLessonType:
       lesson?.lessonType ??
       (liveGeneralFallback ? "live_session" : mapped.course.sourceLessonType),
-    sessionPhase: recordingUrl ? "upcoming" : sessionPhase,
+    sessionPhase,
     scheduledAt:
       lesson?.startsAt ??
       liveGeneralFallback?.startsAt ??

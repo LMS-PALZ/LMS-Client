@@ -10,17 +10,20 @@ const buttonVariants = cva(
     "font-semibold transition-all duration-200 focus-visible:outline-none",
     "focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2",
     "disabled:pointer-events-none disabled:opacity-50",
-    "active:scale-[0.98]",
+    "cursor-pointer active:scale-[0.98]",
   ],
   {
     variants: {
       variant: {
-        primary: "bg-brand-green text-white hover:bg-brand-green-900 shadow-sm",
+        primary:
+          "bg-brand-green text-white shadow-sm hover:bg-brand-green-900 hover:shadow-md",
         secondary:
-          "bg-white text-brand-green border border-brand-green hover:bg-brand-green-50",
-        amber: "bg-brand-amber text-white hover:bg-brand-amber-700 shadow-sm",
+          "bg-white text-brand-green border border-brand-green hover:bg-brand-green-50 hover:border-brand-green-900",
+        amber:
+          "bg-brand-amber text-white shadow-sm hover:bg-brand-amber-700 hover:shadow-md",
         ghost: "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
-        danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
+        danger:
+          "bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-md",
         link: "text-brand-green underline-offset-4 hover:underline p-0 h-auto",
       },
       size: {

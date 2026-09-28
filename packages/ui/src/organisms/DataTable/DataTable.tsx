@@ -48,6 +48,8 @@ export interface DataTableProps<TData, TValue> {
 
   onPageChange?: (page: number) => void;
 
+  onRowClick?: (row: TData) => void;
+
   className?: string;
 }
 
@@ -76,6 +78,8 @@ export function DataTable<TData, TValue>({
 
   pagination,
   onPageChange,
+
+  onRowClick,
 
   className,
 }: DataTableProps<TData, TValue>) {
@@ -146,7 +150,7 @@ export function DataTable<TData, TValue>({
           </div>
         )}
       </div>
-      <div className="overflow-x-auto rounded-xl border bg-white shadow-card">
+      <div className="overflow-x-auto overflow-y-visible rounded-xl border bg-white shadow-card">
         <table className="w-full text-left text-body">
           <thead className="border-b bg-neutral-50">
             {table?.getHeaderGroups().map((hg) => (
@@ -183,10 +187,22 @@ export function DataTable<TData, TValue>({
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className="border-b last:border-0 hover:bg-neutral-50"
+                onClick={() => onRowClick?.(row.original)}
+                className={cn(
+                  "border-b last:border-0 hover:bg-neutral-50",
+                  onRowClick && "cursor-pointer",
+                )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 text-neutral-800">
+                  <td
+                    key={cell.id}
+                    className="px-4 py-3 text-neutral-800"
+                    onClick={(event) => {
+                      if (cell.column.id === "actions") {
+                        event.stopPropagation();
+                      }
+                    }}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

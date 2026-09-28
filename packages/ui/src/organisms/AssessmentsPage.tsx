@@ -8,18 +8,10 @@ import {
   useAssessmentsByProgram,
   useSession,
 } from "@ssu/queries";
+import { canPerformTutorWork, shouldScopeProgramsToTutor } from "@ssu/utils";
 import { Button } from "../atoms/Button";
 import { DashboardEmptyState } from "../molecules/DashboardEmptyState";
 import { AssignmentTable } from "../molecules/AsignmentTable";
-
-function isTutorRole(role: string | undefined): boolean {
-  const normalized = (role ?? "").toLowerCase().trim();
-  return (
-    normalized === "tutor" ||
-    normalized === "trainer" ||
-    normalized === "instructor"
-  );
-}
 
 function readStoredProgramId(): string {
   if (typeof window === "undefined") return "";
@@ -36,7 +28,9 @@ export function AssessmentsPage() {
   const [status, setStatus] = useState("");
   const [programId, setProgramId] = useState(readStoredProgramId);
 
-  const asTutor = isTutorRole(user?.role);
+  // Only pure tutors are scoped to assigned courses; super admins see all.
+  const asTutor = shouldScopeProgramsToTutor(user?.role);
+  const canManageAssessments = canPerformTutorWork(user?.role);
 
   const { data: programsData, isLoading: isProgramsLoading } = useAdminPrograms(
     { page: 1, limit: 100 },
@@ -51,16 +45,29 @@ export function AssessmentsPage() {
 
   const programs = programsData?.items ?? [];
   const hasCourses = programs.length > 0;
-  const canCreateAssessment = !asTutor || hasCourses;
+  const canCreateAssessment = canManageAssessments && (!asTutor || hasCourses);
   const fallbackProgramId = programs[0]?.id?.trim() ?? "";
+  const programStillAvailable = programs.some(
+    (program) => program.id === programId,
+  );
 
-  // Prefer an already-selected course. Only fall back to the first course once.
+  // Prefer an already-selected active course. Drop archived/stale selections.
   useEffect(() => {
-    if (programId) return;
-    if (!fallbackProgramId) return;
+    if (isProgramsLoading) return;
+
+    if (programId && programStillAvailable) return;
+
+    if (!fallbackProgramId) {
+      if (programId) {
+        localStorage.removeItem("programId");
+        setProgramId("");
+      }
+      return;
+    }
+
     localStorage.setItem("programId", fallbackProgramId);
     setProgramId(fallbackProgramId);
-  }, [programId, fallbackProgramId]);
+  }, [fallbackProgramId, isProgramsLoading, programId, programStillAvailable]);
 
   const { data, isError, error, isLoading } = useAssessmentsByProgram(
     programId,
@@ -126,6 +133,7 @@ export function AssessmentsPage() {
           setStatus={setStatus}
           setPage={setPage}
           isLoading={isLoading}
+          canManageAssessments={canManageAssessments}
         />
       )}
     </section>

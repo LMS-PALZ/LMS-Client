@@ -1,5 +1,7 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
+
 interface UpcomingClassCardProps {
   title: string;
   time: string;
@@ -9,7 +11,9 @@ interface UpcomingClassCardProps {
 }
 
 function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
+  return date.toLocaleDateString("en-US", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -27,20 +31,26 @@ export function UpcomingClassCard({
     <button
       type="button"
       onClick={() => onOpen?.()}
-      className="flex w-full items-center rounded-2xl border border-[#E5E7EB] bg-white px-3 py-3"
+      className="group flex w-full items-center gap-3 rounded-2xl border border-[#EEF2F6] bg-[#FAFBFC] px-4 py-3.5 text-left transition hover:border-[#D4E2D8] hover:bg-white"
     >
-      <span className="rounded-full bg-[#DBEAFE] px-3 py-1 text-[12px] text-[#2563EB]">
+      <span className="shrink-0 rounded-full bg-[#DBEAFE] px-3 py-1 text-[12px] font-medium text-[#2563EB]">
         Upcoming
       </span>
 
-      <span className="ml-4 text-[13px] text-[#6B7280]">
-        {time}· {formatDate(date)}
-      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[14px] font-medium text-[#1D1D1D]">
+          {programName}
+          <span className="font-normal text-[#6B7280]"> · {title}</span>
+        </p>
+        <p className="mt-0.5 text-[12px] text-[#6B7280]">
+          {time} · {formatDate(date)}
+        </p>
+      </div>
 
-      <span className="mx-3 text-[#CBD5E1]">|</span>
-      <span className="text-[13px] text-[#1F2937] flex items-center justify-center gap-1">
-        <h3>{programName}</h3> : <p>{title}</p>
-      </span>
+      <ChevronRight
+        className="h-4 w-4 shrink-0 text-[#94A3B8] transition group-hover:text-[#4E845F]"
+        aria-hidden
+      />
     </button>
   );
 }

@@ -55,5 +55,6 @@ export * from "./use-gradeAssessmentSubmission";
 export * from "./use-mysubmissions";
 export * from "./use-overviewprogress";
 export * from "./use-archiveassessment-mutation";
+export * from "./use-assessment-status-mutation";
 export * from "./use-updateassessment-mutation";
 export * from "./use-admindashboard";

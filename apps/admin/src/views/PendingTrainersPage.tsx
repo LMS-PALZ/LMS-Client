@@ -6,10 +6,12 @@ import {
   Button,
   CardSkeleton,
   EmptyState,
+  GoBack,
   PageHeader,
   PageHeaderSkeleton,
 } from "@ssu/ui";
 import { UserCheck } from "lucide-react";
+import { adminPath } from "@ssu/config/portal-paths";
 
 export function PendingTrainersPage() {
   const q = usePendingTrainers();
@@ -17,6 +19,7 @@ export function PendingTrainersPage() {
   if (q.isLoading) {
     return (
       <div className="space-y-6">
+        <GoBack fallbackHref={adminPath("/staff")} />
         <PageHeaderSkeleton showBreadcrumbs />
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -29,6 +32,7 @@ export function PendingTrainersPage() {
 
   return (
     <div className="space-y-6">
+      <GoBack fallbackHref={adminPath("/staff")} />
       <PageHeader
         title="Trainer approvals"
         breadcrumbs={[{ label: "Admin" }, { label: "Pending trainers" }]}

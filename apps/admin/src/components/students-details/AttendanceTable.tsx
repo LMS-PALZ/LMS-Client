@@ -3,6 +3,19 @@
 import { DataTable } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { AttendanceRecord } from "@ssu/types";
+import { displayValue, EMPTY_DISPLAY } from "@ssu/utils";
+
+function attendanceLabel(status: AttendanceRecord["status"]) {
+  if (status === "present") return "✓ Present";
+  if (status === "absent") return "✕ Absent";
+  return "Not recorded";
+}
+
+function attendanceClass(status: AttendanceRecord["status"]) {
+  if (status === "present") return "text-[#2E7D32]";
+  if (status === "absent") return "text-[#C62828]";
+  return "text-[#6B7280]";
+}
 
 const columns: ColumnDef<AttendanceRecord, any>[] = [
   {
@@ -10,27 +23,24 @@ const columns: ColumnDef<AttendanceRecord, any>[] = [
     header: "Session",
     cell: ({ row }) => (
       <div>
-        <p className="font-medium">{row.original.title}</p>
-        <p className="text-sm text-[#6B7280]">{row.original.date}</p>
+        <p className="font-medium">{displayValue(row.original.title)}</p>
+        <p className="text-sm text-[#6B7280]">
+          {displayValue(row.original.date)}
+        </p>
       </div>
     ),
   },
   {
     accessorKey: "week",
     header: "Week",
+    cell: ({ row }) => displayValue(row.original.week),
   },
   {
     accessorKey: "status",
     header: "Attendance",
     cell: ({ row }) => (
-      <span
-        className={
-          row.original.status === "present"
-            ? "text-[#2E7D32]"
-            : "text-[#C62828]"
-        }
-      >
-        {row.original.status === "present" ? "✓ Present" : "✕ Absent"}
+      <span className={attendanceClass(row.original.status)}>
+        {attendanceLabel(row.original.status) || EMPTY_DISPLAY}
       </span>
     ),
   },

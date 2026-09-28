@@ -1,11 +1,18 @@
 "use client";
 
-import { DataTable, StatusBadge } from "@ssu/ui";
+import { DataTable, StatusBadge, useAdminModal } from "@ssu/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Student } from "@ssu/types";
-import { useMemo } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { EllipsisVertical } from "lucide-react";
+import {
+  getErrorMessage,
+  mutationToast,
+  useUpdateStudentStatusMutation,
+} from "@ssu/queries";
+import { StatusDialog } from "@/components/StatusDialog";
+import { displayName, displayValue, EMPTY_DISPLAY } from "@ssu/utils";
 
 const AVATAR_COLORS = [
   "bg-[#86EFAC] text-[#033207]",
@@ -55,10 +62,98 @@ interface StudentsTableProps {
   role: string;
   setRole: (value: string) => void;
 
-  course: string;
-  setCourse: (value: string) => void;
-
   setPage: (page: number) => void;
+}
+
+function StudentActions({ student }: { student: Student }) {
+  const { openModal, closeModal } = useAdminModal();
+  const updateStudentStatus = useUpdateStudentStatusMutation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const isSuspended = String(student.status).toLowerCase() === "suspended";
+  const actionLabel = isSuspended ? "Activate" : "Suspend";
+  const nextStatus = isSuspended ? "active" : "suspended";
+  const fullName = `${student.firstName} ${student.lastName}`.trim();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleAction = () => {
+    setOpen(false);
+    openModal(
+      actionLabel,
+      <StatusDialog
+        variant="confirm"
+        confirmVariant={isSuspended ? "primary" : "danger"}
+        title={`${actionLabel} ${fullName}?`}
+        description={
+          isSuspended
+            ? "They will regain access to the student portal."
+            : "They will lose access to the student portal until reinstated."
+        }
+        confirmLabel={actionLabel}
+        onCancel={closeModal}
+        onConfirm={async () => {
+          try {
+            await updateStudentStatus.mutateAsync({
+              userId: student.id,
+              status: nextStatus,
+            });
+            closeModal();
+            openModal(
+              "",
+              <StatusDialog
+                variant="success"
+                title={`${actionLabel}d successfully`}
+                description={`${fullName}'s status has been updated.`}
+                onDismiss={closeModal}
+              />,
+            );
+          } catch (error) {
+            mutationToast.error(
+              getErrorMessage(error, "Failed to update student status."),
+            );
+          }
+        }}
+      />,
+    );
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        className="text-[13px] text-[#4E845F] hover:opacity-80"
+        aria-label="Student actions"
+      >
+        <EllipsisVertical />
+      </button>
+      {open ? (
+        <div className="absolute bottom-full right-0 z-50 mb-2 w-[150px] rounded-[12px] border border-[#E8EDF5] bg-white py-1 shadow-lg">
+          <button
+            type="button"
+            onClick={handleAction}
+            className={`w-full px-4 py-2.5 text-left text-[14px] hover:bg-[#F7F9FB] ${
+              isSuspended ? "text-[#1D1D1D]" : "text-[#C62828]"
+            }`}
+          >
+            {actionLabel}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function Table({
@@ -70,8 +165,6 @@ export function Table({
   setStatus,
   role,
   setRole,
-  course,
-  setCourse,
   setPage,
 }: StudentsTableProps) {
   const router = useRouter();
@@ -96,7 +189,10 @@ export function Table({
       header: "Student",
       cell: ({ row }) => {
         const { firstName, lastName, id } = row.original;
-        const initials = getInitials(`${firstName} ${lastName}`);
+        const fullName = displayName(firstName, lastName);
+        const initials = getInitials(
+          fullName === EMPTY_DISPLAY ? "" : fullName,
+        );
         const avatarColor = avatarColors[id] ?? AVATAR_COLORS[0];
 
         return (
@@ -106,9 +202,7 @@ export function Table({
             >
               {initials}
             </span>
-            <span>
-              {firstName} {lastName}
-            </span>
+            <span>{fullName}</span>
           </div>
         );
       },
@@ -118,7 +212,9 @@ export function Table({
       header: "Program",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.programTitle}</span>
+          <span className="text-sm">
+            {displayValue(row.original.programTitle)}
+          </span>
         </div>
       ),
     },
@@ -127,7 +223,13 @@ export function Table({
       header: "Progress",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.progressPercent}%</span>
+          <span className="text-sm">
+            {displayValue(
+              row.original.progressPercent != null
+                ? `${row.original.progressPercent}%`
+                : null,
+            )}
+          </span>
         </div>
       ),
     },
@@ -148,15 +250,7 @@ export function Table({
     {
       id: "actions",
       header: "",
-      cell: ({ row }) => (
-        <button
-          type="button"
-          onClick={() => router.push(`/students/${row.original.id}`)}
-          className="text-[13px] text-[#4E845F] hover:opacity-80"
-        >
-          <EllipsisVertical />
-        </button>
-      ),
+      cell: ({ row }) => <StudentActions student={row.original} />,
     },
   ];
 
@@ -171,20 +265,10 @@ export function Table({
       onStatusFilterChange={setStatus}
       roleFilter={role}
       onRoleFilterChange={setRole}
-      courseFilter={course}
-      onCourseFilterChange={setCourse}
       onPageChange={setPage}
+      onRowClick={(row) => router.push(`/students/${row.id}`)}
       searchable
-      statusOptions={["All", "active", "suspended", "pending"]}
-      courseOptions={[
-        "All",
-        "Frontend",
-        "content creation",
-        "product design",
-        "data analysis",
-        "digital marketing",
-        "virtual assistance",
-      ]}
+      statusOptions={["All", "active", "suspended"]}
     />
   );
 }

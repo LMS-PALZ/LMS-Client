@@ -19,17 +19,9 @@ import {
   useUpdateAssessmentMutation,
 } from "@ssu/queries";
 import { useRouter } from "next/navigation";
+import { canPerformTutorWork, shouldScopeProgramsToTutor } from "@ssu/utils";
 
 type StaffTab = "file" | "link";
-
-function isTutorRole(role: string | undefined): boolean {
-  const normalized = (role ?? "").toLowerCase().trim();
-  return (
-    normalized === "tutor" ||
-    normalized === "trainer" ||
-    normalized === "instructor"
-  );
-}
 
 export function CreateAssignmentPage() {
   const [activeTab, setActiveTab] = useState<StaffTab>("file");
@@ -60,7 +52,8 @@ export function CreateAssignmentPage() {
 
   const searchParams = useSearchParams();
   const isEditing = searchParams.get("edit");
-  const asTutor = isTutorRole(user?.role);
+  const asTutor = shouldScopeProgramsToTutor(user?.role);
+  const canCreate = canPerformTutorWork(user?.role);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -93,6 +86,13 @@ export function CreateAssignmentPage() {
   );
 
   const programs = programsData?.items ?? [];
+
+  useEffect(() => {
+    if (isSessionLoading || !user) return;
+    if (!canCreate) {
+      router.replace("/assessment");
+    }
+  }, [canCreate, isSessionLoading, router, user]);
 
   useEffect(() => {
     if (isSessionLoading || isProgramsLoading || !user) return;

@@ -7,10 +7,22 @@ export function useStudentList(
   search = "",
   status = "",
   role = "",
-  course = "",
+  program = "",
+  options?: { enabled?: boolean; programId?: string },
 ) {
+  const programId = options?.programId?.trim() || "";
+
   return useQuery({
-    queryKey: ["students", page, limit, search, status, role, course],
+    queryKey: [
+      "students",
+      page,
+      limit,
+      search,
+      status,
+      role,
+      program,
+      programId,
+    ],
 
     queryFn: async () => {
       const res = await getStudentList(
@@ -19,7 +31,8 @@ export function useStudentList(
         search,
         status,
         role,
-        course,
+        program,
+        programId,
       );
 
       if (!res.ok) {
@@ -28,5 +41,6 @@ export function useStudentList(
 
       return res.data;
     },
+    enabled: options?.enabled ?? true,
   });
 }

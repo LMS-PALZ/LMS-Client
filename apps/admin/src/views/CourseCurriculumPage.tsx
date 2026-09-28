@@ -13,7 +13,7 @@ import {
   mutationToast,
 } from "@ssu/queries";
 import type { ProgramClassroomModule } from "@ssu/types";
-import { AlertBanner, Button } from "@ssu/ui";
+import { AlertBanner, Button, GoBack } from "@ssu/ui";
 import {
   CourseBuilderShell,
   CourseCurriculumView,
@@ -89,31 +89,30 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   };
 
   if (isProgramLoading && !program) {
-    return <AdminCourseDetailSkeleton />;
+    return (
+      <section className="space-y-4">
+        <GoBack fallbackHref={adminPath(`/courses/${courseId}`)} />
+        <AdminCourseDetailSkeleton />
+      </section>
+    );
   }
 
   if (isProgramError || !program) {
     return (
       <section className="space-y-6">
+        <GoBack fallbackHref={adminPath("/courses")} />
         <AlertBanner variant="error">
           {programError instanceof Error
             ? programError.message
             : "Failed to load course."}
         </AlertBanner>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => router.push(adminPath("/courses"))}
-          className="h-10 rounded-full border border-[#E2E8F0] px-5"
-        >
-          Back to courses
-        </Button>
       </section>
     );
   }
 
   return (
     <section className="space-y-6">
+      <GoBack fallbackHref={adminPath(`/courses/${courseId}`)} />
       <nav aria-label="Breadcrumb" className="text-[14px] text-[#94A3B8]">
         <Link href={adminPath("/courses")} className="hover:text-[#4C7D5B]">
           Courses

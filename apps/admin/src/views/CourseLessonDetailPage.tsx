@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminProgram, useProgramClassroomModules } from "@ssu/queries";
-import { AlertBanner, Button } from "@ssu/ui";
+import { AlertBanner, Button, GoBack } from "@ssu/ui";
 import { toVideoEmbedUrl } from "@ssu/utils";
-import { ArrowLeft, Check, Copy, Radio, Video } from "lucide-react";
+import { Check, Copy, Radio, Video } from "lucide-react";
 import { AdminCourseDetailSkeleton } from "@/components/skeletons";
 import {
   formatLessonSchedule,
@@ -66,24 +66,23 @@ export function CourseLessonDetailPage({
   const canJoinZoom = Boolean(meetUrl) && !recordingUrl;
 
   if ((isProgramLoading || isModulesLoading) && !lesson) {
-    return <AdminCourseDetailSkeleton />;
+    return (
+      <div className="space-y-4">
+        <GoBack fallbackHref={courseHref} />
+        <AdminCourseDetailSkeleton />
+      </div>
+    );
   }
 
   if (isProgramError || !program) {
     return (
       <div className="space-y-4">
+        <GoBack fallbackHref={adminPath("/courses")} />
         <AlertBanner variant="error">
           {programError instanceof Error
             ? programError.message
             : "Unable to load this course."}
         </AlertBanner>
-        <Link
-          href={adminPath("/courses")}
-          className="inline-flex items-center gap-2 text-[14px] text-[#4C7D5B] hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to courses
-        </Link>
       </div>
     );
   }
@@ -91,18 +90,12 @@ export function CourseLessonDetailPage({
   if (isModulesError) {
     return (
       <div className="space-y-4">
+        <GoBack fallbackHref={courseHref} />
         <AlertBanner variant="error">
           {modulesError instanceof Error
             ? modulesError.message
             : "Unable to load course modules."}
         </AlertBanner>
-        <Link
-          href={courseHref}
-          className="inline-flex items-center gap-2 text-[14px] text-[#4C7D5B] hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to course
-        </Link>
       </div>
     );
   }
@@ -110,22 +103,17 @@ export function CourseLessonDetailPage({
   if (!module || !lesson) {
     return (
       <div className="space-y-4">
+        <GoBack fallbackHref={courseHref} />
         <AlertBanner variant="error">
           This session could not be found in the course modules.
         </AlertBanner>
-        <Link
-          href={courseHref}
-          className="inline-flex items-center gap-2 text-[14px] text-[#4C7D5B] hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to course
-        </Link>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <GoBack fallbackHref={courseHref} />
       <nav className="flex flex-wrap items-center gap-2 text-[13px] text-[#64748B]">
         <Link href={adminPath("/courses")} className="hover:text-[#4C7D5B]">
           Courses
@@ -173,14 +161,6 @@ export function CourseLessonDetailPage({
               </p>
             )}
           </div>
-
-          <Link
-            href={courseHref}
-            className="inline-flex shrink-0 items-center gap-2 text-[14px] font-medium text-[#4C7D5B] hover:underline"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to course
-          </Link>
         </div>
 
         <dl className="mt-6 grid gap-4 border-t border-[#EEF2F6] pt-5 sm:grid-cols-2 lg:grid-cols-3">

@@ -54,8 +54,9 @@ export function formatSessionDate(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleDateString("en-US", {
-    month: "numeric",
+    month: "short",
     day: "numeric",
+    year: "numeric",
   });
 }
 

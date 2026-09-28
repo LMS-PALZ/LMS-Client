@@ -41,31 +41,23 @@ export function CourseLayoutClient({ moduleId, children }: Props) {
     expanded: week.id === moduleId,
   }));
 
-  const currentModule = data.classroom.modules.find(
-    (module) => module.id === moduleId,
-  );
-  const lesson = currentModule?.lessons?.[0];
-  const recordingUrl = lesson?.recordingUrl?.trim() ?? "";
-  const meetUrl = recordingUrl
-    ? ""
-    : lesson?.zoomJoinUrl || lesson?.liveSessionUrl || "";
-  const courseForShell = recordingUrl
-    ? {
-        ...course,
-        recordingEmbedUrl: recordingUrl,
-        meetUrl: "",
-        sessionPhase: "upcoming" as const,
-      }
-    : course;
+  // Module routes are curriculum entry points — do not auto-play the first lesson.
+  const courseForShell = {
+    ...course,
+    recordingEmbedUrl: null,
+    meetUrl: "",
+    sessionPhase: "upcoming" as const,
+    sessionLabel: course.sessionLabel || "MODULE",
+  };
 
   return (
     <ClassroomCourseLayoutShell
       course={courseForShell}
       weeks={allWeeks}
-      meetUrl={meetUrl}
+      meetUrl=""
       backFallbackHref="/classroom"
       programId={programId}
-      isLive={!recordingUrl && course.sessionPhase === "live"}
+      isLive={false}
     >
       {children}
     </ClassroomCourseLayoutShell>

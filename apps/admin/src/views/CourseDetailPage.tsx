@@ -13,7 +13,7 @@ import {
   useTutorStaff,
   useUpdateProgramStatusMutation,
 } from "@ssu/queries";
-import { AlertBanner } from "@ssu/ui";
+import { AlertBanner, GoBack } from "@ssu/ui";
 import {
   CourseCohortsTab,
   CourseDetailHeader,
@@ -121,12 +121,18 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
   };
 
   if (isProgramLoading && !program) {
-    return <AdminCourseDetailSkeleton />;
+    return (
+      <section className="space-y-4">
+        <GoBack fallbackHref={adminPath("/courses")} />
+        <AdminCourseDetailSkeleton />
+      </section>
+    );
   }
 
   if (isProgramError || !program || !course) {
     return (
       <section className="space-y-6">
+        <GoBack fallbackHref={adminPath("/courses")} />
         <AlertBanner variant="error">
           {programError instanceof Error
             ? programError.message
@@ -138,6 +144,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
 
   return (
     <section className="space-y-6">
+      <GoBack fallbackHref={adminPath("/courses")} />
       <nav aria-label="Breadcrumb" className="text-[14px] text-[#94A3B8]">
         <Link href={adminPath("/courses")} className="hover:text-[#4C7D5B]">
           Courses

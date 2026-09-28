@@ -13,7 +13,10 @@ import {
 import { AdminCoursesPageSkeleton } from "@/components/skeletons";
 import { mapProgramToCourse } from "@/features/courses/lib/program-mappers";
 import type { Course } from "@/features/courses/types";
-import { canCreateCourses, isTutorRole } from "@/lib/admin-roles";
+import {
+  canCreateCourses,
+  shouldFilterProgramsAsTutor,
+} from "@/lib/admin-roles";
 
 function filterCourses(
   courses: Course[],
@@ -42,7 +45,7 @@ export function CoursesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All statuses");
 
-  const asTutor = isTutorRole(user?.role);
+  const asTutor = shouldFilterProgramsAsTutor(user?.role);
   const canAddCourse = canCreateCourses(user?.role);
 
   const { data, isLoading, isError, error } = useAdminPrograms(
@@ -62,10 +65,7 @@ export function CoursesPage() {
   );
 
   const courses = useMemo(
-    () =>
-      (data?.items ?? [])
-        .filter((program) => program.status.toLowerCase() !== "archived")
-        .map(mapProgramToCourse),
+    () => (data?.items ?? []).map(mapProgramToCourse),
     [data?.items],
   );
 

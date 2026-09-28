@@ -2,6 +2,14 @@ import { adminPath } from "@ssu/config/portal-paths";
 import type { NavigationSidebarItem } from "@ssu/ui";
 import type { UserRole } from "@ssu/types";
 import {
+  canPerformAdminWork,
+  canPerformTutorWork,
+  isAdminStaffRole as isAdminStaffRoleUtil,
+  isTutorOnlyRole,
+  normalizeStaffPortalRole,
+  shouldScopeProgramsToTutor,
+} from "@ssu/utils";
+import {
   BookOpen,
   ClipboardList,
   GraduationCap,
@@ -20,37 +28,55 @@ const TUTOR_BLOCKED_PREFIXES = [
   "/auditlog",
   "/certificates",
   "/courses/builder",
+  "/createassignment",
 ];
 
 export function normalizeAdminPortalRole(
   role: UserRole | string | undefined,
 ): AdminPortalRole {
-  const normalized = (role ?? "admin").toLowerCase().trim();
-  if (normalized === "super_admin" || normalized === "superadmin") {
-    return "super_admin";
-  }
-  if (
-    normalized === "tutor" ||
-    normalized === "trainer" ||
-    normalized === "instructor"
-  ) {
-    return "tutor";
-  }
-  return "admin";
+  return normalizeStaffPortalRole(role);
 }
 
+/** Pure tutor role only (not super_admin). */
 export function isTutorRole(role: UserRole | string | undefined): boolean {
-  return normalizeAdminPortalRole(role) === "tutor";
+  return isTutorOnlyRole(role);
 }
 
+/** Admin or super_admin. */
 export function isAdminStaffRole(role: UserRole | string | undefined): boolean {
-  const normalized = normalizeAdminPortalRole(role);
-  return normalized === "admin" || normalized === "super_admin";
+  return isAdminStaffRoleUtil(role);
+}
+
+/**
+ * Tutors and super admins can grade.
+ * Plain admins cannot perform tutor grading work.
+ */
+export function canGradeAssessments(
+  role: UserRole | string | undefined,
+): boolean {
+  return canPerformTutorWork(role);
+}
+
+/**
+ * Tutors and super admins can create/manage assessments.
+ * Plain admins cannot.
+ */
+export function canCreateAssessments(
+  role: UserRole | string | undefined,
+): boolean {
+  return canPerformTutorWork(role);
 }
 
 /** Admins/super-admins can create courses and assign tutors. */
 export function canCreateCourses(role: UserRole | string | undefined): boolean {
-  return isAdminStaffRole(role);
+  return canPerformAdminWork(role);
+}
+
+/** Scope course lists to assigned programs — tutors only, not super admins. */
+export function shouldFilterProgramsAsTutor(
+  role: UserRole | string | undefined,
+): boolean {
+  return shouldScopeProgramsToTutor(role);
 }
 
 export function normalizeAdminPathname(pathname: string): string {
@@ -65,19 +91,30 @@ export function canAccessAdminPath(
   role: UserRole | string | undefined,
   pathname: string,
 ): boolean {
-  if (!isTutorRole(role)) return true;
+  // Pure tutors cannot open admin-only routes.
+  if (isTutorOnlyRole(role)) {
+    const path = normalizeAdminPathname(pathname);
+    return !TUTOR_BLOCKED_PREFIXES.some(
+      (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+    );
+  }
 
-  const path = normalizeAdminPathname(pathname);
-  return !TUTOR_BLOCKED_PREFIXES.some(
-    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
-  );
+  // Plain admins cannot open tutor teaching flows (create assignment).
+  if (!canPerformTutorWork(role)) {
+    const path = normalizeAdminPathname(pathname);
+    if (path === "/createassignment" || path.startsWith("/createassignment?")) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function filterNavItems(
   items: NavItemConfig[],
   role: UserRole | string | undefined,
 ): NavigationSidebarItem[] {
-  if (!isTutorRole(role)) {
+  if (!isTutorOnlyRole(role)) {
     return items.map(({ tutorHidden: _tutorHidden, ...item }) => item);
   }
 
@@ -126,12 +163,6 @@ export function getNavSectionsForRole(role: UserRole | string | undefined) {
       icon: ClipboardList,
       tutorHidden: true,
     },
-    // {
-    //   href: adminPath("/certificates"),
-    //   label: "Certificates",
-    //   icon: ClipboardList,
-    //   tutorHidden: true,
-    // },
   ];
 
   return {

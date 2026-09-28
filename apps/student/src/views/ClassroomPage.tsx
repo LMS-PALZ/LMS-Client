@@ -34,7 +34,7 @@ export function ClassroomPage() {
     <FullPageLayout
       header={
         <div className="flex items-center gap-3">
-          <GoBack fallbackHref="/home" iconOnly />
+          <GoBack fallbackHref="/classroom" />
           <div className="min-w-0">
             <p className="text-micro text-neutral-500 truncate">Classroom</p>
             <p className="text-h4 text-neutral-900 truncate">
