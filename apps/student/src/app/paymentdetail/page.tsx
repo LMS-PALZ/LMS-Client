@@ -1,6 +1,12 @@
 "use client";
 
-import { readStoredPaymentReference, storePaymentReference } from "@ssu/api";
+import {
+  readPaymentCheckoutContext,
+  readStoredPaymentReference,
+  storePaymentCheckoutContext,
+  storePaymentReference,
+  type PaymentCheckoutContext,
+} from "@ssu/api";
 import {
   useInitializePaymentMutation,
   usePrograms,
@@ -53,6 +59,8 @@ function PaymentDetailContent() {
   const [localIdentity, setLocalIdentity] =
     useState<SignupSessionIdentity | null>(null);
   const [storedReference, setStoredReference] = useState<string | null>(null);
+  const [checkoutContext, setCheckoutContext] =
+    useState<PaymentCheckoutContext | null>(null);
 
   useEffect(() => {
     const markHydrated = () => setHasHydrated(true);
@@ -74,8 +82,10 @@ function PaymentDetailContent() {
   }, [setHasHydrated]);
 
   useEffect(() => {
-    setStoredReference(readStoredPaymentReference());
-  }, []);
+    const stored = readStoredPaymentReference();
+    setStoredReference(stored);
+    setCheckoutContext(readPaymentCheckoutContext(referenceFromUrl || stored));
+  }, [referenceFromUrl]);
 
   useEffect(() => {
     if (!hasHydrated) return;
@@ -95,14 +105,28 @@ function PaymentDetailContent() {
     if (restored) setLocalIdentity(restored);
   }, [verify.data]);
 
-  const identity = useMemo(
-    () =>
+  const identity = useMemo(() => {
+    const fromCheckout: SignupSessionIdentity | null = checkoutContext
+      ? {
+          id: "",
+          email: "",
+          first_name: "",
+          last_name: "",
+          phone_number: "",
+          program: checkoutContext.program,
+          program_title: checkoutContext.program_title ?? "",
+          applicationFee: checkoutContext.applicationFee,
+        }
+      : null;
+
+    return mergeSignupIdentity(
       mergeSignupIdentity(
         identityFromVerifyStudent(verify.data?.student),
         localIdentity,
       ),
-    [verify.data?.student, localIdentity],
-  );
+      fromCheckout,
+    );
+  }, [verify.data?.student, localIdentity, checkoutContext]);
 
   const display = identity ?? {
     id: "",
@@ -135,6 +159,12 @@ function PaymentDetailContent() {
       email: latest!.email,
       program: latest!.program,
       callbackUrl,
+    });
+    storePaymentCheckoutContext({
+      reference: data.reference,
+      program: latest!.program,
+      program_title: latest!.program_title,
+      applicationFee: latest!.applicationFee,
     });
     storePaymentResume(latest!, data.reference);
     storePaymentReference(data.reference);

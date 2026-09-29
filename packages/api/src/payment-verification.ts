@@ -1,4 +1,12 @@
 export const PAYMENT_REFERENCE_STORAGE_KEY = "payment_reference";
+export const PAYMENT_CHECKOUT_CONTEXT_KEY = "ssu_payment_checkout";
+
+export type PaymentCheckoutContext = {
+  reference: string;
+  program: string;
+  program_title?: string;
+  applicationFee?: number;
+};
 
 export type PaymentGatewayStatus = "pending" | "successful" | "failed";
 export type PaymentFulfillmentStatus = "pending" | "completed" | "failed";
@@ -185,4 +193,56 @@ export function storePaymentReference(reference: string): void {
 export function clearStoredPaymentReference(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(PAYMENT_REFERENCE_STORAGE_KEY);
+  localStorage.removeItem(PAYMENT_CHECKOUT_CONTEXT_KEY);
+}
+
+/** Program chosen at checkout. Verify's studentRecord does not include it. */
+export function storePaymentCheckoutContext(
+  context: PaymentCheckoutContext,
+): void {
+  if (typeof window === "undefined") return;
+  const reference = context.reference.trim();
+  const program = context.program.trim();
+  if (!reference || !program) return;
+  localStorage.setItem(PAYMENT_REFERENCE_STORAGE_KEY, reference);
+  localStorage.setItem(
+    PAYMENT_CHECKOUT_CONTEXT_KEY,
+    JSON.stringify({
+      reference,
+      program,
+      program_title: context.program_title?.trim() || undefined,
+      applicationFee: context.applicationFee,
+    }),
+  );
+}
+
+export function readPaymentCheckoutContext(
+  reference?: string | null,
+): PaymentCheckoutContext | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(PAYMENT_CHECKOUT_CONTEXT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PaymentCheckoutContext>;
+    const storedReference =
+      typeof parsed.reference === "string" ? parsed.reference.trim() : "";
+    const program =
+      typeof parsed.program === "string" ? parsed.program.trim() : "";
+    if (!storedReference || !program) return null;
+    if (reference && storedReference !== reference.trim()) return null;
+    return {
+      reference: storedReference,
+      program,
+      program_title:
+        typeof parsed.program_title === "string"
+          ? parsed.program_title.trim()
+          : undefined,
+      applicationFee:
+        typeof parsed.applicationFee === "number"
+          ? parsed.applicationFee
+          : undefined,
+    };
+  } catch {
+    return null;
+  }
 }
