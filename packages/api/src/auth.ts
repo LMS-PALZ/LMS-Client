@@ -176,7 +176,14 @@ export type SignupErrorCode =
   | "validation_error"
   | "invalid"
   | "server_error"
-  | "pending_approval";
+  | "pending_approval"
+  | "payment_required";
+
+export type SignupConflictData = {
+  hasMadePayment: boolean;
+  email?: string;
+  programId?: string;
+};
 
 export async function signupStudent(input: {
   first_name: string;
@@ -186,7 +193,12 @@ export async function signupStudent(input: {
   program: string;
 }): Promise<
   | { status: true; message: string; data: AuthUser }
-  | { status: false; code: SignupErrorCode; message: string }
+  | {
+      status: false;
+      code: SignupErrorCode;
+      message: string;
+      data?: SignupConflictData;
+    }
 > {
   try {
     const url = `${API_BASE_URL}/api/v1/students/auth/signup`;
@@ -196,14 +208,55 @@ export async function signupStudent(input: {
     return res.data;
   } catch (error: unknown) {
     const err = error as {
-      response?: { data?: { message?: string } };
+      response?: {
+        status?: number;
+        data?: {
+          message?: string;
+          error_code?: string;
+          data?: {
+            hasMadePayment?: boolean;
+            email?: string;
+            programId?: string;
+          };
+        };
+      };
       message?: string;
     };
+
+    const responseData = err.response?.data;
+    const conflictData = responseData?.data;
+    const errorCode = (responseData?.error_code ?? "").toLowerCase();
+    const unpaidConflict =
+      err.response?.status === 409 &&
+      errorCode === "conflict" &&
+      conflictData?.hasMadePayment === false;
+
+    if (unpaidConflict) {
+      return {
+        status: false,
+        code: "payment_required",
+        message:
+          responseData?.message ||
+          "A student with this email already exists, but payment has not been made yet.",
+        data: {
+          hasMadePayment: false,
+          email:
+            typeof conflictData?.email === "string"
+              ? conflictData.email
+              : undefined,
+          programId:
+            typeof conflictData?.programId === "string"
+              ? conflictData.programId
+              : undefined,
+        },
+      };
+    }
+
     return {
       status: false,
       code: "server_error",
       message:
-        err.response?.data?.message ||
+        responseData?.message ||
         err.message ||
         "Signup failed. Please try again.",
     };

@@ -35,6 +35,9 @@ export function useLogout() {
   return () => {
     clearStudentAuth();
     useSignupStore.getState().clearUser();
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("ssu_student_signup_details");
+    }
     qc.setQueryData(sessionKey, null);
     void qc.invalidateQueries({ queryKey: sessionKey });
     void qc.invalidateQueries({ queryKey: studentProfileKey });

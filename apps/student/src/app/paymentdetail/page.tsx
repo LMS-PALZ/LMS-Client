@@ -5,6 +5,14 @@ import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
 import { Mail, Phone, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ensureSignupSessionPersisted,
+  formatSignupDisplayName,
+  hasCompleteSignupSession,
+  storePaymentResume,
+  type SignupSessionIdentity,
+} from "@/lib/signup-session";
 
 const DEFAULT_PROGRAM_DETAILS = {
   duration: "6 months",
@@ -29,25 +37,89 @@ function formatCurrentDate() {
 
 export default function Page() {
   const payment = useInitializePaymentMutation();
-  const user = useSignupStore((state) => state.user);
+  const hasHydrated = useSignupStore((state) => state._hasHydrated);
+  const setHasHydrated = useSignupStore((state) => state.setHasHydrated);
+  const userEmail = useSignupStore((state) => state.user?.email);
+  const userFirstName = useSignupStore((state) => state.user?.first_name);
+  const userLastName = useSignupStore((state) => state.user?.last_name);
+  const userPhone = useSignupStore((state) => state.user?.phone_number);
+  const userProgram = useSignupStore((state) => state.user?.program);
   const { data: programs } = usePrograms();
+  const [identity, setIdentity] = useState<SignupSessionIdentity | null>(null);
 
-  const matchedProgram = programs?.find((p) => p.slug === user?.program);
+  useEffect(() => {
+    const markHydrated = () => setHasHydrated(true);
+
+    try {
+      if (useSignupStore.persist?.hasHydrated?.()) {
+        markHydrated();
+        return undefined;
+      }
+
+      const unsub = useSignupStore.persist?.onFinishHydration?.(markHydrated);
+      // Persist middleware missing (tests) — don't block the page forever.
+      if (typeof unsub !== "function") {
+        markHydrated();
+        return undefined;
+      }
+      return unsub;
+    } catch {
+      markHydrated();
+      return undefined;
+    }
+  }, [setHasHydrated]);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    setIdentity(ensureSignupSessionPersisted());
+  }, [
+    hasHydrated,
+    userEmail,
+    userFirstName,
+    userLastName,
+    userPhone,
+    userProgram,
+  ]);
+
+  const display = identity ?? {
+    id: "",
+    email: "",
+    first_name: "",
+    last_name: "",
+    phone_number: "",
+    program: "",
+    program_title: "",
+  };
+
+  const fullName = formatSignupDisplayName(display);
+
+  const matchedProgram = programs?.find((p) => p.slug === display.program);
   const applicationFee =
-    matchedProgram?.priceAmount ?? DEFAULT_PROGRAM_DETAILS.applicationFee;
+    matchedProgram?.priceAmount ??
+    identity?.applicationFee ??
+    DEFAULT_PROGRAM_DETAILS.applicationFee;
 
   const handlePayment = async () => {
+    const latest = ensureSignupSessionPersisted();
+    if (!hasCompleteSignupSession(latest)) return;
+
+    // Capture before leaving the origin — Korapay remounts wipe in-memory state.
+    storePaymentResume(latest!);
+
     const callbackUrl = `${window.location.origin}/verifypayment`;
 
     const data = await payment.mutateAsync({
-      email: user?.email ?? "",
-      program: user?.program ?? "",
+      email: latest!.email,
+      program: latest!.program,
       callbackUrl,
     });
 
+    storePaymentResume(latest!, data.reference);
     storePaymentReference(data.reference);
     window.location.href = data.checkout_url;
   };
+
+  const canPay = hasCompleteSignupSession(identity);
 
   return (
     <div className="relative min-h-screen w-full bg-white">
@@ -82,21 +154,21 @@ export default function Page() {
               <div className="flex items-center gap-4 text-[#374151]">
                 <User className="h-5 w-5 text-[#64748B]" />
                 <p className="font-medium sm:text-[15px]">
-                  {user ? `${user.first_name} ${user.last_name}` : "Your Name"}
+                  {fullName || "Your Name"}
                 </p>
               </div>
 
               <div className="flex items-center gap-4 text-[#374151]">
                 <Mail className="h-5 w-5 text-[#64748B]" />
                 <p className="font-medium leading-8 sm:text-[15px]">
-                  {user?.email || "your@email.com"}
+                  {display.email || "your@email.com"}
                 </p>
               </div>
 
               <div className="flex items-center gap-4 text-[#374151]">
                 <Phone className="h-5 w-5 text-[#64748B]" />
                 <p className="font-medium leading-8 sm:text-[15px]">
-                  {user?.phone_number || "0700 000 0000"}
+                  {display.phone_number || "0700 000 0000"}
                 </p>
               </div>
             </div>
@@ -108,7 +180,9 @@ export default function Page() {
                     Selected Program
                   </h2>
                   <p className="text-sm text-[#6B7280] sm:text-[16px]">
-                    {user?.program_title || "Selected program will appear here"}
+                    {display.program_title ||
+                      matchedProgram?.title ||
+                      "Selected program will appear here"}
                   </p>
                 </div>
 
@@ -147,7 +221,7 @@ export default function Page() {
           type="button"
           onClick={handlePayment}
           loading={payment.isPending}
-          disabled={payment.isPending}
+          disabled={payment.isPending || !canPay}
           variant="primary"
           className="mt-8 w-[200px] rounded-[30px] text-[var(--color-surface)]"
         >
