@@ -1,16 +1,25 @@
 "use client";
 
 import { storePaymentReference } from "@ssu/api";
-import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
+import {
+  mutationToast,
+  useInitializePaymentMutation,
+  usePrograms,
+} from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
 import { Mail, Phone, User } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import {
+  isPaymentCheckoutMessage,
+  openPaymentCheckoutPopup,
+} from "@/lib/payment-checkout";
 import {
   PAYMENT_RESUME_QUERY,
   applySignupResumeToken,
   buildPaymentVerifyCallbackUrl,
+  encodeSignupResume,
   ensureSignupSessionPersisted,
   formatSignupDisplayName,
   hasCompleteSignupSession,
@@ -40,6 +49,7 @@ function formatCurrentDate() {
 }
 
 function PaymentDetailContent() {
+  const router = useRouter();
   const payment = useInitializePaymentMutation();
   const searchParams = useSearchParams();
   const resumeToken = searchParams.get(PAYMENT_RESUME_QUERY);
@@ -52,6 +62,15 @@ function PaymentDetailContent() {
   const userProgram = useSignupStore((state) => state.user?.program);
   const { data: programs } = usePrograms();
   const [identity, setIdentity] = useState<SignupSessionIdentity | null>(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const checkoutCleanupRef = useRef<(() => void) | null>(null);
+  const checkoutFinishedRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      checkoutCleanupRef.current?.();
+    };
+  }, []);
 
   useEffect(() => {
     const markHydrated = () => setHasHydrated(true);
@@ -75,7 +94,6 @@ function PaymentDetailContent() {
   }, [setHasHydrated]);
 
   useEffect(() => {
-    // URL resume can restore immediately (does not depend on zustand hydration).
     if (resumeToken) {
       setIdentity(applySignupResumeToken(resumeToken));
       return;
@@ -114,8 +132,11 @@ function PaymentDetailContent() {
     const latest = ensureSignupSessionPersisted();
     if (!hasCompleteSignupSession(latest)) return;
 
+    // Keep React state even if storage is wiped during the gateway round-trip.
+    setIdentity(latest);
     storePaymentResume(latest!);
 
+    const resume = encodeSignupResume(latest!);
     const callbackUrl = buildPaymentVerifyCallbackUrl(
       window.location.origin,
       latest!,
@@ -125,11 +146,59 @@ function PaymentDetailContent() {
       email: latest!.email,
       program: latest!.program,
       callbackUrl,
+      resume,
     });
 
     storePaymentResume(latest!, data.reference);
     storePaymentReference(data.reference);
-    window.location.href = data.checkout_url;
+
+    checkoutCleanupRef.current?.();
+
+    const popup = openPaymentCheckoutPopup(data.checkout_url);
+    if (!popup) {
+      // Popup blocked — fall back to full-page redirect.
+      window.location.href = data.checkout_url;
+      return;
+    }
+
+    setCheckoutOpen(true);
+    checkoutFinishedRef.current = false;
+
+    const finish = (paid: boolean) => {
+      if (checkoutFinishedRef.current) return;
+      checkoutFinishedRef.current = true;
+      checkoutCleanupRef.current?.();
+      checkoutCleanupRef.current = null;
+      setCheckoutOpen(false);
+      setIdentity(ensureSignupSessionPersisted() ?? latest);
+
+      if (paid) {
+        router.replace("/welcome");
+        return;
+      }
+
+      mutationToast.info(
+        "Payment not completed yet. You can try again when ready.",
+      );
+    };
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (!isPaymentCheckoutMessage(event.data)) return;
+      finish(event.data.paid);
+    };
+
+    const pollClosed = window.setInterval(() => {
+      if (!popup.closed) return;
+      finish(false);
+    }, 800);
+
+    checkoutCleanupRef.current = () => {
+      window.removeEventListener("message", onMessage);
+      window.clearInterval(pollClosed);
+    };
+
+    window.addEventListener("message", onMessage);
   };
 
   const canPay = hasCompleteSignupSession(identity);
@@ -233,12 +302,12 @@ function PaymentDetailContent() {
         <Button
           type="button"
           onClick={handlePayment}
-          loading={payment.isPending}
-          disabled={payment.isPending || !canPay}
+          loading={payment.isPending || checkoutOpen}
+          disabled={payment.isPending || checkoutOpen || !canPay}
           variant="primary"
           className="mt-8 w-[200px] rounded-[30px] text-[var(--color-surface)]"
         >
-          Proceed to Payment
+          {checkoutOpen ? "Complete payment…" : "Proceed to Payment"}
         </Button>
       </div>
     </div>

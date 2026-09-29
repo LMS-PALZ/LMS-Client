@@ -7,6 +7,10 @@ import { useVerifyPayment } from "@ssu/queries";
 import { PaymentStatusSkeleton } from "@ssu/ui";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import {
+  PAYMENT_CHECKOUT_MESSAGE,
+  type PaymentCheckoutMessage,
+} from "@/lib/payment-checkout";
+import {
   PAYMENT_RESUME_QUERY,
   applySignupResumeToken,
   decodeSignupResume,
@@ -53,10 +57,12 @@ function StatusCard({
   label,
   tone,
   countdown,
+  showCountdown,
 }: {
   label: string;
   tone: "success" | "pending" | "failed";
   countdown: number;
+  showCountdown: boolean;
 }) {
   const styles = {
     success: {
@@ -92,9 +98,15 @@ function StatusCard({
           <Icon className={`h-7 w-7 ${styles.icon}`} aria-hidden />
         </div>
         <h1 className="text-[22px] font-semibold text-[#1D1D1D]">{label}</h1>
-        <p className="mt-3 text-[14px] leading-6 text-[#6B7280]">
-          {countdown > 0 ? `Redirecting… in ${countdown}s` : "Redirecting…"}
-        </p>
+        {showCountdown ? (
+          <p className="mt-3 text-[14px] leading-6 text-[#6B7280]">
+            {countdown > 0 ? `Redirecting… in ${countdown}s` : "Redirecting…"}
+          </p>
+        ) : (
+          <p className="mt-3 text-[14px] leading-6 text-[#6B7280]">
+            You can close this window and return to registration.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -104,9 +116,15 @@ function PaymentVerifyContent() {
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
   const resumeToken = searchParams.get(PAYMENT_RESUME_QUERY);
+  const [isPopup, setIsPopup] = useState(false);
 
   useEffect(() => {
     applySignupResumeToken(resumeToken);
+    try {
+      setIsPopup(Boolean(window.opener && !window.opener.closed));
+    } catch {
+      setIsPopup(false);
+    }
   }, [resumeToken]);
 
   const paymentDetailHref = paymentDetailPath(
@@ -116,15 +134,41 @@ function PaymentVerifyContent() {
   const { data, isLoading, isError, error } = useVerifyPayment(reference);
   const isPaid = data ? isPaymentFullySuccessful(data) : false;
 
-  const redirectHref = !reference
-    ? paymentDetailHref
-    : isError
+  useEffect(() => {
+    if (!isPopup || !reference) return;
+    if (!data && !isError) return;
+
+    const payload: PaymentCheckoutMessage = {
+      type: PAYMENT_CHECKOUT_MESSAGE,
+      reference,
+      paid: Boolean(data && isPaid),
+      paymentStatus: data?.paymentStatus,
+    };
+
+    try {
+      window.opener?.postMessage(payload, window.location.origin);
+    } catch {
+      // ignore cross-window failures
+    }
+
+    const timer = window.setTimeout(() => {
+      window.close();
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [isPopup, reference, data, isError, isPaid]);
+
+  const redirectHref = isPopup
+    ? null
+    : !reference
       ? paymentDetailHref
-      : data
-        ? isPaid
-          ? "/welcome"
-          : paymentDetailHref
-        : null;
+      : isError
+        ? paymentDetailHref
+        : data
+          ? isPaid
+            ? "/welcome"
+            : paymentDetailHref
+          : null;
 
   const countdown = useRedirectCountdown(
     Boolean(redirectHref) && (!!data || isError || !reference),
@@ -134,7 +178,12 @@ function PaymentVerifyContent() {
 
   if (!reference) {
     return (
-      <StatusCard label="payment failed" tone="failed" countdown={countdown} />
+      <StatusCard
+        label="payment failed"
+        tone="failed"
+        countdown={countdown}
+        showCountdown={!isPopup}
+      />
     );
   }
 
@@ -156,6 +205,7 @@ function PaymentVerifyContent() {
             : "failed"
         }
         countdown={countdown}
+        showCountdown={!isPopup}
       />
     );
   }
@@ -166,6 +216,7 @@ function PaymentVerifyContent() {
         label={paymentStatusLabel(data.paymentStatus)}
         tone="success"
         countdown={countdown}
+        showCountdown={!isPopup}
       />
     );
   }
@@ -177,6 +228,7 @@ function PaymentVerifyContent() {
         label={label}
         tone={data.paymentStatus === "failed" ? "failed" : "pending"}
         countdown={countdown}
+        showCountdown={!isPopup}
       />
     );
   }

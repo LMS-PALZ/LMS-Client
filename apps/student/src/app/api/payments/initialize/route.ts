@@ -2,6 +2,8 @@ import { getApiBaseUrl } from "@ssu/api";
 import { getPaymentVerifyCallbackUrl } from "@ssu/config/payment-callback";
 import { NextRequest, NextResponse } from "next/server";
 
+const RESUME_COOKIE = "ssu_payment_resume";
+
 async function postInitialize(payload: Record<string, string>) {
   const upstream = await fetch(
     `${getApiBaseUrl()}/api/v1/payments/initialize`,
@@ -39,16 +41,32 @@ function resolveCallbackUrl(req: NextRequest, bodyCallback?: unknown): string {
   return fromEnv;
 }
 
+function withResumeCookie(res: NextResponse, resume: string | undefined) {
+  if (!resume) return res;
+  res.cookies.set({
+    name: RESUME_COOKIE,
+    value: resume,
+    path: "/",
+    maxAge: 60 * 60 * 2,
+    sameSite: "lax",
+    secure: true,
+    httpOnly: false,
+  });
+  return res;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as {
       email?: string;
       program?: string;
       callback_url?: string;
+      resume?: string;
     };
 
     const email = body.email?.trim();
     const program = body.program?.trim();
+    const resume = body.resume?.trim();
 
     if (!email || !program) {
       return NextResponse.json(
@@ -61,16 +79,22 @@ export async function POST(req: NextRequest) {
 
     const initial = await postInitialize({ email, program, callback_url });
     if (initial.upstream.ok) {
-      return NextResponse.json(initial.body, {
-        status: initial.upstream.status,
-      });
+      return withResumeCookie(
+        NextResponse.json(initial.body, {
+          status: initial.upstream.status,
+        }),
+        resume,
+      );
     }
 
     // If backend doesn't support `callback_url` yet, retry without it so payments still work.
     const retry = await postInitialize({ email, program });
-    return NextResponse.json(retry.body ?? initial.body, {
-      status: retry.upstream.status,
-    });
+    return withResumeCookie(
+      NextResponse.json(retry.body ?? initial.body, {
+        status: retry.upstream.status,
+      }),
+      resume,
+    );
   } catch {
     return NextResponse.json(
       { status: false, message: "Payment initialization failed." },

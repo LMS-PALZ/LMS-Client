@@ -142,31 +142,38 @@ function clearResumeCookie(): void {
 
 function readPaymentResumeStorage(): SignupSessionIdentity | null {
   if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(PAYMENT_RESUME_STORAGE_KEY);
+
+  const parse = (raw: string | null): SignupSessionIdentity | null => {
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<SignupSessionIdentity>;
-    const email = trim(parsed.email);
-    const program = trim(parsed.program);
-    if (!email && !program) return null;
-    return {
-      id: trim(parsed.id),
-      email,
-      first_name: trim(parsed.first_name),
-      last_name: trim(parsed.last_name),
-      phone_number: trim(parsed.phone_number),
-      program,
-      program_title: trim(parsed.program_title),
-      programId: trim(parsed.programId) || undefined,
-      programSlug: trim(parsed.programSlug) || program || undefined,
-      applicationFee:
-        typeof parsed.applicationFee === "number"
-          ? parsed.applicationFee
-          : undefined,
-    };
-  } catch {
-    return null;
-  }
+    try {
+      const parsed = JSON.parse(raw) as Partial<SignupSessionIdentity>;
+      const email = trim(parsed.email);
+      const program = trim(parsed.program);
+      if (!email && !program) return null;
+      return {
+        id: trim(parsed.id),
+        email,
+        first_name: trim(parsed.first_name),
+        last_name: trim(parsed.last_name),
+        phone_number: trim(parsed.phone_number),
+        program,
+        program_title: trim(parsed.program_title),
+        programId: trim(parsed.programId) || undefined,
+        programSlug: trim(parsed.programSlug) || program || undefined,
+        applicationFee:
+          typeof parsed.applicationFee === "number"
+            ? parsed.applicationFee
+            : undefined,
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  return (
+    parse(window.localStorage.getItem(PAYMENT_RESUME_STORAGE_KEY)) ||
+    parse(window.sessionStorage.getItem(PAYMENT_RESUME_STORAGE_KEY))
+  );
 }
 
 function buildIdentity(
@@ -316,7 +323,7 @@ export function persistSignupSession(input: {
   return identity;
 }
 
-/** Snapshot used when leaving for Korapay (localStorage + cookie). */
+/** Snapshot used when leaving for Korapay (localStorage + sessionStorage + cookie). */
 export function storePaymentResume(
   identity: SignupSessionIdentity,
   reference?: string,
@@ -324,14 +331,17 @@ export function storePaymentResume(
   if (typeof window === "undefined") return;
 
   const token = encodeSignupResume(identity);
-  window.localStorage.setItem(
-    PAYMENT_RESUME_STORAGE_KEY,
-    JSON.stringify({
-      ...identity,
-      reference: reference ?? "",
-      savedAt: Date.now(),
-    }),
-  );
+  const payload = JSON.stringify({
+    ...identity,
+    reference: reference ?? "",
+    savedAt: Date.now(),
+  });
+  window.localStorage.setItem(PAYMENT_RESUME_STORAGE_KEY, payload);
+  try {
+    window.sessionStorage.setItem(PAYMENT_RESUME_STORAGE_KEY, payload);
+  } catch {
+    // ignore quota / private mode
+  }
   writeResumeCookie(token);
   writeStudentSignupDetails({
     first_name: identity.first_name,
@@ -402,6 +412,11 @@ export function clearSignupSession(): void {
   clearResumeCookie();
   if (typeof window !== "undefined") {
     window.localStorage.removeItem(PAYMENT_RESUME_STORAGE_KEY);
+    try {
+      window.sessionStorage.removeItem(PAYMENT_RESUME_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
   }
   useSignupStore.getState().clearUser();
 }

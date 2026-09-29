@@ -8,12 +8,17 @@ export function useInitializePaymentMutation() {
       email,
       program,
       callbackUrl,
+      resume,
     }: {
       email: string;
       program: string;
       callbackUrl?: string;
+      resume?: string;
     }) => {
-      const res = await initializePayment(email, program, { callbackUrl });
+      const res = await initializePayment(email, program, {
+        callbackUrl,
+        resume,
+      });
 
       if (!res.ok) {
         throw new Error(res.message);

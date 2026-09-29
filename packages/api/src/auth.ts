@@ -520,12 +520,15 @@ export async function adminlogin(
 export async function initializePayment(
   email: string,
   program: string,
-  options?: { callbackUrl?: string },
+  options?: { callbackUrl?: string; resume?: string },
 ) {
   try {
     const payload: Record<string, string> = { email, program };
     if (options?.callbackUrl) {
       payload.callback_url = options.callbackUrl;
+    }
+    if (options?.resume) {
+      payload.resume = options.resume;
     }
 
     const url =
