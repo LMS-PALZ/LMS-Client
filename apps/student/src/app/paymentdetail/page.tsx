@@ -5,8 +5,12 @@ import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
 import { Mail, Phone, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import {
+  PAYMENT_RESUME_QUERY,
+  applySignupResumeToken,
+  buildPaymentVerifyCallbackUrl,
   ensureSignupSessionPersisted,
   formatSignupDisplayName,
   hasCompleteSignupSession,
@@ -35,8 +39,10 @@ function formatCurrentDate() {
   });
 }
 
-export default function Page() {
+function PaymentDetailContent() {
   const payment = useInitializePaymentMutation();
+  const searchParams = useSearchParams();
+  const resumeToken = searchParams.get(PAYMENT_RESUME_QUERY);
   const hasHydrated = useSignupStore((state) => state._hasHydrated);
   const setHasHydrated = useSignupStore((state) => state.setHasHydrated);
   const userEmail = useSignupStore((state) => state.user?.email);
@@ -57,7 +63,6 @@ export default function Page() {
       }
 
       const unsub = useSignupStore.persist?.onFinishHydration?.(markHydrated);
-      // Persist middleware missing (tests) — don't block the page forever.
       if (typeof unsub !== "function") {
         markHydrated();
         return undefined;
@@ -70,10 +75,16 @@ export default function Page() {
   }, [setHasHydrated]);
 
   useEffect(() => {
+    // URL resume can restore immediately (does not depend on zustand hydration).
+    if (resumeToken) {
+      setIdentity(applySignupResumeToken(resumeToken));
+      return;
+    }
     if (!hasHydrated) return;
     setIdentity(ensureSignupSessionPersisted());
   }, [
     hasHydrated,
+    resumeToken,
     userEmail,
     userFirstName,
     userLastName,
@@ -103,10 +114,12 @@ export default function Page() {
     const latest = ensureSignupSessionPersisted();
     if (!hasCompleteSignupSession(latest)) return;
 
-    // Capture before leaving the origin — Korapay remounts wipe in-memory state.
     storePaymentResume(latest!);
 
-    const callbackUrl = `${window.location.origin}/verifypayment`;
+    const callbackUrl = buildPaymentVerifyCallbackUrl(
+      window.location.origin,
+      latest!,
+    );
 
     const data = await payment.mutateAsync({
       email: latest!.email,
@@ -229,5 +242,13 @@ export default function Page() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <PaymentDetailContent />
+    </Suspense>
   );
 }

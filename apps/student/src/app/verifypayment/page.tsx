@@ -6,6 +6,13 @@ import { isPaymentFullySuccessful } from "@ssu/api";
 import { useVerifyPayment } from "@ssu/queries";
 import { PaymentStatusSkeleton } from "@ssu/ui";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  PAYMENT_RESUME_QUERY,
+  applySignupResumeToken,
+  decodeSignupResume,
+  paymentDetailPath,
+  resolveSignupSession,
+} from "@/lib/signup-session";
 
 function paymentStatusLabel(
   paymentStatus: string,
@@ -96,18 +103,27 @@ function StatusCard({
 function PaymentVerifyContent() {
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
+  const resumeToken = searchParams.get(PAYMENT_RESUME_QUERY);
+
+  useEffect(() => {
+    applySignupResumeToken(resumeToken);
+  }, [resumeToken]);
+
+  const paymentDetailHref = paymentDetailPath(
+    decodeSignupResume(resumeToken) ?? resolveSignupSession(),
+  );
 
   const { data, isLoading, isError, error } = useVerifyPayment(reference);
   const isPaid = data ? isPaymentFullySuccessful(data) : false;
 
   const redirectHref = !reference
-    ? "/paymentdetail"
+    ? paymentDetailHref
     : isError
-      ? "/paymentdetail"
+      ? paymentDetailHref
       : data
         ? isPaid
           ? "/welcome"
-          : "/paymentdetail"
+          : paymentDetailHref
         : null;
 
   const countdown = useRedirectCountdown(

@@ -37,6 +37,8 @@ export function useLogout() {
     useSignupStore.getState().clearUser();
     if (typeof window !== "undefined") {
       window.localStorage.removeItem("ssu_student_signup_details");
+      window.localStorage.removeItem("ssu_payment_resume");
+      document.cookie = "ssu_payment_resume=; Path=/; Max-Age=0; SameSite=Lax";
     }
     qc.setQueryData(sessionKey, null);
     void qc.invalidateQueries({ queryKey: sessionKey });
