@@ -51,36 +51,40 @@ export function WelcomePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white px-6 py-10 sm:px-8 sm:py-12">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-[820px] flex-col items-center justify-center text-center ">
-        <div className="mb-10 w-[120px] sm:mb-12">
+    <main className="relative min-h-dvh w-full bg-white">
+      {/* Top-aligned so the CTA is never clipped by vertical centering */}
+      <div className="mx-auto flex w-full max-w-[640px] flex-col items-center px-4 pb-8 pt-14 text-center sm:pt-16">
+        <div className="mb-4 w-[100px] sm:w-[112px]">
           <img
             src="/firstlogo.png"
             alt="Chiggy Nsofor Foundation"
             loading="eager"
+            className="h-auto w-full"
           />
         </div>
 
-        <h1 className="mb-2 text-[20px] font-bold  text-[#1F2937] sm:text-[25px]">
-          You&apos;re in.
-        </h1>
-        <p className="mx-auto mb-8 max-w-[500px] font-semibold sm:text-[17px] text-sm  text-[#495057]">
-          Welcome to the Skill Scale-up Program. Few things to know about your
-          journey.
-        </p>
+        <div className="mx-auto max-w-[340px]">
+          <h1 className="mb-1.5 text-[22px] font-bold text-[#1F2937] sm:text-[23px]">
+            You&apos;re in.
+          </h1>
+          <p className="mx-auto mb-5 text-sm leading-5 text-[#6B7280]">
+            Welcome to the Skill Scale-up Program. Few things to know about your
+            journey.
+          </p>
+        </div>
 
-        <section className="w-full max-w-[500px] rounded-[12px] bg-[#FAFBFD] px-7 py-6 text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:px-8 sm:py-9">
-          <div className="space-y-10">
+        <section className="w-full max-w-[560px] rounded-[28px] bg-[#F9FBFD] px-6 py-5 text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:px-8 sm:py-6">
+          <div className="space-y-5">
             {welcomeHighlights.map(({ title, description, icon: Icon }) => (
-              <article key={title} className="flex items-start gap-4">
-                <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                  <Icon className="h-5 w-5 text-[#64748B]" />
+              <article key={title} className="flex items-start gap-3.5">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                  <Icon className="h-4 w-4 text-[#64748B]" />
                 </div>
                 <div>
-                  <h2 className="mb-3 text-sm font-bold text-[#1F2937] sm:text-[17px]">
+                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     {title}
                   </h2>
-                  <p className="max-w-[500px] text-sm leading-[1.6] text-[#4B5563] sm:text-[15px]">
+                  <p className="text-sm leading-5 text-[#6B7280] sm:text-[15px]">
                     {description}
                   </p>
                 </div>
@@ -92,8 +96,7 @@ export function WelcomePage() {
         <Button
           type="button"
           variant="primary"
-          size="lg"
-          className="mt-10 h-[60px] rounded-full px-10 text-[15px] text-[var(--color-surface)] sm:min-w-[210px]"
+          className="mt-5 w-[200px] shrink-0 rounded-[30px] text-[var(--color-surface)]"
           onClick={() => router.push("/setpassword")}
         >
           Let&apos;s get started
