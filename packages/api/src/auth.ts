@@ -298,7 +298,25 @@ export async function resetPassword(
   }
 }
 
-export type ForgetPasswordErrorCode = "invalid" | "server_error";
+export type ForgetPasswordErrorCode =
+  | "invalid"
+  | "server_error"
+  | "payment_required";
+
+function isUnpaidPasswordRecoveryMessage(message: string): boolean {
+  const normalized = message.toLowerCase();
+  if (!normalized.includes("payment")) return false;
+  return (
+    normalized.includes("completed payment") ||
+    normalized.includes("complete payment") ||
+    normalized.includes("pending") ||
+    normalized.includes("failed") ||
+    normalized.includes("not been made") ||
+    normalized.includes("incomplete") ||
+    normalized.includes("uncompleted") ||
+    normalized.includes("unpaid")
+  );
+}
 
 export async function forgetPassword(
   email: string,
@@ -317,16 +335,38 @@ export async function forgetPassword(
     };
   } catch (error: unknown) {
     const err = error as {
-      response?: { data?: { code?: string; message?: string } };
+      response?: {
+        data?: {
+          code?: string;
+          error_code?: string;
+          message?: string;
+        };
+      };
       message?: string;
     };
+    const responseData = err.response?.data;
+    const message =
+      responseData?.message ||
+      err.message ||
+      "Forget password failed. Please try again.";
+    const rawCode = (
+      responseData?.error_code ||
+      responseData?.code ||
+      ""
+    ).toLowerCase();
+    const paymentRequired =
+      rawCode === "payment_required" ||
+      rawCode === "payment_pending" ||
+      rawCode === "payment_failed" ||
+      rawCode === "incomplete_payment" ||
+      isUnpaidPasswordRecoveryMessage(message);
+
     return {
       ok: false,
-      code: (err.response?.data?.code as ForgetPasswordErrorCode) || "invalid",
-      message:
-        err.response?.data?.message ||
-        err.message ||
-        "Forget password failed. Please try again.",
+      code: paymentRequired
+        ? "payment_required"
+        : (responseData?.code as ForgetPasswordErrorCode) || "invalid",
+      message,
     };
   }
 }

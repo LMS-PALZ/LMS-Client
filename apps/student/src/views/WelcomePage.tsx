@@ -52,9 +52,8 @@ export function WelcomePage() {
 
   return (
     <main className="relative min-h-dvh w-full bg-white">
-      {/* Top-aligned so the CTA is never clipped by vertical centering */}
-      <div className="mx-auto flex w-full max-w-[640px] flex-col items-center px-4 pb-8 pt-14 text-center sm:pt-16">
-        <div className="mb-4 w-[100px] sm:w-[112px]">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[640px] flex-col items-center justify-center px-4 py-12 text-center sm:py-14">
+        <div className="mb-6 w-[112px] sm:mb-8 sm:w-[128px]">
           <img
             src="/firstlogo.png"
             alt="Chiggy Nsofor Foundation"
@@ -63,28 +62,28 @@ export function WelcomePage() {
           />
         </div>
 
-        <div className="mx-auto max-w-[340px]">
-          <h1 className="mb-1.5 text-[22px] font-bold text-[#1F2937] sm:text-[23px]">
+        <div className="mx-auto max-w-[380px]">
+          <h1 className="mb-2 text-[22px] font-bold text-[#1F2937] sm:text-[25px]">
             You&apos;re in.
           </h1>
-          <p className="mx-auto mb-5 text-sm leading-5 text-[#6B7280]">
+          <p className="mx-auto mb-7 text-sm leading-6 text-[#6B7280] sm:mb-8 sm:text-[15px]">
             Welcome to the Skill Scale-up Program. Few things to know about your
             journey.
           </p>
         </div>
 
-        <section className="w-full max-w-[560px] rounded-[28px] bg-[#F9FBFD] px-6 py-5 text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:px-8 sm:py-6">
-          <div className="space-y-5">
+        <section className="w-full max-w-[560px] rounded-[28px] bg-[#F9FBFD] px-6 py-6 text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:px-8 sm:py-8">
+          <div className="space-y-7">
             {welcomeHighlights.map(({ title, description, icon: Icon }) => (
-              <article key={title} className="flex items-start gap-3.5">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                  <Icon className="h-4 w-4 text-[#64748B]" />
+              <article key={title} className="flex items-start gap-4">
+                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                  <Icon className="h-5 w-5 text-[#64748B]" />
                 </div>
                 <div>
-                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
+                  <h2 className="mb-1.5 font-medium text-[#374151] sm:text-[15px]">
                     {title}
                   </h2>
-                  <p className="text-sm leading-5 text-[#6B7280] sm:text-[15px]">
+                  <p className="text-sm leading-6 text-[#6B7280] sm:text-[15px]">
                     {description}
                   </p>
                 </div>
@@ -96,7 +95,7 @@ export function WelcomePage() {
         <Button
           type="button"
           variant="primary"
-          className="mt-5 w-[200px] shrink-0 rounded-[30px] text-[var(--color-surface)]"
+          className="mt-8 w-[220px] shrink-0 rounded-[30px] text-[var(--color-surface)] sm:mt-10"
           onClick={() => router.push("/setpassword")}
         >
           Let&apos;s get started

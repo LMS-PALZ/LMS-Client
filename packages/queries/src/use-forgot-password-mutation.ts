@@ -7,6 +7,8 @@ export function useForgotPasswordMutation() {
     mutationFn: async (input: { email: string }) => forgetPassword(input.email),
     onSuccess: (data, variables) => {
       if (!data.ok) {
+        // Unpaid student — page routes to payment; avoid a blocking error toast.
+        if (data.code === "payment_required") return;
         mutationToast.error(data.message);
         return;
       }

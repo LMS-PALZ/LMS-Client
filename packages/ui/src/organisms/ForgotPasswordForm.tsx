@@ -17,6 +17,9 @@ type FormValues = z.infer<typeof forgotPasswordSchema>;
 
 interface ForgotPasswordFormProps {
   onSuccessRedirect?: string;
+  /** Student unpaid recovery — route here instead of showing a hard error. */
+  paymentRequiredPath?: string;
+  onPaymentRequired?: (email: string) => void;
   showLoginLink?: boolean;
   requireSessionCheck?: boolean;
   logoSrc?: string;
@@ -27,6 +30,8 @@ interface ForgotPasswordFormProps {
 
 export function ForgotPasswordForm({
   onSuccessRedirect = "/confirmcode?from=forgetpassword",
+  paymentRequiredPath,
+  onPaymentRequired,
   requireSessionCheck = true,
   logoSrc = "/firstlogo.png",
   title = "Reset password",
@@ -54,6 +59,12 @@ export function ForgotPasswordForm({
       if (res.ok) {
         setUser({ forgotPasswordEmail: values.email });
         setTimeout(() => router.replace(onSuccessRedirect), 1500);
+        return;
+      }
+
+      if (res.code === "payment_required" && paymentRequiredPath) {
+        onPaymentRequired?.(values.email);
+        router.replace(paymentRequiredPath);
       }
     } catch {
       /* Toasts handled in useForgotPasswordMutation */
