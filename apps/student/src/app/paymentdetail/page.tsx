@@ -10,7 +10,7 @@ import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
 import { Mail, Phone, User } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import {
   ensureSignupSessionPersisted,
   formatSignupDisplayName,
@@ -56,13 +56,11 @@ function PaymentDetailContent() {
 
   useEffect(() => {
     const markHydrated = () => setHasHydrated(true);
-
     try {
       if (useSignupStore.persist?.hasHydrated?.()) {
         markHydrated();
         return undefined;
       }
-
       const unsub = useSignupStore.persist?.onFinishHydration?.(markHydrated);
       if (typeof unsub !== "function") {
         markHydrated();
@@ -88,7 +86,6 @@ function PaymentDetailContent() {
   const reference = referenceFromUrl || storedReference;
   const verify = useVerifyPayment(reference, { notify: false });
 
-  // Persist verify student into local session whenever it arrives.
   useEffect(() => {
     if (!verify.data?.student) return;
     if (verify.data.reference) {
@@ -98,10 +95,13 @@ function PaymentDetailContent() {
     if (restored) setLocalIdentity(restored);
   }, [verify.data]);
 
-  // Merge verify + local so missing program from verify does not wipe signup program.
-  const identity = mergeSignupIdentity(
-    identityFromVerifyStudent(verify.data?.student),
-    localIdentity,
+  const identity = useMemo(
+    () =>
+      mergeSignupIdentity(
+        identityFromVerifyStudent(verify.data?.student),
+        localIdentity,
+      ),
+    [verify.data?.student, localIdentity],
   );
 
   const display = identity ?? {
@@ -115,7 +115,6 @@ function PaymentDetailContent() {
   };
 
   const fullName = formatSignupDisplayName(display);
-
   const matchedProgram = programs?.find((p) => p.slug === display.program);
   const applicationFee =
     matchedProgram?.priceAmount ??
@@ -131,15 +130,12 @@ function PaymentDetailContent() {
     if (!hasCompleteSignupSession(latest)) return;
 
     storePaymentResume(latest!);
-
     const callbackUrl = `${window.location.origin}/verifypayment`;
-
     const data = await payment.mutateAsync({
       email: latest!.email,
       program: latest!.program,
       callbackUrl,
     });
-
     storePaymentResume(latest!, data.reference);
     storePaymentReference(data.reference);
     window.location.href = data.checkout_url;
@@ -148,14 +144,15 @@ function PaymentDetailContent() {
   const canPay = hasCompleteSignupSession(identity);
 
   return (
-    <div className="relative flex min-h-dvh w-full flex-col bg-white">
+    <div className="relative min-h-dvh w-full bg-white">
       <GoBack
         fallbackHref="/signup"
         className="absolute left-4 top-4 z-10 text-sm font-medium sm:left-8 sm:top-5"
       />
 
-      <div className="mx-auto flex w-full max-w-[640px] flex-1 flex-col items-center justify-center px-4 py-5 text-center sm:py-6">
-        <div className="mb-4 w-[100px] sm:mb-5 sm:w-[112px]">
+      {/* Top-aligned so the CTA is never clipped by vertical centering */}
+      <div className="mx-auto flex w-full max-w-[640px] flex-col items-center px-4 pb-8 pt-14 text-center sm:pt-16">
+        <div className="mb-4 w-[100px] sm:w-[112px]">
           <img
             src="/firstlogo.png"
             alt="Chiggy Nsofor Foundation"
@@ -168,30 +165,27 @@ function PaymentDetailContent() {
           <h1 className="mb-1.5 text-[22px] font-bold text-[#1F2937] sm:text-[23px]">
             Confirm your payment
           </h1>
-
-          <p className="mx-auto mb-5 max-w-[560px] text-sm leading-5 text-[#6B7280]">
+          <p className="mx-auto mb-5 text-sm leading-5 text-[#6B7280]">
             Pay the application fee to continue. You&apos;ll set up your account
             after payment.
           </p>
         </div>
 
-        <div className="w-full max-w-[560px] rounded-[28px] bg-[#F9FBFD] text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:rounded-[32px]">
+        <div className="w-full max-w-[560px] rounded-[28px] bg-[#F9FBFD] text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
           <div className="grid gap-5 px-6 py-5 sm:px-8 sm:py-6 lg:grid-cols-[1fr_0.95fr] lg:gap-0 lg:px-0 lg:py-0">
-            <div className="space-y-4 lg:space-y-5 lg:px-7 lg:py-6">
+            <div className="space-y-4 lg:px-7 lg:py-6">
               <div className="flex items-center gap-3 text-[#374151]">
                 <User className="h-5 w-5 shrink-0 text-[#64748B]" />
                 <p className="font-medium sm:text-[15px]">
                   {fullName || "Your Name"}
                 </p>
               </div>
-
               <div className="flex items-center gap-3 text-[#374151]">
                 <Mail className="h-5 w-5 shrink-0 text-[#64748B]" />
                 <p className="break-all font-medium sm:text-[15px]">
                   {display.email || "your@email.com"}
                 </p>
               </div>
-
               <div className="flex items-center gap-3 text-[#374151]">
                 <Phone className="h-5 w-5 shrink-0 text-[#64748B]" />
                 <p className="font-medium sm:text-[15px]">
@@ -212,7 +206,6 @@ function PaymentDetailContent() {
                       "Selected program will appear here"}
                   </p>
                 </div>
-
                 <div>
                   <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     Duration
@@ -221,7 +214,6 @@ function PaymentDetailContent() {
                     {DEFAULT_PROGRAM_DETAILS.duration}
                   </p>
                 </div>
-
                 <div>
                   <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     Start Date
@@ -230,7 +222,6 @@ function PaymentDetailContent() {
                     {formatCurrentDate()}
                   </p>
                 </div>
-
                 <div>
                   <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     Application fee
