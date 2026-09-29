@@ -56,47 +56,24 @@ function readStudentRecord(
   return null;
 }
 
+/** Expects snake_case: first_name, last_name, email, phone_number. */
 function normalizeStudent(
   row: Record<string, unknown>,
 ): PaymentVerificationStudent | undefined {
   const nested = readStudentRecord(row);
   const source = nested ?? row;
 
-  const email = readString(source.email, source.Email);
-  const first_name = readString(
-    source.first_name,
-    source.firstName,
-    source.firstname,
-  );
-  const last_name = readString(
-    source.last_name,
-    source.lastName,
-    source.lastname,
-  );
-  const phone_number = readString(
-    source.phone_number,
-    source.phoneNumber,
-    source.phone,
-  );
-  const program = readString(
-    source.program,
-    source.programSlug,
-    source.program_slug,
-    source.slug,
-  );
-  const program_title = readString(
-    source.program_title,
-    source.programTitle,
-    source.programName,
-    source.program_name,
-  );
-  const programId = readString(source.programId, source.program_id);
-  const id = readString(source.id, source._id, source.studentId);
+  const email = readString(source.email);
+  const first_name = readString(source.first_name);
+  const last_name = readString(source.last_name);
+  const phone_number = readString(source.phone_number);
+  const program = readString(source.program, source.program_slug);
+  const program_title = readString(source.program_title, source.program_name);
+  const programId = readString(source.program_id, source.programId);
+  const id = readString(source.id, source._id);
   const applicationFee = readNumber(
-    source.applicationFee,
     source.application_fee,
-    source.amount,
-    source.priceAmount,
+    source.applicationFee,
   );
 
   if (
