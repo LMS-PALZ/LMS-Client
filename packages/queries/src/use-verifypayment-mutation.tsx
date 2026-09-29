@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { verifyPayment } from "@ssu/api";
+import {
+  isPaymentFullySuccessful,
+  storePaymentReference,
+  verifyPayment,
+} from "@ssu/api";
 import { getErrorMessage, mutationToast } from "./notify";
 
 export function useVerifyPayment(reference: string | null) {
@@ -19,16 +23,24 @@ export function useVerifyPayment(reference: string | null) {
     },
     enabled: !!reference,
     retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: "always",
   });
 
   useEffect(() => {
-    if (notifiedRef.current) return;
+    if (notifiedRef.current || !query.isFetched) return;
 
     if (query.isSuccess && query.data) {
       notifiedRef.current = true;
-      mutationToast.success(
-        query.data.message ?? "Payment verified successfully",
-      );
+      if (isPaymentFullySuccessful(query.data)) {
+        storePaymentReference(query.data.reference);
+        mutationToast.success("Payment verified successfully");
+      } else {
+        mutationToast.error(
+          query.data.failureReason || query.data.paymentStatus,
+        );
+      }
     }
 
     if (query.isError) {
@@ -37,7 +49,13 @@ export function useVerifyPayment(reference: string | null) {
         getErrorMessage(query.error, "Payment verification failed"),
       );
     }
-  }, [query.isSuccess, query.data, query.isError, query.error]);
+  }, [
+    query.isFetched,
+    query.isSuccess,
+    query.data,
+    query.isError,
+    query.error,
+  ]);
 
   return query;
 }

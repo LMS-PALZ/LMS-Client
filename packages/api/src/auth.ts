@@ -496,16 +496,50 @@ export async function initializePayment(
   }
 }
 
-export async function verifyPayment(reference: string) {
+export async function verifyPayment(reference: string): Promise<
+  | {
+      ok: true;
+      data: import("./payment-verification").PaymentVerificationData;
+      message: string;
+    }
+  | { ok: false; message: string }
+> {
   try {
-    const res = await axios.get(`${API_BASE_URL}/api/v1/payments/verify`, {
-      params: { reference },
+    const url =
+      typeof window !== "undefined"
+        ? `/api/payments/verify?reference=${encodeURIComponent(reference)}&_=${Date.now()}`
+        : `${API_BASE_URL}/api/v1/payments/verify`;
+
+    const res = await axios.get(url, {
+      params:
+        typeof window === "undefined"
+          ? { reference, _: Date.now() }
+          : undefined,
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     });
+
+    const { normalizePaymentVerification } =
+      await import("./payment-verification");
+    const data = normalizePaymentVerification(res.data?.data);
+    if (!data) {
+      return {
+        ok: false as const,
+        message:
+          res.data?.message ||
+          "Payment verification returned an unexpected response.",
+      };
+    }
 
     return {
       ok: true as const,
-      data: res.data.data,
-      message: res.data.message,
+      data,
+      message:
+        typeof res.data?.message === "string"
+          ? res.data.message
+          : "Payment verification completed",
     };
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } };

@@ -1,5 +1,6 @@
 "use client";
 
+import { storePaymentReference } from "@ssu/api";
 import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
@@ -44,7 +45,7 @@ export default function Page() {
       callbackUrl,
     });
 
-    localStorage.setItem("payment_reference", data.reference);
+    storePaymentReference(data.reference);
     window.location.href = data.checkout_url;
   };
 

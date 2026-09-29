@@ -2,7 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { clearStudentAuth } from "@ssu/api";
-import { sessionKey, useSetPasswordMutation } from "@ssu/queries";
+import {
+  sessionKey,
+  useSetPasswordMutation,
+  useSignupPaymentVerification,
+} from "@ssu/queries";
+import { isPaymentFullySuccessful } from "@ssu/api";
+import { PaymentStatusSkeleton } from "@ssu/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { resetPasswordSchema } from "@ssu/schema";
 import { useRouter } from "next/navigation";
@@ -22,11 +28,21 @@ export default function SetPasswordPage() {
   const queryClient = useQueryClient();
 
   const setPassword = useSetPasswordMutation();
+  const paymentCheck = useSignupPaymentVerification();
+  const paymentOk =
+    paymentCheck.data && isPaymentFullySuccessful(paymentCheck.data);
 
   useEffect(() => {
     clearStudentAuth();
     void queryClient.setQueryData(sessionKey, null);
   }, [queryClient]);
+
+  useEffect(() => {
+    if (!paymentCheck.isFetched) return;
+    if (paymentCheck.isError || !paymentOk) {
+      router.replace("/paymentdetail");
+    }
+  }, [paymentCheck.isFetched, paymentCheck.isError, paymentOk, router]);
 
   const [showPw, setShowPw] = useState(false);
 
@@ -51,6 +67,16 @@ export default function SetPasswordPage() {
       /* Toasts handled in useSetPasswordMutation */
     }
   });
+
+  if (paymentCheck.isLoading || !paymentOk) {
+    return (
+      <AuthLayout>
+        <div className="flex min-h-[320px] items-center justify-center">
+          <PaymentStatusSkeleton className="min-h-0 py-12" />
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>

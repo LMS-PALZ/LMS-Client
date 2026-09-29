@@ -7,6 +7,7 @@ export * from "./notifications";
 export * from "./uploads";
 export * from "./admin";
 export * from "./auth";
+export * from "./payment-verification";
 export * from "./student-login";
 export * from "./student-profile";
 export * from "./student-home";
