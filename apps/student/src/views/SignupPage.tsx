@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { writeStudentSignupDetails } from "@/lib/signup-details";
+import { isStudentSignupEnabled } from "@/lib/signup-availability";
 
 type FormValues = z.infer<typeof signUpSchema>;
 
@@ -28,6 +29,7 @@ export function SignupPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const setUser = useSignupStore((state) => state.setUser);
+  const signupDisabled = !isStudentSignupEnabled;
 
   useEffect(() => {
     if (isStudentAuthenticated()) return;
@@ -66,6 +68,7 @@ export function SignupPage() {
   const selectedProgram = watch("program");
 
   const onSubmit = handleSubmit(async (values) => {
+    if (signupDisabled) return;
     const res = await signup.mutateAsync(values);
 
     if (!res.status) {
@@ -126,6 +129,13 @@ export function SignupPage() {
           It only takes a moment to begin.
         </p>
 
+        {signupDisabled ? (
+          <div className="mb-5 w-full max-w-sm rounded-[12px] border border-[#F3D9A8] bg-[#FFF8EB] px-4 py-3 text-center text-sm text-[#8A5A00]">
+            Signup is temporarily unavailable. Please check back later or log in
+            if you already have an account.
+          </div>
+        ) : null}
+
         <form onSubmit={onSubmit} className="w-full max-w-sm space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
@@ -138,7 +148,7 @@ export function SignupPage() {
                 id="last_name"
                 type="text"
                 autoComplete="family-name"
-                disabled={isSubmitting}
+                disabled={signupDisabled || isSubmitting}
                 {...register("last_name")}
                 placeholder="Enter your last name"
                 className="rounded-[12px] placeholder:text-sm placeholder:text-[#B3BDC9]"
@@ -155,7 +165,7 @@ export function SignupPage() {
                 id="first_name"
                 type="text"
                 autoComplete="given-name"
-                disabled={isSubmitting}
+                disabled={signupDisabled || isSubmitting}
                 {...register("first_name")}
                 placeholder="Enter your first name"
                 className="rounded-[12px] placeholder:text-sm placeholder:text-[#B3BDC9]"
@@ -173,7 +183,7 @@ export function SignupPage() {
               id="email"
               type="email"
               autoComplete="email"
-              disabled={isSubmitting}
+              disabled={signupDisabled || isSubmitting}
               {...register("email")}
               placeholder="Enter your email address"
               className="rounded-[12px] placeholder:text-sm placeholder:text-[#B3BDC9]"
@@ -190,7 +200,7 @@ export function SignupPage() {
               id="phone_number"
               type="tel"
               autoComplete="tel"
-              disabled={isSubmitting}
+              disabled={signupDisabled || isSubmitting}
               {...register("phone_number")}
               placeholder="0803 555 7878"
               className="rounded-[12px] placeholder:text-sm placeholder:text-[#B3BDC9]"
@@ -209,7 +219,7 @@ export function SignupPage() {
               <button
                 id="program"
                 type="button"
-                disabled={isSubmitting || programsLoading}
+                disabled={signupDisabled || isSubmitting || programsLoading}
                 onClick={() => setIsProgramOpen((current) => !current)}
                 className="flex h-11 w-full items-center justify-between rounded-[12px] border border-[#D7DFEC] bg-white px-4 text-left text-[17px] text-[#1F2937] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-haspopup="listbox"
@@ -292,10 +302,10 @@ export function SignupPage() {
             variant="primary"
             size="lg"
             className="w-full rounded-[30px] text-[var(--color-surface)]"
-            loading={isSubmitting || signup.isPending}
-            disabled={isSubmitting || signup.isPending}
+            loading={!signupDisabled && (isSubmitting || signup.isPending)}
+            disabled={signupDisabled || isSubmitting || signup.isPending}
           >
-            Signup
+            {signupDisabled ? "Signup unavailable" : "Signup"}
           </Button>
 
           <p className="pt-2 text-center text-sm text-neutral-700">
