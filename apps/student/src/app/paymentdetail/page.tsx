@@ -1,28 +1,20 @@
 "use client";
 
-import { storePaymentReference } from "@ssu/api";
 import {
-  mutationToast,
-  useInitializePaymentMutation,
-  usePrograms,
-} from "@ssu/queries";
+  readStoredPaymentReference,
+  storePaymentReference,
+  verifyPayment,
+} from "@ssu/api";
+import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
 import { Mail, Phone, User } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  isPaymentCheckoutMessage,
-  openPaymentCheckoutPopup,
-} from "@/lib/payment-checkout";
-import {
-  PAYMENT_RESUME_QUERY,
-  applySignupResumeToken,
-  buildPaymentVerifyCallbackUrl,
-  encodeSignupResume,
   ensureSignupSessionPersisted,
   formatSignupDisplayName,
   hasCompleteSignupSession,
+  persistSignupSessionFromVerify,
   storePaymentResume,
   type SignupSessionIdentity,
 } from "@/lib/signup-session";
@@ -48,11 +40,8 @@ function formatCurrentDate() {
   });
 }
 
-function PaymentDetailContent() {
-  const router = useRouter();
+export default function Page() {
   const payment = useInitializePaymentMutation();
-  const searchParams = useSearchParams();
-  const resumeToken = searchParams.get(PAYMENT_RESUME_QUERY);
   const hasHydrated = useSignupStore((state) => state._hasHydrated);
   const setHasHydrated = useSignupStore((state) => state.setHasHydrated);
   const userEmail = useSignupStore((state) => state.user?.email);
@@ -62,15 +51,6 @@ function PaymentDetailContent() {
   const userProgram = useSignupStore((state) => state.user?.program);
   const { data: programs } = usePrograms();
   const [identity, setIdentity] = useState<SignupSessionIdentity | null>(null);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const checkoutCleanupRef = useRef<(() => void) | null>(null);
-  const checkoutFinishedRef = useRef(false);
-
-  useEffect(() => {
-    return () => {
-      checkoutCleanupRef.current?.();
-    };
-  }, []);
 
   useEffect(() => {
     const markHydrated = () => setHasHydrated(true);
@@ -94,15 +74,31 @@ function PaymentDetailContent() {
   }, [setHasHydrated]);
 
   useEffect(() => {
-    if (resumeToken) {
-      setIdentity(applySignupResumeToken(resumeToken));
-      return;
-    }
     if (!hasHydrated) return;
-    setIdentity(ensureSignupSessionPersisted());
+
+    const local = ensureSignupSessionPersisted();
+    if (local) {
+      setIdentity(local);
+    }
+
+    // If local session is incomplete, refill from verify using the stored reference.
+    const reference = readStoredPaymentReference();
+    if (!reference) return;
+    if (hasCompleteSignupSession(local)) return;
+
+    let cancelled = false;
+    void (async () => {
+      const res = await verifyPayment(reference);
+      if (cancelled || !res.ok) return;
+      const restored = persistSignupSessionFromVerify(res.data.student);
+      if (restored) setIdentity(restored);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     hasHydrated,
-    resumeToken,
     userEmail,
     userFirstName,
     userLastName,
@@ -132,73 +128,19 @@ function PaymentDetailContent() {
     const latest = ensureSignupSessionPersisted();
     if (!hasCompleteSignupSession(latest)) return;
 
-    // Keep React state even if storage is wiped during the gateway round-trip.
-    setIdentity(latest);
     storePaymentResume(latest!);
 
-    const resume = encodeSignupResume(latest!);
-    const callbackUrl = buildPaymentVerifyCallbackUrl(
-      window.location.origin,
-      latest!,
-    );
+    const callbackUrl = `${window.location.origin}/verifypayment`;
 
     const data = await payment.mutateAsync({
       email: latest!.email,
       program: latest!.program,
       callbackUrl,
-      resume,
     });
 
     storePaymentResume(latest!, data.reference);
     storePaymentReference(data.reference);
-
-    checkoutCleanupRef.current?.();
-
-    const popup = openPaymentCheckoutPopup(data.checkout_url);
-    if (!popup) {
-      // Popup blocked — fall back to full-page redirect.
-      window.location.href = data.checkout_url;
-      return;
-    }
-
-    setCheckoutOpen(true);
-    checkoutFinishedRef.current = false;
-
-    const finish = (paid: boolean) => {
-      if (checkoutFinishedRef.current) return;
-      checkoutFinishedRef.current = true;
-      checkoutCleanupRef.current?.();
-      checkoutCleanupRef.current = null;
-      setCheckoutOpen(false);
-      setIdentity(ensureSignupSessionPersisted() ?? latest);
-
-      if (paid) {
-        router.replace("/welcome");
-        return;
-      }
-
-      mutationToast.info(
-        "Payment not completed yet. You can try again when ready.",
-      );
-    };
-
-    const onMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      if (!isPaymentCheckoutMessage(event.data)) return;
-      finish(event.data.paid);
-    };
-
-    const pollClosed = window.setInterval(() => {
-      if (!popup.closed) return;
-      finish(false);
-    }, 800);
-
-    checkoutCleanupRef.current = () => {
-      window.removeEventListener("message", onMessage);
-      window.clearInterval(pollClosed);
-    };
-
-    window.addEventListener("message", onMessage);
+    window.location.href = data.checkout_url;
   };
 
   const canPay = hasCompleteSignupSession(identity);
@@ -302,22 +244,14 @@ function PaymentDetailContent() {
         <Button
           type="button"
           onClick={handlePayment}
-          loading={payment.isPending || checkoutOpen}
-          disabled={payment.isPending || checkoutOpen || !canPay}
+          loading={payment.isPending}
+          disabled={payment.isPending || !canPay}
           variant="primary"
           className="mt-8 w-[200px] rounded-[30px] text-[var(--color-surface)]"
         >
-          {checkoutOpen ? "Complete payment…" : "Proceed to Payment"}
+          Proceed to Payment
         </Button>
       </div>
     </div>
-  );
-}
-
-export default function Page() {
-  return (
-    <Suspense fallback={null}>
-      <PaymentDetailContent />
-    </Suspense>
   );
 }

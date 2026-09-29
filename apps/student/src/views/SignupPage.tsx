@@ -25,7 +25,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { isStudentSignupEnabled } from "@/lib/signup-availability";
-import { persistSignupSession, storePaymentResume } from "@/lib/signup-session";
+import { persistSignupSession } from "@/lib/signup-session";
 
 type FormValues = z.infer<typeof signUpSchema>;
 
@@ -78,14 +78,13 @@ export function SignupPage() {
 
     // Existing unpaid signup — resume at payment (email already verified upstream).
     if (!res.status && res.code === "payment_required") {
-      const identity = persistSignupSession({
+      persistSignupSession({
         values,
         programName: matchedProgram?.title,
         applicationFee: matchedProgram?.priceAmount,
         programId: res.data?.programId,
         id: "",
       });
-      storePaymentResume(identity);
 
       mutationToast.info("Continue to payment to complete your registration.");
       router.replace("/paymentdetail");
@@ -96,13 +95,12 @@ export function SignupPage() {
       return;
     }
 
-    const identity = persistSignupSession({
+    persistSignupSession({
       values,
       programName: matchedProgram?.title,
       applicationFee: matchedProgram?.priceAmount,
       id: res.data?.id ?? "",
     });
-    storePaymentResume(identity);
 
     setTimeout(() => {
       router.replace("/confirmcode?signup");
