@@ -9,7 +9,8 @@ import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
 import { Mail, Phone, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
   ensureSignupSessionPersisted,
   formatSignupDisplayName,
@@ -40,17 +41,15 @@ function formatCurrentDate() {
   });
 }
 
-export default function Page() {
+function PaymentDetailContent() {
   const payment = useInitializePaymentMutation();
+  const searchParams = useSearchParams();
+  const referenceFromUrl = searchParams.get("reference")?.trim() || null;
   const hasHydrated = useSignupStore((state) => state._hasHydrated);
   const setHasHydrated = useSignupStore((state) => state.setHasHydrated);
-  const userEmail = useSignupStore((state) => state.user?.email);
-  const userFirstName = useSignupStore((state) => state.user?.first_name);
-  const userLastName = useSignupStore((state) => state.user?.last_name);
-  const userPhone = useSignupStore((state) => state.user?.phone_number);
-  const userProgram = useSignupStore((state) => state.user?.program);
   const { data: programs } = usePrograms();
   const [identity, setIdentity] = useState<SignupSessionIdentity | null>(null);
+  const verifyStartedRef = useRef<string | null>(null);
 
   useEffect(() => {
     const markHydrated = () => setHasHydrated(true);
@@ -77,34 +76,32 @@ export default function Page() {
     if (!hasHydrated) return;
 
     const local = ensureSignupSessionPersisted();
-    if (local) {
-      setIdentity(local);
-    }
+    if (local) setIdentity(local);
 
-    // If local session is incomplete, refill from verify using the stored reference.
-    const reference = readStoredPaymentReference();
+    const reference = referenceFromUrl || readStoredPaymentReference();
     if (!reference) return;
-    if (hasCompleteSignupSession(local)) return;
 
-    let cancelled = false;
+    storePaymentReference(reference);
+
+    // Always hydrate from verify when we have a reference — do not cancel on store updates.
+    if (verifyStartedRef.current === reference) return;
+    verifyStartedRef.current = reference;
+
     void (async () => {
       const res = await verifyPayment(reference);
-      if (cancelled || !res.ok) return;
-      const restored = persistSignupSessionFromVerify(res.data.student);
-      if (restored) setIdentity(restored);
-    })();
+      if (!res.ok) return;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    hasHydrated,
-    userEmail,
-    userFirstName,
-    userLastName,
-    userPhone,
-    userProgram,
-  ]);
+      const restored = persistSignupSessionFromVerify(res.data.student);
+      if (restored) {
+        setIdentity(restored);
+        return;
+      }
+
+      // Fallback: keep whatever local session we already had.
+      const again = ensureSignupSessionPersisted();
+      if (again) setIdentity(again);
+    })();
+  }, [hasHydrated, referenceFromUrl]);
 
   const display = identity ?? {
     id: "",
@@ -125,7 +122,7 @@ export default function Page() {
     DEFAULT_PROGRAM_DETAILS.applicationFee;
 
   const handlePayment = async () => {
-    const latest = ensureSignupSessionPersisted();
+    const latest = ensureSignupSessionPersisted() ?? identity;
     if (!hasCompleteSignupSession(latest)) return;
 
     storePaymentResume(latest!);
@@ -146,64 +143,65 @@ export default function Page() {
   const canPay = hasCompleteSignupSession(identity);
 
   return (
-    <div className="relative min-h-screen w-full bg-white">
+    <div className="relative flex min-h-screen w-full flex-col bg-white">
       <GoBack
         fallbackHref="/signup"
-        className="absolute left-6 top-12 text-sm font-medium sm:left-16 sm:top-20"
+        className="absolute left-4 top-4 z-10 text-sm font-medium sm:left-8 sm:top-6"
       />
 
-      <div className="flex flex-col items-center justify-center bg-[#FFFFFF] px-4 py-10 text-center sm:py-14">
-        <div className="mb-8 w-[120px] sm:mb-12">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-6 text-center sm:py-8 lg:py-4">
+        <div className="mb-4 w-[96px] sm:mb-5 sm:w-[110px] lg:mb-3 lg:w-[100px]">
           <img
             src="/firstlogo.png"
             alt="Chiggy Nsofor Foundation"
             loading="eager"
+            className="h-auto w-full"
           />
         </div>
 
-        <div className="mx-auto max-w-[300px]">
-          <h1 className="mb-3 text-[24px] font-bold text-[#1F2937] sm:text-[23px]">
+        <div className="mx-auto max-w-[320px]">
+          <h1 className="mb-1.5 text-[22px] font-bold text-[#1F2937] sm:text-[23px] lg:mb-1">
             Confirm your payment
           </h1>
 
-          <p className="mx-auto mb-8 max-w-[560px] text-sm text-[#6B7280]">
+          <p className="mx-auto mb-5 max-w-[560px] text-sm leading-5 text-[#6B7280] lg:mb-4">
             Pay the application fee to continue. You&apos;ll set up your account
             after payment.
           </p>
         </div>
 
-        <div className="max-w-100 rounded-[34px] bg-[#F9FBFD] text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:w-[600px]">
-          <div className="grid gap-8 px-8 py-10 sm:px-10 lg:grid-cols-[1fr_0.95fr] lg:gap-0 lg:px-0 lg:py-0">
-            <div className="space-y-7 lg:px-8 lg:py-10">
-              <div className="flex items-center gap-4 text-[#374151]">
-                <User className="h-5 w-5 text-[#64748B]" />
+        <div className="w-full max-w-[560px] rounded-[28px] bg-[#F9FBFD] text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:rounded-[34px]">
+          <div className="grid gap-5 px-6 py-6 sm:gap-6 sm:px-8 sm:py-7 lg:grid-cols-[1fr_0.95fr] lg:gap-0 lg:px-0 lg:py-0">
+            <div className="space-y-4 lg:space-y-5 lg:px-7 lg:py-6">
+              <div className="flex items-center gap-3 text-[#374151]">
+                <User className="h-5 w-5 shrink-0 text-[#64748B]" />
                 <p className="font-medium sm:text-[15px]">
                   {fullName || "Your Name"}
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 text-[#374151]">
-                <Mail className="h-5 w-5 text-[#64748B]" />
-                <p className="font-medium leading-8 sm:text-[15px]">
+              <div className="flex items-center gap-3 text-[#374151]">
+                <Mail className="h-5 w-5 shrink-0 text-[#64748B]" />
+                <p className="break-all font-medium sm:text-[15px]">
                   {display.email || "your@email.com"}
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 text-[#374151]">
-                <Phone className="h-5 w-5 text-[#64748B]" />
-                <p className="font-medium leading-8 sm:text-[15px]">
+              <div className="flex items-center gap-3 text-[#374151]">
+                <Phone className="h-5 w-5 shrink-0 text-[#64748B]" />
+                <p className="font-medium sm:text-[15px]">
                   {display.phone_number || "0700 000 0000"}
                 </p>
               </div>
             </div>
 
-            <div className="border-t border-[#E2E8F0] pt-8 lg:border-l lg:border-t-0 lg:px-12 lg:py-10">
-              <div className="space-y-8">
+            <div className="border-t border-[#E2E8F0] pt-5 lg:border-l lg:border-t-0 lg:px-8 lg:py-6 lg:pt-6">
+              <div className="space-y-4 lg:space-y-4">
                 <div>
-                  <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
+                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     Selected Program
                   </h2>
-                  <p className="text-sm text-[#6B7280] sm:text-[16px]">
+                  <p className="text-sm text-[#6B7280] sm:text-[15px]">
                     {display.program_title ||
                       matchedProgram?.title ||
                       "Selected program will appear here"}
@@ -211,28 +209,28 @@ export default function Page() {
                 </div>
 
                 <div>
-                  <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
+                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     Duration
                   </h2>
-                  <p className="text-[#6B7280] sm:text-[16px]">
+                  <p className="text-sm text-[#6B7280] sm:text-[15px]">
                     {DEFAULT_PROGRAM_DETAILS.duration}
                   </p>
                 </div>
 
                 <div>
-                  <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
+                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     Start Date
                   </h2>
-                  <p className="text-[#6B7280] sm:text-[16px]">
+                  <p className="text-sm text-[#6B7280] sm:text-[15px]">
                     {formatCurrentDate()}
                   </p>
                 </div>
 
                 <div>
-                  <h2 className="mb-2 font-medium text-[#374151] sm:text-[17px]">
+                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
                     Application fee
                   </h2>
-                  <p className="font-semibold leading-8 text-[#2F6F45] sm:text-[16px]">
+                  <p className="font-semibold text-[#2F6F45] sm:text-[15px]">
                     {formatCurrency(applicationFee)}
                   </p>
                 </div>
@@ -247,11 +245,19 @@ export default function Page() {
           loading={payment.isPending}
           disabled={payment.isPending || !canPay}
           variant="primary"
-          className="mt-8 w-[200px] rounded-[30px] text-[var(--color-surface)]"
+          className="mt-5 w-[200px] rounded-[30px] text-[var(--color-surface)] lg:mt-4"
         >
           Proceed to Payment
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <PaymentDetailContent />
+    </Suspense>
   );
 }

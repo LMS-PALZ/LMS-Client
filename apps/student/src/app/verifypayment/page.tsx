@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { isPaymentFullySuccessful } from "@ssu/api";
+import { isPaymentFullySuccessful, storePaymentReference } from "@ssu/api";
 import { useVerifyPayment } from "@ssu/queries";
 import { PaymentStatusSkeleton } from "@ssu/ui";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
@@ -104,16 +104,23 @@ function PaymentVerifyContent() {
   useEffect(() => {
     if (!data?.student) return;
     persistSignupSessionFromVerify(data.student);
+    if (data.reference) {
+      storePaymentReference(data.reference);
+    }
   }, [data]);
 
+  const paymentDetailHref = reference
+    ? `/paymentdetail?reference=${encodeURIComponent(reference)}`
+    : "/paymentdetail";
+
   const redirectHref = !reference
-    ? "/paymentdetail"
+    ? paymentDetailHref
     : isError
-      ? "/paymentdetail"
+      ? paymentDetailHref
       : data
         ? isPaid
           ? "/welcome"
-          : "/paymentdetail"
+          : paymentDetailHref
         : null;
 
   const countdown = useRedirectCountdown(
