@@ -203,10 +203,11 @@ export function persistSignupSessionFromVerify(
 ): SignupSessionIdentity | null {
   if (!student) return ensureSignupSessionPersisted();
 
-  const identity = identityFromVerifyStudent(student);
-  if (!identity) return null;
-  writeIdentity(identity);
-  return identity;
+  const fromVerify = identityFromVerifyStudent(student);
+  const merged = mergeSignupIdentity(fromVerify, buildIdentity());
+  if (!merged) return null;
+  writeIdentity(merged);
+  return merged;
 }
 
 /** Map verify student payload → display identity (no store writes). */
@@ -237,6 +238,31 @@ export function identityFromVerifyStudent(
     programId: trim(student.programId) || undefined,
     programSlug: trim(student.programSlug) || program || undefined,
     applicationFee: student.applicationFee,
+  };
+}
+
+/** Prefer primary fields; keep fallback program/title when verify omits them. */
+export function mergeSignupIdentity(
+  primary: SignupSessionIdentity | null | undefined,
+  fallback: SignupSessionIdentity | null | undefined,
+): SignupSessionIdentity | null {
+  if (!primary && !fallback) return null;
+  if (!primary) return fallback ?? null;
+  if (!fallback) return primary;
+
+  const program = primary.program || fallback.program;
+  return {
+    id: primary.id || fallback.id,
+    email: primary.email || fallback.email,
+    first_name: primary.first_name || fallback.first_name,
+    last_name: primary.last_name || fallback.last_name,
+    phone_number: primary.phone_number || fallback.phone_number,
+    program,
+    program_title: primary.program_title || fallback.program_title,
+    programId: primary.programId || fallback.programId,
+    programSlug:
+      primary.programSlug || fallback.programSlug || program || undefined,
+    applicationFee: primary.applicationFee ?? fallback.applicationFee,
   };
 }
 
