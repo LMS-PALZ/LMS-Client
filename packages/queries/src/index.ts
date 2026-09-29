@@ -8,6 +8,7 @@ export * from "./use-resend-code-mutation";
 export * from "./use-forgot-password-mutation";
 export * from "./use-reset-password-mutation";
 export * from "./use-set-password-mutation";
+export * from "./use-signup-payment-verification";
 export * from "./use-payment-mutation";
 export * from "./use-verifypayment-mutation";
 export * from "./use-programs";

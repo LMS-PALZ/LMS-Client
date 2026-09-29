@@ -8,6 +8,8 @@ export function useSignupMutation() {
     mutationFn: async (input: SignUpFormValues) => signupStudent(input),
     onSuccess: (data) => {
       if (!data.status) {
+        // Recoverable unpaid signup — page routes to payment; avoid a blocking error toast.
+        if (data.code === "payment_required") return;
         mutationToast.error(data.message);
         return;
       }

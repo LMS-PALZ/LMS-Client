@@ -2,10 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { clearStudentAuth, isStudentAuthenticated } from "@ssu/api";
-import { sessionKey, usePrograms, useSignupMutation } from "@ssu/queries";
+import {
+  mutationToast,
+  sessionKey,
+  usePrograms,
+  useSignupMutation,
+} from "@ssu/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { signUpSchema } from "@ssu/schema";
-import { useSignupStore } from "@ssu/store";
 import {
   AuthLayout,
   Button,
@@ -20,15 +24,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { writeStudentSignupDetails } from "@/lib/signup-details";
 import { isStudentSignupEnabled } from "@/lib/signup-availability";
+import { persistSignupSession } from "@/lib/signup-session";
 
 type FormValues = z.infer<typeof signUpSchema>;
 
 export function SignupPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const setUser = useSignupStore((state) => state.setUser);
   const signupDisabled = !isStudentSignupEnabled;
 
   useEffect(() => {
@@ -71,27 +74,32 @@ export function SignupPage() {
     if (signupDisabled) return;
     const res = await signup.mutateAsync(values);
 
+    const matchedProgram = programs?.find((p) => p.slug === values.program);
+
+    // Existing unpaid signup — resume at payment (email already verified upstream).
+    if (!res.status && res.code === "payment_required") {
+      persistSignupSession({
+        values,
+        programName: matchedProgram?.title,
+        applicationFee: matchedProgram?.priceAmount,
+        programId: res.data?.programId,
+        id: "",
+      });
+
+      mutationToast.info("Continue to payment to complete your registration.");
+      router.replace("/paymentdetail");
+      return;
+    }
+
     if (!res.status) {
       return;
     }
 
-    const matchedProgram = programs?.find((p) => p.slug === values.program);
-
-    writeStudentSignupDetails({
-      ...values,
+    persistSignupSession({
+      values,
       programName: matchedProgram?.title,
       applicationFee: matchedProgram?.priceAmount,
-    });
-
-    setUser({
       id: res.data?.id ?? "",
-      email: values.email,
-      role: "student",
-      first_name: values.first_name,
-      last_name: values.last_name,
-      phone_number: values.phone_number,
-      program: values.program,
-      program_title: matchedProgram?.title ?? "",
     });
 
     setTimeout(() => {

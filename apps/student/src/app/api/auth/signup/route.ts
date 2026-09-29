@@ -89,8 +89,18 @@ export async function POST(request: Request) {
     const data = await upstream.json().catch(() => ({}));
 
     if (!upstream.ok) {
+      const record =
+        data && typeof data === "object"
+          ? (data as Record<string, unknown>)
+          : {};
+
       return NextResponse.json(
-        { message: upstreamErrorMessage(data) },
+        {
+          message: upstreamErrorMessage(data),
+          error_code: record.error_code,
+          data: record.data,
+          status: record.status ?? "error",
+        },
         { status: upstream.status },
       );
     }

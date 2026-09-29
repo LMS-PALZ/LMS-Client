@@ -19,11 +19,13 @@ export function useProfileDetail() {
     if (!query.data) return;
 
     const program = query.data.program;
+    const current = useSignupStore.getState().user;
+    if (!current) return;
 
     setUser({
-      programId: program?.id ?? "",
-      programSlug: program?.slug ?? "",
-      program_title: program?.title ?? "",
+      programId: program?.id ?? current.programId ?? "",
+      programSlug: program?.slug ?? current.programSlug ?? "",
+      program_title: program?.title ?? current.program_title ?? "",
     });
   }, [query.data, setUser]);
 

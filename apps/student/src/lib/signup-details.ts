@@ -34,3 +34,11 @@ export function writeStudentSignupDetails(details: StudentSignupDetails): void {
     JSON.stringify(details),
   );
 }
+
+export function clearStudentSignupDetails(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(STUDENT_SIGNUP_DETAILS_STORAGE_KEY);
+}
