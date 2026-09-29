@@ -6,6 +6,7 @@ import { LoginForm } from "@ssu/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
+import { isStudentSignupEnabled } from "@/lib/signup-availability";
 
 function LoginPageContent() {
   const queryClient = useQueryClient();
@@ -29,7 +30,7 @@ function LoginPageContent() {
       onSuccessRedirect="/home"
       requireSessionCheck={!forceLogin}
       signupLink="/"
-      showSignupLink
+      showSignupLink={isStudentSignupEnabled}
       title="Welcome back!"
       description="Sign in to continue to your dashboard."
     />
