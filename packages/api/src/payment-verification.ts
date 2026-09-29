@@ -47,7 +47,13 @@ function readNumber(...values: unknown[]): number | undefined {
 function readStudentRecord(
   row: Record<string, unknown>,
 ): Record<string, unknown> | null {
-  for (const key of ["student", "applicant", "user", "customer"] as const) {
+  for (const key of [
+    "studentRecord",
+    "student",
+    "applicant",
+    "user",
+    "customer",
+  ] as const) {
     const value = row[key];
     if (value && typeof value === "object" && !Array.isArray(value)) {
       return value as Record<string, unknown>;
@@ -56,7 +62,10 @@ function readStudentRecord(
   return null;
 }
 
-/** Expects snake_case: first_name, last_name, email, phone_number. */
+/**
+ * Maps backend `studentRecord` (camelCase) into our signup snake_case identity.
+ * Example: { firstName, lastName, email, phoneNumber }
+ */
 function normalizeStudent(
   row: Record<string, unknown>,
 ): PaymentVerificationStudent | undefined {
@@ -64,16 +73,25 @@ function normalizeStudent(
   const source = nested ?? row;
 
   const email = readString(source.email);
-  const first_name = readString(source.first_name);
-  const last_name = readString(source.last_name);
-  const phone_number = readString(source.phone_number);
-  const program = readString(source.program, source.program_slug);
-  const program_title = readString(source.program_title, source.program_name);
-  const programId = readString(source.program_id, source.programId);
+  const first_name = readString(source.firstName, source.first_name);
+  const last_name = readString(source.lastName, source.last_name);
+  const phone_number = readString(source.phoneNumber, source.phone_number);
+  const program = readString(
+    source.program,
+    source.programSlug,
+    source.program_slug,
+  );
+  const program_title = readString(
+    source.programTitle,
+    source.program_title,
+    source.programName,
+    source.program_name,
+  );
+  const programId = readString(source.programId, source.program_id);
   const id = readString(source.id, source._id);
   const applicationFee = readNumber(
-    source.application_fee,
     source.applicationFee,
+    source.application_fee,
   );
 
   if (
