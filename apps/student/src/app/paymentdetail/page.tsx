@@ -1,20 +1,21 @@
 "use client";
 
+import { readStoredPaymentReference, storePaymentReference } from "@ssu/api";
 import {
-  readStoredPaymentReference,
-  storePaymentReference,
-  verifyPayment,
-} from "@ssu/api";
-import { useInitializePaymentMutation, usePrograms } from "@ssu/queries";
+  useInitializePaymentMutation,
+  usePrograms,
+  useVerifyPayment,
+} from "@ssu/queries";
 import { useSignupStore } from "@ssu/store";
 import { Button, GoBack } from "@ssu/ui";
 import { Mail, Phone, User } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   ensureSignupSessionPersisted,
   formatSignupDisplayName,
   hasCompleteSignupSession,
+  identityFromVerifyStudent,
   persistSignupSessionFromVerify,
   storePaymentResume,
   type SignupSessionIdentity,
@@ -48,8 +49,9 @@ function PaymentDetailContent() {
   const hasHydrated = useSignupStore((state) => state._hasHydrated);
   const setHasHydrated = useSignupStore((state) => state.setHasHydrated);
   const { data: programs } = usePrograms();
-  const [identity, setIdentity] = useState<SignupSessionIdentity | null>(null);
-  const verifyStartedRef = useRef<string | null>(null);
+  const [localIdentity, setLocalIdentity] =
+    useState<SignupSessionIdentity | null>(null);
+  const [storedReference, setStoredReference] = useState<string | null>(null);
 
   useEffect(() => {
     const markHydrated = () => setHasHydrated(true);
@@ -73,35 +75,31 @@ function PaymentDetailContent() {
   }, [setHasHydrated]);
 
   useEffect(() => {
+    setStoredReference(readStoredPaymentReference());
+  }, []);
+
+  useEffect(() => {
     if (!hasHydrated) return;
-
     const local = ensureSignupSessionPersisted();
-    if (local) setIdentity(local);
+    if (local) setLocalIdentity(local);
+  }, [hasHydrated]);
 
-    const reference = referenceFromUrl || readStoredPaymentReference();
-    if (!reference) return;
+  const reference = referenceFromUrl || storedReference;
+  const verify = useVerifyPayment(reference, { notify: false });
 
-    storePaymentReference(reference);
+  // Persist verify student into local session whenever it arrives.
+  useEffect(() => {
+    if (!verify.data?.student) return;
+    if (verify.data.reference) {
+      storePaymentReference(verify.data.reference);
+    }
+    const restored = persistSignupSessionFromVerify(verify.data.student);
+    if (restored) setLocalIdentity(restored);
+  }, [verify.data]);
 
-    // Always hydrate from verify when we have a reference — do not cancel on store updates.
-    if (verifyStartedRef.current === reference) return;
-    verifyStartedRef.current = reference;
-
-    void (async () => {
-      const res = await verifyPayment(reference);
-      if (!res.ok) return;
-
-      const restored = persistSignupSessionFromVerify(res.data.student);
-      if (restored) {
-        setIdentity(restored);
-        return;
-      }
-
-      // Fallback: keep whatever local session we already had.
-      const again = ensureSignupSessionPersisted();
-      if (again) setIdentity(again);
-    })();
-  }, [hasHydrated, referenceFromUrl]);
+  // Prefer live verify payload for display — do not wait on store/effects.
+  const identity =
+    identityFromVerifyStudent(verify.data?.student) ?? localIdentity;
 
   const display = identity ?? {
     id: "",
@@ -122,7 +120,10 @@ function PaymentDetailContent() {
     DEFAULT_PROGRAM_DETAILS.applicationFee;
 
   const handlePayment = async () => {
-    const latest = ensureSignupSessionPersisted() ?? identity;
+    const latest =
+      persistSignupSessionFromVerify(verify.data?.student) ??
+      ensureSignupSessionPersisted() ??
+      identity;
     if (!hasCompleteSignupSession(latest)) return;
 
     storePaymentResume(latest!);

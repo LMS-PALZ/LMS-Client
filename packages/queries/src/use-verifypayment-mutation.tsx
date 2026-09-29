@@ -7,7 +7,11 @@ import {
 } from "@ssu/api";
 import { getErrorMessage, mutationToast } from "./notify";
 
-export function useVerifyPayment(reference: string | null) {
+export function useVerifyPayment(
+  reference: string | null,
+  options?: { notify?: boolean },
+) {
+  const notify = options?.notify !== false;
   const notifiedRef = useRef(false);
 
   const query = useQuery({
@@ -29,6 +33,7 @@ export function useVerifyPayment(reference: string | null) {
   });
 
   useEffect(() => {
+    if (!notify) return;
     if (notifiedRef.current || !query.isFetched) return;
 
     if (query.isSuccess && query.data) {
@@ -50,6 +55,7 @@ export function useVerifyPayment(reference: string | null) {
       );
     }
   }, [
+    notify,
     query.isFetched,
     query.isSuccess,
     query.data,

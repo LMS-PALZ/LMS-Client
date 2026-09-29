@@ -203,23 +203,41 @@ export function persistSignupSessionFromVerify(
 ): SignupSessionIdentity | null {
   if (!student) return ensureSignupSessionPersisted();
 
-  const identity = buildIdentity({
-    id: trim(student.id),
-    email: trim(student.email).toLowerCase(),
-    first_name: trim(student.first_name),
-    last_name: trim(student.last_name),
-    phone_number: trim(student.phone_number),
-    program: trim(student.program) || trim(student.programSlug),
-    program_title: trim(student.program_title),
-    programId: trim(student.programId) || undefined,
-    programSlug:
-      trim(student.programSlug) || trim(student.program) || undefined,
-    applicationFee: student.applicationFee,
-  });
-
+  const identity = identityFromVerifyStudent(student);
   if (!identity) return null;
   writeIdentity(identity);
   return identity;
+}
+
+/** Map verify student payload → display identity (no store writes). */
+export function identityFromVerifyStudent(
+  student: PaymentVerificationStudent | null | undefined,
+): SignupSessionIdentity | null {
+  if (!student) return null;
+
+  const email = trim(student.email).toLowerCase();
+  const first_name = trim(student.first_name);
+  const last_name = trim(student.last_name);
+  const phone_number = trim(student.phone_number);
+  const program = trim(student.program) || trim(student.programSlug);
+  const program_title = trim(student.program_title);
+
+  if (!email && !first_name && !last_name && !phone_number && !program) {
+    return null;
+  }
+
+  return {
+    id: trim(student.id),
+    email,
+    first_name,
+    last_name,
+    phone_number,
+    program,
+    program_title,
+    programId: trim(student.programId) || undefined,
+    programSlug: trim(student.programSlug) || program || undefined,
+    applicationFee: student.applicationFee,
+  };
 }
 
 export function storePaymentResume(

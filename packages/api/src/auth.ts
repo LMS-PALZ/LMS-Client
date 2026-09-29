@@ -576,7 +576,8 @@ export async function verifyPayment(reference: string): Promise<
 
     const { normalizePaymentVerification } =
       await import("./payment-verification");
-    const data = normalizePaymentVerification(res.data?.data);
+    const raw = res.data?.data;
+    const data = normalizePaymentVerification(raw);
     if (!data) {
       return {
         ok: false as const,
@@ -584,6 +585,26 @@ export async function verifyPayment(reference: string): Promise<
           res.data?.message ||
           "Payment verification returned an unexpected response.",
       };
+    }
+
+    // Backend sends studentRecord (camelCase). Ensure it always lands on `student`.
+    if (!data.student && raw && typeof raw === "object") {
+      const record = (raw as Record<string, unknown>).studentRecord;
+      if (record && typeof record === "object" && !Array.isArray(record)) {
+        const row = record as Record<string, unknown>;
+        const read = (key: string) =>
+          typeof row[key] === "string" ? String(row[key]).trim() : "";
+        data.student = {
+          first_name: read("firstName") || read("first_name") || undefined,
+          last_name: read("lastName") || read("last_name") || undefined,
+          email: read("email") || undefined,
+          phone_number:
+            read("phoneNumber") || read("phone_number") || undefined,
+          program: read("program") || undefined,
+          program_title:
+            read("programTitle") || read("program_title") || undefined,
+        };
+      }
     }
 
     return {
