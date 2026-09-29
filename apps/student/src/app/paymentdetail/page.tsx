@@ -180,9 +180,8 @@ function PaymentDetailContent() {
         className="absolute left-4 top-4 z-10 text-sm font-medium sm:left-8 sm:top-5"
       />
 
-      {/* Top-aligned so the CTA is never clipped by vertical centering */}
-      <div className="mx-auto flex w-full max-w-[640px] flex-col items-center px-4 pb-8 pt-14 text-center sm:pt-16">
-        <div className="mb-4 w-[100px] sm:w-[112px]">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[640px] flex-col items-center justify-center px-4 py-12 text-center sm:py-14">
+        <div className="mb-6 w-[112px] sm:mb-8 sm:w-[128px]">
           <img
             src="/firstlogo.png"
             alt="Chiggy Nsofor Foundation"
@@ -191,19 +190,19 @@ function PaymentDetailContent() {
           />
         </div>
 
-        <div className="mx-auto max-w-[340px]">
-          <h1 className="mb-1.5 text-[22px] font-bold text-[#1F2937] sm:text-[23px]">
+        <div className="mx-auto max-w-[380px]">
+          <h1 className="mb-2 text-[22px] font-bold text-[#1F2937] sm:text-[25px]">
             Confirm your payment
           </h1>
-          <p className="mx-auto mb-5 text-sm leading-5 text-[#6B7280]">
+          <p className="mx-auto mb-7 text-sm leading-6 text-[#6B7280] sm:mb-8 sm:text-[15px]">
             Pay the application fee to continue. You&apos;ll set up your account
             after payment.
           </p>
         </div>
 
         <div className="w-full max-w-[560px] rounded-[28px] bg-[#F9FBFD] text-left shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
-          <div className="grid gap-5 px-6 py-5 sm:px-8 sm:py-6 lg:grid-cols-[1fr_0.95fr] lg:gap-0 lg:px-0 lg:py-0">
-            <div className="space-y-4 lg:px-7 lg:py-6">
+          <div className="grid gap-6 px-6 py-6 sm:px-8 sm:py-8 lg:grid-cols-[1fr_0.95fr] lg:gap-0 lg:px-0 lg:py-0">
+            <div className="space-y-5 lg:px-8 lg:py-8">
               <div className="flex items-center gap-3 text-[#374151]">
                 <User className="h-5 w-5 shrink-0 text-[#64748B]" />
                 <p className="font-medium sm:text-[15px]">
@@ -224,10 +223,10 @@ function PaymentDetailContent() {
               </div>
             </div>
 
-            <div className="border-t border-[#E2E8F0] pt-5 lg:border-l lg:border-t-0 lg:px-8 lg:py-6">
-              <div className="space-y-4">
+            <div className="border-t border-[#E2E8F0] pt-6 lg:border-l lg:border-t-0 lg:px-8 lg:py-8">
+              <div className="space-y-5">
                 <div>
-                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
+                  <h2 className="mb-1.5 font-medium text-[#374151] sm:text-[15px]">
                     Selected Program
                   </h2>
                   <p className="text-sm text-[#6B7280] sm:text-[15px]">
@@ -237,7 +236,7 @@ function PaymentDetailContent() {
                   </p>
                 </div>
                 <div>
-                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
+                  <h2 className="mb-1.5 font-medium text-[#374151] sm:text-[15px]">
                     Duration
                   </h2>
                   <p className="text-sm text-[#6B7280] sm:text-[15px]">
@@ -245,7 +244,7 @@ function PaymentDetailContent() {
                   </p>
                 </div>
                 <div>
-                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
+                  <h2 className="mb-1.5 font-medium text-[#374151] sm:text-[15px]">
                     Start Date
                   </h2>
                   <p className="text-sm text-[#6B7280] sm:text-[15px]">
@@ -253,7 +252,7 @@ function PaymentDetailContent() {
                   </p>
                 </div>
                 <div>
-                  <h2 className="mb-1 font-medium text-[#374151] sm:text-[15px]">
+                  <h2 className="mb-1.5 font-medium text-[#374151] sm:text-[15px]">
                     Application fee
                   </h2>
                   <p className="font-semibold text-[#2F6F45] sm:text-[15px]">
@@ -271,7 +270,7 @@ function PaymentDetailContent() {
           loading={payment.isPending}
           disabled={payment.isPending || !canPay}
           variant="primary"
-          className="mt-5 w-[200px] shrink-0 rounded-[30px] text-[var(--color-surface)]"
+          className="mt-8 w-[220px] shrink-0 rounded-[30px] text-[var(--color-surface)] sm:mt-10"
         >
           Proceed to Payment
         </Button>
