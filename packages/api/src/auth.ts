@@ -821,6 +821,12 @@ export async function getStudentList(
             lastName: String(row.lastName ?? row.last_name ?? ""),
             programTitle: programLabel,
             progressPercent: Number(row.progressPercent ?? row.progress ?? 0),
+            onboardingProgress: String(
+              row.onboardingProgress ?? row.onboarding_progress ?? "",
+            ).trim(),
+            statusLabel: String(
+              row.statusLabel ?? row.status_label ?? "",
+            ).trim(),
             attendance:
               row.attendance && typeof row.attendance === "object"
                 ? row.attendance

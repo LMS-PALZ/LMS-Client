@@ -1,42 +1,57 @@
 "use client";
 
-import { Users, UserCheck, Flag } from "lucide-react";
+import { Users, UserCheck, Clock3, Flag } from "lucide-react";
 import { StatCard } from "@ssu/ui";
 import { useStudentList } from "@ssu/queries";
+import { useMemo } from "react";
 import { AdminStatsCardsSkeleton } from "@/components/skeletons";
 
-const title = "Total enrolled";
-const enrollstats = "Across 5 program";
-const weeks = "Active this week";
-const flags = "Flagged Students";
-const missclss = "Missed live classes";
-
 export function Card() {
-  const { data: statsData, isLoading } = useStudentList();
+  const { data: statsData, isLoading } = useStudentList(1, 100);
+
+  const counts = useMemo(() => {
+    const items = statsData?.items ?? [];
+    let active = 0;
+    let pending = 0;
+    for (const student of items) {
+      const status = String(student.status ?? "")
+        .trim()
+        .toLowerCase();
+      if (status === "active") active += 1;
+      else if (status === "pending") pending += 1;
+    }
+    return { active, pending };
+  }, [statsData?.items]);
 
   if (isLoading && !statsData) {
     return <AdminStatsCardsSkeleton />;
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <StatCard
-        icon={Users}
-        label={title}
-        value={statsData?.meta?.totalEnrolled}
-        description={enrollstats}
-      />
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
         icon={UserCheck}
-        label={weeks}
+        label="Active students"
+        value={counts.active}
+        description="Finished onboarding"
+      />
+      <StatCard
+        icon={Clock3}
+        label="Pending students"
+        value={counts.pending}
+        description="Still onboarding"
+      />
+      <StatCard
+        icon={Users}
+        label="Active this week"
         value={statsData?.meta?.activeThisWeek?.count}
         description={`${statsData?.meta?.activeThisWeek?.percent ?? 0}%`}
       />
       <StatCard
         icon={Flag}
-        label={flags}
+        label="Flagged Students"
         value={statsData?.meta?.flaggedStudents}
-        description={missclss}
+        description="Missed live classes"
       />
     </div>
   );
