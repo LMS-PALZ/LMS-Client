@@ -243,6 +243,7 @@ export type Status =
   | "flagged"
   | "access-revoked"
   | "active"
+  | "pending"
   | "invited"
   | "suspended"
   | "published";
@@ -253,7 +254,9 @@ export interface Student {
   lastName: string;
   programTitle: string;
   progressPercent: number;
-  attendance: {
+  onboardingProgress?: string;
+  statusLabel?: string;
+  attendance?: {
     display: string;
   };
   status: Status;

@@ -50,6 +50,8 @@ export interface DataTableProps<TData, TValue> {
 
   onRowClick?: (row: TData) => void;
 
+  emptyMessage?: string;
+
   className?: string;
 }
 
@@ -80,6 +82,8 @@ export function DataTable<TData, TValue>({
   onPageChange,
 
   onRowClick,
+
+  emptyMessage = "No results found.",
 
   className,
 }: DataTableProps<TData, TValue>) {
@@ -184,30 +188,44 @@ export function DataTable<TData, TValue>({
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                onClick={() => onRowClick?.(row.original)}
-                className={cn(
-                  "border-b last:border-0 hover:bg-neutral-50",
-                  onRowClick && "cursor-pointer",
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="px-4 py-3 text-neutral-800"
-                    onClick={(event) => {
-                      if (cell.column.id === "actions") {
-                        event.stopPropagation();
-                      }
-                    }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+            {table.getRowModel().rows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={Math.max(tableColumns.length, 1)}
+                  className="px-4 py-16 text-center text-[14px] text-[#94A3B8]"
+                >
+                  {emptyMessage}
+                </td>
               </tr>
-            ))}
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={cn(
+                    "border-b last:border-0 hover:bg-neutral-50",
+                    onRowClick && "cursor-pointer",
+                  )}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className="px-4 py-3 text-neutral-800"
+                      onClick={(event) => {
+                        if (cell.column.id === "actions") {
+                          event.stopPropagation();
+                        }
+                      }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -42,6 +42,16 @@ function getAvatarColor(): string {
   return AVATAR_COLORS[index];
 }
 
+function formatOnboardingStage(value?: string | null): string {
+  const raw = String(value ?? "").trim();
+  if (!raw) return EMPTY_DISPLAY;
+  return raw
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
 interface StudentsTableProps {
   students: Student[];
 
@@ -63,6 +73,7 @@ interface StudentsTableProps {
   setRole: (value: string) => void;
 
   setPage: (page: number) => void;
+  emptyMessage?: string;
 }
 
 function StudentActions({ student }: { student: Student }) {
@@ -166,6 +177,7 @@ export function Table({
   role,
   setRole,
   setPage,
+  emptyMessage = "No students found.",
 }: StudentsTableProps) {
   const router = useRouter();
 
@@ -179,11 +191,6 @@ export function Table({
   );
 
   const columns: ColumnDef<Student, any>[] = [
-    {
-      id: "select",
-      header: () => <input type="checkbox" />,
-      cell: () => <input type="checkbox" />,
-    },
     {
       accessorKey: "name",
       header: "Student",
@@ -219,26 +226,13 @@ export function Table({
       ),
     },
     {
-      accessorKey: "progress",
-      header: "Progress",
+      accessorKey: "onboardingProgress",
+      header: "Onboarding",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <span className="text-sm">
-            {displayValue(
-              row.original.progressPercent != null
-                ? `${row.original.progressPercent}%`
-                : null,
-            )}
+            {formatOnboardingStage(row.original.onboardingProgress)}
           </span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "attendance",
-      header: "Attendance",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.attendance.display}</span>
         </div>
       ),
     },
@@ -268,7 +262,8 @@ export function Table({
       onPageChange={setPage}
       onRowClick={(row) => router.push(`/students/${row.id}`)}
       searchable
-      statusOptions={["All", "active", "suspended"]}
+      statusOptions={["All", "active", "pending", "suspended"]}
+      emptyMessage={emptyMessage}
     />
   );
 }

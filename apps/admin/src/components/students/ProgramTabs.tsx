@@ -8,6 +8,11 @@ export interface ProgramTab {
   slug?: string;
 }
 
+export const ALL_PROGRAMS_TAB: ProgramTab = {
+  id: "all",
+  title: "All program",
+};
+
 interface ProgramTabsProps {
   programs: ProgramTab[];
   selectedId: string;
@@ -21,10 +26,12 @@ export function ProgramTabs({
   onSelect,
   isLoading = false,
 }: ProgramTabsProps) {
+  const tabs = [ALL_PROGRAMS_TAB, ...programs];
+
   if (isLoading && programs.length === 0) {
     return (
       <div className="flex flex-wrap gap-3">
-        {Array.from({ length: 4 }).map((_, index) => (
+        {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}
             className="h-11 w-40 animate-pulse rounded-[12px] bg-[#EEF2F6]"
@@ -42,7 +49,7 @@ export function ProgramTabs({
 
   return (
     <div className="flex flex-wrap gap-3">
-      {programs.map((program) => {
+      {tabs.map((program) => {
         const selected = program.id === selectedId;
         return (
           <button
