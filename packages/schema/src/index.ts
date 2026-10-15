@@ -279,3 +279,31 @@ export const inviteStaffSchema = z.object({
 });
 
 export type InviteStaffFormValues = z.infer<typeof inviteStaffSchema>;
+
+export const adminRegisterStudentSchema = z.object({
+  first_name: z.string().trim().min(1, "First name is required"),
+
+  last_name: z.string().trim().min(1, "Last name is required"),
+
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+
+  phone_number: z
+    .string()
+    .transform((val) => val.replace(/\s/g, ""))
+    .refine((val) => /^\d+$/.test(val), {
+      message: "Phone number must contain only numbers",
+    })
+    .refine((val) => val.length === 11, {
+      message: "Phone number must be exactly 11 digits",
+    }),
+
+  programId: z.string().min(1, "Please select a program"),
+});
+
+export type AdminRegisterStudentFormValues = z.input<
+  typeof adminRegisterStudentSchema
+>;
