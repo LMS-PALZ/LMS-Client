@@ -210,17 +210,23 @@ export function StudentManagement() {
 
       <div className="flex flex-col gap-4">
         <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="primary"
-            size="lg"
-            onClick={() => openRegisterModal()}
-            disabled={isProgramsLoading}
-            className="flex items-center gap-2 rounded-[30px] py-2 text-[var(--color-surface)]"
-          >
-            <UserPlus size={18} />
-            Register Student
-          </Button>
+          {showTableLoader || isProgramsLoading ? (
+            <div
+              className="h-11 w-[180px] animate-pulse rounded-[30px] bg-[#EEF2F6]"
+              aria-hidden
+            />
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              onClick={() => openRegisterModal()}
+              className="flex items-center gap-2 rounded-[30px] py-2 text-[var(--color-surface)]"
+            >
+              <UserPlus size={18} />
+              Register Student
+            </Button>
+          )}
         </div>
 
         {showTableLoader ? (
