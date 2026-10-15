@@ -87,9 +87,7 @@ export async function login(
 }
 
 export type InviteStaffErrorCode =
-  | "invalid"
-  | "duplicate_email"
-  | "server_error";
+  "invalid" | "duplicate_email" | "server_error";
 
 export async function inviteStaff(data: {
   email: string;
@@ -132,6 +130,91 @@ export async function inviteStaff(data: {
         error.response?.data?.message ||
         error.message ||
         "Failed to send invitation. Please try again.",
+    };
+  }
+}
+
+export type RegisterStudentErrorCode =
+  | "invalid"
+  | "unauthorized"
+  | "forbidden"
+  | "program_not_found"
+  | "duplicate_student"
+  | "server_error";
+
+const REGISTER_STUDENT_ERROR_MESSAGES: Record<
+  RegisterStudentErrorCode,
+  string
+> = {
+  invalid:
+    "Some details are invalid, or this program is not accepting enrollments.",
+  unauthorized: "Your session has expired. Please log in again.",
+  forbidden: "Only admins can register students.",
+  program_not_found: "The selected program could not be found.",
+  duplicate_student:
+    "A student already exists with this email or phone number.",
+  server_error: "Failed to register student. Please try again.",
+};
+
+function registerStudentErrorCode(status?: number): RegisterStudentErrorCode {
+  switch (status) {
+    case 400:
+      return "invalid";
+    case 401:
+      return "unauthorized";
+    case 403:
+      return "forbidden";
+    case 404:
+      return "program_not_found";
+    case 409:
+      return "duplicate_student";
+    default:
+      return "server_error";
+  }
+}
+
+export async function registerAndEnrollStudent(data: {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  programId: string;
+}): Promise<
+  | { ok: true; data: any; message: string }
+  | { ok: false; code: RegisterStudentErrorCode; message: string }
+> {
+  const token = getStoredAuthToken();
+  if (!token) {
+    return {
+      ok: false,
+      code: "unauthorized",
+      message: REGISTER_STUDENT_ERROR_MESSAGES.unauthorized,
+    };
+  }
+
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/api/v1/admins/students`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true,
+      data: res.data?.data,
+      message: res.data?.message || "Student registered successfully",
+    };
+  } catch (error: any) {
+    const code = registerStudentErrorCode(error.response?.status);
+    return {
+      ok: false,
+      code,
+      message:
+        error.response?.data?.message || REGISTER_STUDENT_ERROR_MESSAGES[code],
     };
   }
 }
@@ -299,9 +382,7 @@ export async function resetPassword(
 }
 
 export type ForgetPasswordErrorCode =
-  | "invalid"
-  | "server_error"
-  | "payment_required";
+  "invalid" | "server_error" | "payment_required";
 
 function isUnpaidPasswordRecoveryMessage(message: string): boolean {
   const normalized = message.toLowerCase();

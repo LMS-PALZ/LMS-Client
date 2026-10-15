@@ -1,10 +1,14 @@
 "use client";
 
-import { DataTableSkeleton } from "@ssu/ui";
+import { Button, DataTableSkeleton, useAdminModal } from "@ssu/ui";
 import { useAdminPrograms, useStudentList } from "@ssu/queries";
+import type { AdminRegisterStudentFormValues } from "@ssu/schema";
 import type { Student } from "@ssu/types";
+import { UserPlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { RegisterStudent } from "@/views/StudentManagement/RegisterStudent";
 import { Card } from "./Card";
+import { StatusDialog } from "./StatusDialog";
 import { Table } from "./Table";
 import {
   ALL_PROGRAMS_TAB,
@@ -40,11 +44,12 @@ function matchesProgram(student: Student, program: ProgramTab) {
 }
 
 export function StudentManagement() {
+  const { openModal, closeModal } = useAdminModal();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [role, setRole] = useState("");
-  const [selectedProgram, setSelectedProgram] =
+  const [programSelection, setSelectedProgram] =
     useState<ProgramTab>(ALL_PROGRAMS_TAB);
   const [isProgramPending, setIsProgramPending] = useState(false);
 
@@ -65,23 +70,74 @@ export function StudentManagement() {
     [programsData?.items],
   );
 
-  useEffect(() => {
-    if (isProgramsLoading) return;
+  const selectedProgram =
+    isProgramsLoading ||
+    programSelection.id === ALL_PROGRAMS_TAB.id ||
+    programs.some((program) => program.id === programSelection.id)
+      ? programSelection
+      : ALL_PROGRAMS_TAB;
 
-    if (selectedProgram.id === ALL_PROGRAMS_TAB.id) return;
-
-    const stillAvailable = programs.some(
-      (program) => program.id === selectedProgram.id,
-    );
-    if (!stillAvailable) {
-      setIsProgramPending(true);
-      setSelectedProgram(ALL_PROGRAMS_TAB);
-    }
-  }, [isProgramsLoading, programs, selectedProgram]);
-
-  useEffect(() => {
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
     setPage(1);
-  }, [selectedProgram?.id, search, status]);
+  };
+
+  const handleStatusChange = (value: string) => {
+    setStatus(value);
+    setPage(1);
+  };
+
+  const publishedPrograms = useMemo(
+    () =>
+      (programsData?.items ?? []).filter(
+        (program) => String(program.status).toLowerCase() === "published",
+      ),
+    [programsData?.items],
+  );
+
+  const openRegisterModal = (
+    defaultValues?: Partial<AdminRegisterStudentFormValues>,
+  ) => {
+    const preselectedProgramId = publishedPrograms.some(
+      (program) => program.id === selectedProgram.id,
+    )
+      ? selectedProgram.id
+      : "";
+
+    openModal(
+      "Student Information",
+      <RegisterStudent
+        programs={publishedPrograms}
+        defaultValues={{ programId: preselectedProgramId, ...defaultValues }}
+        onClose={closeModal}
+        onSuccess={(values, programTitle) => {
+          openModal(
+            "",
+            <StatusDialog
+              variant="success"
+              title="Student registered!"
+              description={`${values.first_name} ${values.last_name} has been enrolled in ${programTitle}. An onboarding link has been sent to ${values.email}.`}
+              onDismiss={closeModal}
+            />,
+          );
+        }}
+        onError={(message, values) => {
+          openModal(
+            "",
+            <StatusDialog
+              variant="error"
+              title="Registration failed"
+              description={message}
+              dismissLabel="Close"
+              confirmLabel="Try again"
+              onDismiss={closeModal}
+              onConfirm={() => openRegisterModal(values)}
+            />,
+          );
+        }}
+      />,
+    );
+  };
 
   useEffect(() => {
     if (!isProgramPending) return;
@@ -152,26 +208,42 @@ export function StudentManagement() {
         }}
       />
 
-      {showTableLoader ? (
-        <DataTableSkeleton
-          rows={8}
-          columns={5}
-          className="border-0 bg-transparent p-0 shadow-none"
-        />
-      ) : (
-        <Table
-          students={pagedStudents}
-          pagination={pagination}
-          search={search}
-          setSearch={setSearch}
-          status={status}
-          setStatus={setStatus}
-          role={role}
-          setRole={setRole}
-          setPage={setPage}
-          emptyMessage={emptyMessage}
-        />
-      )}
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            onClick={() => openRegisterModal()}
+            disabled={isProgramsLoading}
+            className="flex items-center gap-2 rounded-[30px] py-2 text-[var(--color-surface)]"
+          >
+            <UserPlus size={18} />
+            Register Student
+          </Button>
+        </div>
+
+        {showTableLoader ? (
+          <DataTableSkeleton
+            rows={8}
+            columns={5}
+            className="border-0 bg-transparent p-0 shadow-none"
+          />
+        ) : (
+          <Table
+            students={pagedStudents}
+            pagination={pagination}
+            search={search}
+            setSearch={handleSearchChange}
+            status={status}
+            setStatus={handleStatusChange}
+            role={role}
+            setRole={setRole}
+            setPage={setPage}
+            emptyMessage={emptyMessage}
+          />
+        )}
+      </div>
     </section>
   );
 }

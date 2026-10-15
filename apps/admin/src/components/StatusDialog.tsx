@@ -1,10 +1,10 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@ssu/ui";
 
 export interface StatusDialogProps {
-  variant: "success" | "confirm";
+  variant: "success" | "error" | "confirm";
 
   title: string;
   description?: string;
@@ -44,6 +44,12 @@ export function StatusDialog({
         </div>
       )}
 
+      {variant === "error" && (
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#F87171]">
+          {icon ?? <XCircle className="h-9 w-9 text-[#FFFFFF]" />}
+        </div>
+      )}
+
       <h2 className="text-[18px] font-semibold text-[#1D1D1D]">{title}</h2>
 
       {description && (
@@ -62,6 +68,29 @@ export function StatusDialog({
         >
           {dismissLabel}
         </Button>
+      ) : variant === "error" ? (
+        <div className="mt-7 flex w-full items-center gap-3">
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            onClick={onDismiss}
+            className="flex-1 rounded-[30px] bg-[#E2E8F0] text-[#1D1D1D] hover:bg-[#D7DFEC]"
+          >
+            {dismissLabel}
+          </Button>
+          {onConfirm ? (
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              onClick={onConfirm}
+              className="flex-1 rounded-[30px] text-[var(--color-surface)]"
+            >
+              {confirmLabel}
+            </Button>
+          ) : null}
+        </div>
       ) : (
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button
