@@ -18,7 +18,7 @@ Set the public origin in `.env.local` so share URLs resolve correctly:
 | Student | `http://localhost:5173`        |
 | Admin   | `http://localhost:5175`        |
 
-Use your deployed HTTPS URL in production (e.g. `https://student.skillscaleup.org`).
+Use your deployed HTTPS URL in production (e.g. `https://portal.skillscaleup.org`).
 
 For the **student** app, copy env vars into `apps/student/.env.local` (Next.js reads env from the app folder, not the monorepo root).
 
