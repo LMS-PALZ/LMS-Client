@@ -106,7 +106,7 @@ export function AccountSetupStepThree({
       </div>
 
       <p className="text-center text-[15px] text-[#7A8594]">
-        It should be a max of 2mb, and show your face.
+        It should be a max of 2MB, and show your face.
       </p>
 
       {error && (

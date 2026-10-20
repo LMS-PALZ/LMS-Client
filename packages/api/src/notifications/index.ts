@@ -127,14 +127,18 @@ async function listStaffNotifications(): Promise<NotificationDto[]> {
   const programsRes = await listAdminPrograms({ page: 1, limit: 100 });
   if (!programsRes.ok) return [];
 
+  const activePrograms = programsRes.data.items.filter(
+    (program) => String(program.status ?? "").toLowerCase() !== "archived",
+  );
+
   const isTutor = shouldScopeProgramsToTutor(session.role);
   const programs = isTutor
-    ? filterProgramsForTutor(programsRes.data.items, {
+    ? filterProgramsForTutor(activePrograms, {
         id: session.id,
         email: session.email,
         accessToken: session.accessToken || getStoredAuthToken() || undefined,
       })
-    : programsRes.data.items;
+    : activePrograms;
 
   // Tutors always get an “added to course” notice for each of their programs.
   const assignedNotifications = isTutor

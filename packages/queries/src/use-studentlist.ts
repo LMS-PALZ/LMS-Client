@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getStudentList } from "@ssu/api";
 
 export function useStudentList(
@@ -42,5 +42,6 @@ export function useStudentList(
       return res.data;
     },
     enabled: options?.enabled ?? true,
+    placeholderData: keepPreviousData,
   });
 }

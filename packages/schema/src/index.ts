@@ -249,13 +249,16 @@ function isFileLike(value: unknown): value is File {
   );
 }
 
+export const PROFILE_PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+
 export const accountSetupStepThreeSchema = z.object({
   profilePhoto: z
     .custom<File>(isFileLike, {
       message: "Please upload your profile photo",
     })
-    .refine((file) => file.size <= 2 * 1024 * 1024, {
-      message: "Your photo must be 2MB or less",
+    .refine((file) => file.size <= PROFILE_PHOTO_MAX_BYTES, {
+      message:
+        "Your photo should not exceed 2MB. Please choose a smaller image.",
     })
     .refine((file) => file.type.startsWith("image/"), {
       message: "Please upload a valid image file",
