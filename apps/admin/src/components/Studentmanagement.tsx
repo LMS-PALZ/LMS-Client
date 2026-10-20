@@ -5,7 +5,7 @@ import { useAdminPrograms, useStudentList } from "@ssu/queries";
 import type { AdminRegisterStudentFormValues } from "@ssu/schema";
 import type { Student } from "@ssu/types";
 import { UserPlus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { RegisterStudent } from "@/views/StudentManagement/RegisterStudent";
 import { Card } from "./Card";
 import { StatusDialog } from "./StatusDialog";
@@ -18,31 +18,6 @@ import {
 
 const PAGE_SIZE = 10;
 
-function matchesProgram(student: Student, program: ProgramTab) {
-  if (program.id === ALL_PROGRAMS_TAB.id) return true;
-
-  const label = String(student.programTitle ?? "")
-    .trim()
-    .toLowerCase();
-  if (!label) return false;
-
-  const title = program.title.trim().toLowerCase();
-  const slug = (program.slug ?? "").trim().toLowerCase();
-  const parts = label
-    .split(/[,|/]/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  return (
-    label === title ||
-    (slug !== "" && label === slug) ||
-    parts.includes(title) ||
-    (slug !== "" && parts.includes(slug)) ||
-    label.includes(title) ||
-    title.includes(label)
-  );
-}
-
 export function StudentManagement() {
   const { openModal, closeModal } = useAdminModal();
   const [page, setPage] = useState(1);
@@ -51,7 +26,6 @@ export function StudentManagement() {
   const [role, setRole] = useState("");
   const [programSelection, setSelectedProgram] =
     useState<ProgramTab>(ALL_PROGRAMS_TAB);
-  const [isProgramPending, setIsProgramPending] = useState(false);
 
   const { data: programsData, isLoading: isProgramsLoading } = useAdminPrograms(
     {
@@ -139,44 +113,32 @@ export function StudentManagement() {
     );
   };
 
-  useEffect(() => {
-    if (!isProgramPending) return;
-    const timer = window.setTimeout(() => setIsProgramPending(false), 280);
-    return () => window.clearTimeout(timer);
-  }, [selectedProgram?.id, isProgramPending]);
+  const programFilter =
+    selectedProgram.id === ALL_PROGRAMS_TAB.id ? "" : selectedProgram.title;
 
   const { data, isLoading, isFetching } = useStudentList(
-    1,
-    100,
+    page,
+    PAGE_SIZE,
     search,
     status,
     role,
-    "",
+    programFilter,
   );
 
-  const programStudents = useMemo(() => {
-    if (isProgramPending) return [];
-    const items = (data?.items ?? []) as Student[];
-    return items.filter((student) => matchesProgram(student, selectedProgram));
-  }, [data?.items, selectedProgram, isProgramPending]);
-
-  const totalPages = Math.max(1, Math.ceil(programStudents.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pagedStudents = programStudents.slice(
-    (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE,
-  );
+  const students = (data?.items ?? []) as Student[];
+  const serverPagination = data?.pagination;
+  const totalPages = Math.max(1, Number(serverPagination?.totalPages ?? 1));
+  const currentPage = Number(serverPagination?.page ?? page);
 
   const pagination = {
-    page: safePage,
+    page: currentPage,
     totalPages,
-    total: programStudents.length,
-    hasNextPage: safePage < totalPages,
-    hasPreviousPage: safePage > 1,
+    total: Number(serverPagination?.total ?? students.length),
+    hasNextPage: currentPage < totalPages,
+    hasPreviousPage: currentPage > 1,
   };
 
-  const showTableLoader =
-    isProgramPending || isLoading || (isFetching && !data);
+  const showTableLoader = isLoading || (isFetching && !data);
 
   const hasActiveFilters = Boolean(search.trim() || status.trim());
   const emptyMessage =
@@ -200,7 +162,6 @@ export function StudentManagement() {
         isLoading={isProgramsLoading}
         onSelect={(program) => {
           if (program.id === selectedProgram.id) return;
-          setIsProgramPending(true);
           setSelectedProgram(program);
           setSearch("");
           setStatus("");
@@ -237,7 +198,7 @@ export function StudentManagement() {
           />
         ) : (
           <Table
-            students={pagedStudents}
+            students={students}
             pagination={pagination}
             search={search}
             setSearch={handleSearchChange}

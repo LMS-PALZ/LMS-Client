@@ -186,6 +186,11 @@ export function AccountSetupModal({
     setStep((prev) => (prev > 1 ? prev - 1 : prev));
   };
 
+  const canFinish =
+    Boolean(profilePhoto) &&
+    !stepThreeErrors.profilePhoto &&
+    !createProfile.isPending;
+
   const handleFinish = async () => {
     if (!validateStepThree()) return;
     if (!profilePhoto) return;
@@ -318,7 +323,16 @@ export function AccountSetupModal({
             profilePhoto={profilePhoto}
             setProfilePhoto={(file) => {
               setProfilePhoto(file);
-              setStepThreeErrors({});
+              const result = accountSetupStepThreeSchema.safeParse({
+                profilePhoto: file,
+              });
+              if (result.success) {
+                setStepThreeErrors({});
+                return;
+              }
+              const errors = mapFieldErrors(result.error.flatten().fieldErrors);
+              if (errors.profilePhoto) mutationToast.error(errors.profilePhoto);
+              setStepThreeErrors(errors);
             }}
             error={stepThreeErrors.profilePhoto}
           />
@@ -350,9 +364,9 @@ export function AccountSetupModal({
               <button
                 type="button"
                 onClick={handleFinish}
-                disabled={!profilePhoto || createProfile.isPending}
+                disabled={!canFinish}
                 className={`relative flex h-[42px] items-center justify-center rounded-full px-7 text-[15px] font-medium text-white transition ${
-                  profilePhoto && !createProfile.isPending
+                  canFinish
                     ? "bg-[#4E845F] hover:bg-[#3D6E4D]"
                     : "cursor-not-allowed bg-[#D8DEE8] text-[#9AA5B1]"
                 }`}

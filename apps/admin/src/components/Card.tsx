@@ -3,27 +3,22 @@
 import { Users, UserCheck, Clock3, Flag } from "lucide-react";
 import { StatCard } from "@ssu/ui";
 import { useStudentList } from "@ssu/queries";
-import { useMemo } from "react";
 import { AdminStatsCardsSkeleton } from "@/components/skeletons";
 
+interface StudentStatsMeta {
+  totalEnrolled?: number;
+  totalActiveStudents?: number;
+  totalPendingStudents?: number;
+  activeThisWeek?: { count?: number; percent?: number };
+  flaggedStudents?: number;
+}
+
 export function Card() {
-  const { data: statsData, isLoading } = useStudentList(1, 100);
+  // Unfiltered, so table search, status, program and paging never change the stats.
+  const { data, isLoading } = useStudentList(1, 1);
+  const meta = data?.meta as StudentStatsMeta | undefined;
 
-  const counts = useMemo(() => {
-    const items = statsData?.items ?? [];
-    let active = 0;
-    let pending = 0;
-    for (const student of items) {
-      const status = String(student.status ?? "")
-        .trim()
-        .toLowerCase();
-      if (status === "active") active += 1;
-      else if (status === "pending") pending += 1;
-    }
-    return { active, pending };
-  }, [statsData?.items]);
-
-  if (isLoading && !statsData) {
+  if (isLoading && !meta) {
     return <AdminStatsCardsSkeleton />;
   }
 
@@ -32,25 +27,25 @@ export function Card() {
       <StatCard
         icon={UserCheck}
         label="Active students"
-        value={counts.active}
+        value={meta?.totalActiveStudents ?? 0}
         description="Finished onboarding"
       />
       <StatCard
         icon={Clock3}
         label="Pending students"
-        value={counts.pending}
+        value={meta?.totalPendingStudents ?? 0}
         description="Still onboarding"
       />
       <StatCard
         icon={Users}
         label="Active this week"
-        value={statsData?.meta?.activeThisWeek?.count}
-        description={`${statsData?.meta?.activeThisWeek?.percent ?? 0}%`}
+        value={meta?.activeThisWeek?.count ?? 0}
+        description={`${meta?.activeThisWeek?.percent ?? 0}%`}
       />
       <StatCard
         icon={Flag}
         label="Flagged Students"
-        value={statsData?.meta?.flaggedStudents}
+        value={meta?.flaggedStudents ?? 0}
         description="Missed live classes"
       />
     </div>
