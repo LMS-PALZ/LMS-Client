@@ -2,7 +2,7 @@
 
 import { useSession, useStudentProfile } from "@ssu/queries";
 import { isStudentProfileComplete } from "@ssu/api";
-import { AlertBanner, CardSkeleton, PageHeader } from "@ssu/ui";
+import { AlertBanner, CardSkeleton, PageBackFrame, PageHeader } from "@ssu/ui";
 import { displayName, displayValue, EMPTY_DISPLAY } from "@ssu/utils";
 
 export function ProfilePage() {
@@ -19,9 +19,11 @@ export function ProfilePage() {
       {profileQuery.isLoading ? (
         <CardSkeleton lines={4} className="min-h-[200px]" />
       ) : profileQuery.isError ? (
-        <AlertBanner variant="error">
-          Could not load your profile. Please try again later.
-        </AlertBanner>
+        <PageBackFrame fallbackHref="/home">
+          <AlertBanner variant="error">
+            Could not load your profile. Please try again later.
+          </AlertBanner>
+        </PageBackFrame>
       ) : (
         <div className="rounded-2xl border bg-white p-6 shadow-card space-y-6">
           <section>

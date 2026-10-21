@@ -54,9 +54,10 @@ export function CalendarPage() {
     <div className="space-y-6">
       <PageHeader title="Calendar" />
       <p className="-mt-2 text-[14px] leading-relaxed text-neutral-600 sm:text-[15px]">
-        Live classes, upcoming and past sessions, and assignment due dates for
-        your program. Click a live class to join, or open a past session for
-        recordings and resources.
+        Live classes, recordings, and assignment due dates for your program.
+        Click a live class to join, or a green recording event to rewatch. Past
+        sessions appear on their original date — use the arrows to browse other
+        months. You can also rewatch anytime from My Classroom.
       </p>
 
       <CalendarLegend />

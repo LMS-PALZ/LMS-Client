@@ -2,6 +2,11 @@
 
 import { cn } from "@ssu/utils";
 import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  PageBreadcrumb,
+  PageBreadcrumbProvider,
+  useBreadcrumbItems,
+} from "../../molecules/PageBreadcrumb";
 import { SidebarProvider } from "../../organisms/SidebarContext";
 import { MobileSidebar } from "../../organisms/NavigationSidebar/MobileSidebar";
 
@@ -25,6 +30,22 @@ export function useSidebarCollapsed() {
   return useContext(SidebarCollapseContext);
 }
 
+function DashboardBreadcrumbBar({ fullWidthMain }: { fullWidthMain: boolean }) {
+  const items = useBreadcrumbItems();
+  if (items.length < 2) return null;
+
+  return (
+    <div
+      className={cn(
+        "mx-auto w-full px-4 pb-1 pt-3 md:px-6",
+        fullWidthMain ? "max-w-none" : "max-w-[1280px]",
+      )}
+    >
+      <PageBreadcrumb items={items} />
+    </div>
+  );
+}
+
 export function DashboardLayout({
   sidebar,
   header,
@@ -44,30 +65,34 @@ export function DashboardLayout({
       }}
     >
       <SidebarProvider>
-        <div className="flex h-screen overflow-hidden bg-[#F0F5F1] lg:gap-2">
-          <aside className="hidden lg:block">{sidebar}</aside>
+        <PageBreadcrumbProvider>
+          <div className="flex h-screen overflow-hidden bg-[#F0F5F1] lg:gap-2">
+            <aside className="hidden lg:block">{sidebar}</aside>
 
-          <MobileSidebar>{sidebar}</MobileSidebar>
+            <MobileSidebar>{sidebar}</MobileSidebar>
 
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-none bg-[#FAFAFA] lg:rounded-[16px]">
-            <header className="flex h-[var(--header-height)] flex-shrink-0 items-center px-4 md:px-6">
-              {header}
-            </header>
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-none bg-[#FAFAFA] lg:rounded-[16px]">
+              <header className="flex h-[var(--header-height)] flex-shrink-0 items-center px-4 md:px-6">
+                {header}
+              </header>
 
-            <main className="flex-1 overflow-y-auto">
-              <div
-                className={cn(
-                  "mx-auto p-4 md:p-6",
-                  fullWidthMain ? "max-w-none" : "max-w-[1280px]",
-                )}
-              >
-                {children}
-              </div>
-            </main>
+              <DashboardBreadcrumbBar fullWidthMain={fullWidthMain} />
+
+              <main className="flex-1 overflow-y-auto">
+                <div
+                  className={cn(
+                    "mx-auto p-4 md:p-6",
+                    fullWidthMain ? "max-w-none" : "max-w-[1280px]",
+                  )}
+                >
+                  {children}
+                </div>
+              </main>
+            </div>
+
+            {overlay}
           </div>
-
-          {overlay}
-        </div>
+        </PageBreadcrumbProvider>
       </SidebarProvider>
     </SidebarCollapseContext.Provider>
   );

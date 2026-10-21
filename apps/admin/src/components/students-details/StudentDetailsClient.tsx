@@ -3,7 +3,7 @@
 import { useStudentDetails } from "@ssu/queries";
 import { StudentDetails } from "@/components/students-details/studentdetail";
 import { AdminStudentDetailSkeleton } from "@/components/skeletons";
-import { AlertBanner, GoBack } from "@ssu/ui";
+import { AlertBanner, GoBack, usePageBreadcrumbs } from "@ssu/ui";
 import { adminPath } from "@ssu/config/portal-paths";
 
 interface Props {
@@ -12,6 +12,14 @@ interface Props {
 
 export function StudentDetailsClient({ id }: Props) {
   const { data, isLoading, isError, error } = useStudentDetails(id);
+  const studentName = data
+    ? `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim() || "Student"
+    : "Student";
+
+  usePageBreadcrumbs([
+    { label: "Students", href: adminPath("/students") },
+    { label: studentName },
+  ]);
 
   if (isLoading && !data) {
     return (

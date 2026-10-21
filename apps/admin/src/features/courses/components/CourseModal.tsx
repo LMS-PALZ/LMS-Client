@@ -10,7 +10,7 @@ interface CourseModalProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   children: ReactNode;
-  footer: ReactNode;
+  footer?: ReactNode;
   className?: string;
 }
 
@@ -44,13 +44,15 @@ export function CourseModal({
             </Dialog.Close>
           </div>
 
-          <div className="relative z-10 min-h-0 flex-1 overflow-visible px-6 py-4">
+          <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-4">
             {children}
           </div>
 
-          <div className="relative z-0 shrink-0 border-t border-[#EEF2F6] px-6 py-4">
-            {footer}
-          </div>
+          {footer != null ? (
+            <div className="relative z-0 shrink-0 border-t border-[#EEF2F6] px-6 py-4">
+              {footer}
+            </div>
+          ) : null}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

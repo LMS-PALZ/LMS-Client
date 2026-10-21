@@ -13,6 +13,7 @@ import { Settings, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { RouteBreadcrumbs } from "@/components/RouteBreadcrumbs";
 import { getAdminPageTitle } from "@/lib/adminRoutes";
 import { getNavSectionsForRole } from "@/lib/admin-roles";
 
@@ -73,6 +74,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         />
       }
     >
+      <RouteBreadcrumbs />
       {children}
     </DashboardLayout>
   );

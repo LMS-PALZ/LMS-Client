@@ -54,7 +54,7 @@ export function buildLessonPayload(
     id: input.existingLesson?.id ?? createId("temp-lesson"),
     title: input.title.trim(),
     overview: isLiveSession
-      ? input.description.trim()
+      ? input.overview.trim() || input.description.trim() || undefined
       : input.overview.trim() || undefined,
     summary: isLiveSession ? input.description.trim() : undefined,
     lessonType: input.activityType,

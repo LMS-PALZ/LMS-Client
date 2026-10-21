@@ -27,9 +27,17 @@ export function buildCalendarEvents(
   );
 
   const classEvents: StudentCalendarEvent[] = lessons
-    .filter((lesson) => lesson.lessonType === "live_session" && lesson.startsAt)
+    .filter((lesson) => {
+      if (!lesson.startsAt) return false;
+      return (
+        lesson.lessonType === "live_session" ||
+        lesson.lessonType === "recording" ||
+        Boolean(lesson.recordingUrl?.trim())
+      );
+    })
     .map((lesson) => {
       const extended = lesson as typeof lesson & { isLiveNow?: boolean };
+      const hasRecording = Boolean(lesson.recordingUrl?.trim());
       const phase = resolveLessonSessionPhase(
         lesson.startsAt,
         lesson.durationMinutes,
@@ -42,14 +50,27 @@ export function buildCalendarEvents(
           : DEFAULT_DURATION_MINUTES;
       const end = addMinutes(start, duration);
 
+      let title = lesson.title;
+      if (hasRecording && phase !== "upcoming") {
+        title = `${lesson.title} · Recording`;
+      } else if (phase === "live" && !hasRecording) {
+        title = `${lesson.title} · Live`;
+      }
+
+      // Ended Zoom-only sessions have nothing to open; keep them visible for history.
+      const href =
+        hasRecording || phase === "live" || phase === "upcoming"
+          ? getCalendarSessionHref(lesson.id, lesson.recordingUrl)
+          : undefined;
+
       return {
         id: `session-${lesson.id}`,
-        title: phase === "live" ? `${lesson.title} · Live` : lesson.title,
+        title,
         start: start.toISOString(),
         end: end.toISOString(),
-        href: getCalendarSessionHref(lesson.id, lesson.recordingUrl),
+        href,
         sessionPhase: phase,
-        kind: "class-session",
+        kind: "class-session" as const,
         courseTitle: programTitle,
       };
     });

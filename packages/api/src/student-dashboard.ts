@@ -43,7 +43,10 @@ export function mapClassroomLessonsToSessions(
           (lesson.lessonType === "live_session"
             ? new Date().toISOString()
             : ""),
-        isLive: isLessonLive(extended.isLiveNow),
+        // Pre-recorded sessions must never appear as live Zoom classes.
+        isLive: lesson.recordingUrl?.trim()
+          ? false
+          : isLessonLive(extended.isLiveNow),
         meetingUrl: lesson.zoomJoinUrl || lesson.liveSessionUrl,
         zoomJoinUrl: lesson.zoomJoinUrl,
         description: lesson.overview ?? lesson.summary,
@@ -114,20 +117,47 @@ function mapLiveGeneralToSessions(
     startsAt: string;
     liveSessionUrl?: string | null;
     zoomJoinUrl?: string | null;
+    recordingUrl?: string | null;
   }>,
 ): LiveSessionItem[] {
   return liveGeneralPrograms
     .filter((item) => item.lessonId && item.lessonTitle)
-    .map((item) => ({
-      id: item.lessonId,
-      title: item.lessonTitle,
-      courseName: item.programTitle || "",
-      startsAt: item.startsAt || new Date().toISOString(),
-      isLive: true,
-      meetingUrl: item.liveSessionUrl ?? undefined,
-      zoomJoinUrl: item.zoomJoinUrl ?? undefined,
-      programId: item.programId,
-    }));
+    .map((item) => {
+      const recordingUrl = readString(item.recordingUrl) || undefined;
+      return {
+        id: item.lessonId,
+        title: item.lessonTitle,
+        courseName: item.programTitle || "",
+        startsAt: item.startsAt || new Date().toISOString(),
+        // Never mark a pre-recorded session as a live Zoom class.
+        isLive: !recordingUrl,
+        meetingUrl: item.liveSessionUrl ?? undefined,
+        zoomJoinUrl: item.zoomJoinUrl ?? undefined,
+        recordingUrl,
+        programId: item.programId,
+      };
+    });
+}
+
+function mergeSessionEntries(
+  existing: LiveSessionItem,
+  incoming: LiveSessionItem,
+): LiveSessionItem {
+  const recordingUrl = incoming.recordingUrl?.trim() || existing.recordingUrl;
+  const hasRecording = Boolean(recordingUrl?.trim());
+
+  return {
+    ...existing,
+    ...incoming,
+    // Classroom payloads usually have recordingUrl; /me live stubs often do not.
+    recordingUrl,
+    meetingUrl: incoming.meetingUrl || existing.meetingUrl,
+    zoomJoinUrl: incoming.zoomJoinUrl || existing.zoomJoinUrl,
+    programId: incoming.programId || existing.programId,
+    durationMinutes: incoming.durationMinutes ?? existing.durationMinutes,
+    // Pre-recorded always wins over a live stub for the same lesson id.
+    isLive: hasRecording ? false : Boolean(incoming.isLive || existing.isLive),
+  };
 }
 
 export const studentDashboardApi = {
@@ -236,9 +266,10 @@ export const studentDashboardApi = {
     const byId = new Map<string, LiveSessionItem>();
     for (const session of sessionSources) {
       const existing = byId.get(session.id);
-      if (!existing || (!existing.isLive && session.isLive)) {
-        byId.set(session.id, session);
-      }
+      byId.set(
+        session.id,
+        existing ? mergeSessionEntries(existing, session) : session,
+      );
     }
 
     return Array.from(byId.values()).sort(

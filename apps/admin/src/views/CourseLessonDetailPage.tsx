@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminProgram, useProgramClassroomModules } from "@ssu/queries";
-import { AlertBanner, Button, GoBack } from "@ssu/ui";
+import { AlertBanner, Button, GoBack, usePageBreadcrumbs } from "@ssu/ui";
 import { toVideoEmbedUrl } from "@ssu/utils";
 import { Check, Copy, Radio, Video } from "lucide-react";
 import { AdminCourseDetailSkeleton } from "@/components/skeletons";
@@ -65,6 +64,16 @@ export function CourseLessonDetailPage({
   }, [isWatching, recordingEmbedUrl]);
   const canJoinZoom = Boolean(meetUrl) && !recordingUrl;
 
+  usePageBreadcrumbs([
+    { label: "Courses", href: adminPath("/courses") },
+    {
+      label: program?.title ?? "Course",
+      href: courseHref,
+    },
+    { label: module?.title ?? "Module" },
+    { label: lesson?.title ?? "Lesson" },
+  ]);
+
   if ((isProgramLoading || isModulesLoading) && !lesson) {
     return (
       <div className="space-y-4">
@@ -114,19 +123,6 @@ export function CourseLessonDetailPage({
   return (
     <div className="space-y-6">
       <GoBack fallbackHref={courseHref} />
-      <nav className="flex flex-wrap items-center gap-2 text-[13px] text-[#64748B]">
-        <Link href={adminPath("/courses")} className="hover:text-[#4C7D5B]">
-          Courses
-        </Link>
-        <span>/</span>
-        <Link href={courseHref} className="hover:text-[#4C7D5B]">
-          {program.title}
-        </Link>
-        <span>/</span>
-        <span className="text-[#1D1D1D]">{module.title}</span>
-        <span>/</span>
-        <span className="text-[#1D1D1D]">{lesson.title}</span>
-      </nav>
 
       <div className="rounded-[16px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

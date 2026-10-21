@@ -8,8 +8,7 @@ import {
 } from "@/contexts/ClassroomPlaybackContext";
 import { LiveIndicator } from "@ssu/ui";
 import { cn } from "@ssu/utils";
-import { GoBack } from "@ssu/ui";
-import { CheckCircle2, ChevronDown, Circle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Circle, Play } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type ReactNode } from "react";
@@ -173,13 +172,17 @@ function ClassroomCourseLayoutShellInner({
   return (
     <div className="grid gap-3 xl:grid-cols-[1.9fr_0.78fr]">
       <div className="flex flex-col rounded-[20px] bg-white p-2 md:p-8">
-        <GoBack fallbackHref={backFallbackHref} />
-
-        <div className="mt-8 inline-flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
-          {liveActive && hasRecording ? (
+        <div className="inline-flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-[#F3F6F8] px-3 py-2 text-[14px] text-[#6B7280]">
+          {hasRecording ? (
             <>
-              <LiveIndicator label="Live now" size="md" tone="classroom" />
-              <span className="text-[#D1D5DB]">|</span>
+              <span
+                className="h-3 w-3 shrink-0 rounded-full bg-[#436E53]"
+                aria-hidden
+              />
+              <Play
+                className="h-3.5 w-3.5 shrink-0 fill-[#436E53] text-[#436E53]"
+                aria-hidden
+              />
               <span className="font-medium text-[#6B7280]">{statusLabel}</span>
             </>
           ) : liveActive ? (

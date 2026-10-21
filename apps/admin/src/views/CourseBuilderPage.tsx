@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
@@ -10,7 +9,7 @@ import {
   useCreateProgramMutation,
   useSession,
 } from "@ssu/queries";
-import { AlertBanner, GoBack } from "@ssu/ui";
+import { AlertBanner, GoBack, usePageBreadcrumbs } from "@ssu/ui";
 import {
   CourseBasicForm,
   CourseBuilderShell,
@@ -79,16 +78,14 @@ export function CourseBuilderPage() {
     return null;
   }
 
+  usePageBreadcrumbs([
+    { label: "Courses", href: adminPath("/courses") },
+    { label: "Course builder" },
+  ]);
+
   return (
     <section className="space-y-6">
       <GoBack fallbackHref={adminPath("/courses")} />
-      <nav aria-label="Breadcrumb" className="text-[14px] text-[#94A3B8]">
-        <Link href={adminPath("/courses")} className="hover:text-[#4C7D5B]">
-          Courses
-        </Link>
-        <span className="mx-2">&gt;</span>
-        <span className="text-[#1D1D1D]">Course builder</span>
-      </nav>
 
       {createProgram.isError && (
         <AlertBanner variant="error">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
@@ -13,7 +12,7 @@ import {
   useTutorStaff,
   useUpdateProgramStatusMutation,
 } from "@ssu/queries";
-import { AlertBanner, GoBack } from "@ssu/ui";
+import { AlertBanner, GoBack, usePageBreadcrumbs } from "@ssu/ui";
 import {
   CourseCohortsTab,
   CourseDetailHeader,
@@ -120,6 +119,18 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
     }
   };
 
+  usePageBreadcrumbs(
+    program
+      ? [
+          { label: "Courses", href: adminPath("/courses") },
+          { label: program.title },
+        ]
+      : [
+          { label: "Courses", href: adminPath("/courses") },
+          { label: "Course" },
+        ],
+  );
+
   if (isProgramLoading && !program) {
     return (
       <section className="space-y-4">
@@ -145,13 +156,6 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
   return (
     <section className="space-y-6">
       <GoBack fallbackHref={adminPath("/courses")} />
-      <nav aria-label="Breadcrumb" className="text-[14px] text-[#94A3B8]">
-        <Link href={adminPath("/courses")} className="hover:text-[#4C7D5B]">
-          Courses
-        </Link>
-        <span className="mx-2">&gt;</span>
-        <span className="text-[#1D1D1D]">{program.title}</span>
-      </nav>
 
       {updateStatus.isError && (
         <AlertBanner variant="error">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
@@ -13,7 +12,7 @@ import {
   mutationToast,
 } from "@ssu/queries";
 import type { ProgramClassroomModule } from "@ssu/types";
-import { AlertBanner, Button, GoBack } from "@ssu/ui";
+import { AlertBanner, Button, GoBack, usePageBreadcrumbs } from "@ssu/ui";
 import {
   CourseBuilderShell,
   CourseCurriculumView,
@@ -88,6 +87,23 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     }
   };
 
+  usePageBreadcrumbs(
+    program
+      ? [
+          { label: "Courses", href: adminPath("/courses") },
+          {
+            label: program.title,
+            href: adminPath(`/courses/${courseId}`),
+          },
+          { label: "Curriculum" },
+        ]
+      : [
+          { label: "Courses", href: adminPath("/courses") },
+          { label: "Course", href: adminPath(`/courses/${courseId}`) },
+          { label: "Curriculum" },
+        ],
+  );
+
   if (isProgramLoading && !program) {
     return (
       <section className="space-y-4">
@@ -113,20 +129,6 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   return (
     <section className="space-y-6">
       <GoBack fallbackHref={adminPath(`/courses/${courseId}`)} />
-      <nav aria-label="Breadcrumb" className="text-[14px] text-[#94A3B8]">
-        <Link href={adminPath("/courses")} className="hover:text-[#4C7D5B]">
-          Courses
-        </Link>
-        <span className="mx-2">&gt;</span>
-        <Link
-          href={adminPath(`/courses/${courseId}`)}
-          className="hover:text-[#4C7D5B]"
-        >
-          {program.title}
-        </Link>
-        <span className="mx-2">&gt;</span>
-        <span className="text-[#1D1D1D]">Course builder</span>
-      </nav>
 
       {(updateStatus.isError || upsertClassroom.isError) && (
         <AlertBanner variant="error">
