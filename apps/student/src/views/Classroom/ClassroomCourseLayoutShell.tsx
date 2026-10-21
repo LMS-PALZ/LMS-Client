@@ -153,10 +153,12 @@ function ClassroomCourseLayoutShellInner({
 
   function openLesson(lesson: ClassroomLesson) {
     const recorded = Boolean(lesson.recordingUrl?.trim());
-    if (!recorded && lesson.sessionPhase === "ended") return;
+    const canJoinLive =
+      !recorded && (lesson.isLive || lesson.sessionPhase === "live");
 
     if (pathname.startsWith(`/classroom/${lesson.id}`)) {
-      if (!recorded) setJoinRequested(true);
+      // Only request Zoom join while the live window is active.
+      if (canJoinLive) setJoinRequested(true);
       return;
     }
 
@@ -165,6 +167,7 @@ function ClassroomCourseLayoutShellInner({
         lessonId: lesson.id,
         programId,
         recordingUrl: lesson.recordingUrl,
+        mode: recorded ? "watch" : canJoinLive ? "join" : "view",
       }),
     );
   }

@@ -10,13 +10,6 @@ function addMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60_000);
 }
 
-function getCalendarSessionHref(
-  lessonId: string,
-  recordingUrl?: string,
-): string {
-  return classroomSessionHref({ lessonId, recordingUrl });
-}
-
 export function buildCalendarEvents(
   classroom: StudentClassroomData,
   assignments: AssignmentListItem[],
@@ -57,11 +50,17 @@ export function buildCalendarEvents(
         title = `${lesson.title} · Live`;
       }
 
-      // Ended Zoom-only sessions have nothing to open; keep them visible for history.
-      const href =
-        hasRecording || phase === "live" || phase === "upcoming"
-          ? getCalendarSessionHref(lesson.id, lesson.recordingUrl)
-          : undefined;
+      // Always link to the class detail page (resources). Join/watch is gated there.
+      const href = classroomSessionHref({
+        lessonId: lesson.id,
+        recordingUrl: lesson.recordingUrl,
+        mode:
+          hasRecording && phase !== "upcoming"
+            ? "watch"
+            : phase === "live"
+              ? "join"
+              : "view",
+      });
 
       return {
         id: `session-${lesson.id}`,

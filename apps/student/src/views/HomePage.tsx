@@ -27,8 +27,9 @@ import {
 } from "@/lib/assignment-display";
 import { classroomSessionHref } from "@/lib/classroom/recording-embed";
 import {
-  homeSessionActionLabel,
-  isSessionActionEnabled,
+  hasRecordingUrl,
+  isLiveJoinEnabled,
+  isRecordingPlayEnabled,
   resolveHomeSessionCardStatus,
 } from "@/lib/sessions/session-access";
 import {
@@ -36,6 +37,7 @@ import {
   formatSessionDayLabel,
 } from "@/lib/sessions/today-sessions";
 import { ClassroomCourseCard } from "@/views/Classroom/ClassroomCourseCard";
+import { JOIN_LIVE_CLASS_LABEL, WATCH_RECORDED_CLASS_LABEL } from "@ssu/utils";
 import { GraduationCap, Notebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -96,12 +98,16 @@ export function HomePage() {
     progress.data?.enrolledProgramTitle || program?.title || "your course";
 
   const openClass = (session: (typeof sessionList)[number]) => {
-    if (!isSessionActionEnabled(session)) return;
+    const recorded = hasRecordingUrl(session);
+    if (recorded && !isRecordingPlayEnabled(session)) return;
+
+    const canJoin = !recorded && isLiveJoinEnabled(session);
     router.push(
       classroomSessionHref({
         lessonId: session.id,
         programId: session.programId,
         recordingUrl: session.recordingUrl,
+        mode: recorded ? "watch" : canJoin ? "join" : "view",
       }),
     );
   };
@@ -136,27 +142,37 @@ export function HomePage() {
             />
           }
           sessions={sessionList.map((s) => {
-            const actionEnabled = isSessionActionEnabled(s);
+            const recorded = hasRecordingUrl(s);
+            const canPlay = recorded && isRecordingPlayEnabled(s);
+            const canJoin = !recorded && isLiveJoinEnabled(s);
+            const locked = recorded && !canPlay;
+            const label = locked
+              ? "Starts at scheduled time"
+              : canPlay
+                ? WATCH_RECORDED_CLASS_LABEL
+                : canJoin
+                  ? JOIN_LIVE_CLASS_LABEL
+                  : "View class details";
             return {
               id: s.id,
               title: s.title,
               time: formatSessionTime(s.startsAt),
               date: formatSessionDayLabel(s.startsAt),
               status: resolveHomeSessionCardStatus(s),
-              disabled: !actionEnabled,
+              disabled: locked,
               action: (
                 <button
                   type="button"
                   onClick={() => openClass(s)}
-                  disabled={!actionEnabled}
+                  disabled={locked}
                   className={
-                    actionEnabled
-                      ? "font-semibold text-[#4E845F] hover:underline"
-                      : "cursor-not-allowed font-semibold text-[#94A3B8]"
+                    locked
+                      ? "cursor-not-allowed font-semibold text-[#94A3B8]"
+                      : "font-semibold text-[#4E845F] hover:underline"
                   }
                 >
-                  {homeSessionActionLabel(s)}
-                  {actionEnabled ? " >" : ""}
+                  {label}
+                  {locked ? "" : " >"}
                 </button>
               ),
             };

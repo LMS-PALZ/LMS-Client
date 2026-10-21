@@ -6,7 +6,7 @@ import { mapClassroomResponse } from "@/lib/classroom/mappers";
 import { ClassroomCourseProvider } from "@/contexts/ClassroomCourseContext";
 import {
   hasRecordingUrl,
-  isSessionActionEnabled,
+  isRecordingPlayEnabled,
 } from "@/lib/sessions/session-access";
 import {
   useEnrolledProgram,
@@ -208,30 +208,18 @@ export function ClassroomSessionLayout({
     isLive: Boolean(extendedLesson?.isLiveNow || liveGeneralFallback),
     recordingUrl,
   };
-  if (accessSession.startsAt && !isSessionActionEnabled(accessSession)) {
-    const isRecording = hasRecordingUrl(accessSession);
-    if (!isRecording && sessionPhase === "ended") {
-      return (
-        <DashboardEmptyState
-          backHref={CLASSROOM_BACK_HREF}
-          icon={Video}
-          title="Class has ended"
-          description="This live session is over. A recording will appear here if your tutor adds one."
-        />
-      );
-    }
+  // Only lock the page before a recording's release time. Ended live classes
+  // still open so students can view resources; Join stays disabled in the shell.
+  if (
+    hasRecordingUrl(accessSession) &&
+    !isRecordingPlayEnabled(accessSession)
+  ) {
     return (
       <DashboardEmptyState
         backHref={CLASSROOM_BACK_HREF}
         icon={Video}
-        title={
-          isRecording ? "Recording not available yet" : "Class has not started"
-        }
-        description={
-          isRecording
-            ? "This recording will unlock at the scheduled class time. After that you can watch it anytime."
-            : "You can join this live class when the scheduled start time is reached."
-        }
+        title="Recording not available yet"
+        description="This recording will unlock at the scheduled class time. After that you can watch it anytime."
       />
     );
   }
