@@ -18,6 +18,8 @@ import {
   cn,
   displayValue,
   EMPTY_DISPLAY,
+  CLASS_ENDED_LABEL,
+  CLASS_NOT_STARTED_LABEL,
   JOIN_LIVE_CLASS_LABEL,
   WATCH_RECORDED_CLASS_LABEL,
 } from "@ssu/utils";
@@ -77,12 +79,13 @@ function lessonActionLabel(lesson: {
   });
 
   if (hasRecording) {
-    if (!canPlayRecording) return "Not available";
+    if (!canPlayRecording) return CLASS_NOT_STARTED_LABEL;
     return WATCH_RECORDED_CLASS_LABEL;
   }
 
   if (lesson.lessonType === "live_session") {
-    if (phase === "ended" || !canJoinLive) return "View Detials";
+    if (phase === "ended") return CLASS_ENDED_LABEL;
+    if (!canJoinLive) return CLASS_NOT_STARTED_LABEL;
     return JOIN_LIVE_CLASS_LABEL;
   }
 
@@ -232,7 +235,7 @@ export function MyClassroomPage() {
       <DashboardEmptyState
         icon={GraduationCap}
         title="Nothing here yet"
-        description="Check back later."
+        description="Ask your admin for access."
       />
     );
   }
@@ -306,7 +309,7 @@ export function MyClassroomPage() {
             <DashboardEmptyState
               icon={GraduationCap}
               title="Nothing here yet"
-              description="Check back later."
+              description="Open a class when it's ready."
             />
           ) : (
             <>
@@ -314,7 +317,7 @@ export function MyClassroomPage() {
                 <LiveIndicator label="Live" size="md" tone="classroom" />
               ) : (
                 <span className="inline-flex items-center rounded-full bg-[#E8F4FC] px-3 py-1.5 text-[13px] font-semibold text-[#2B6CB0]">
-                  Upcoming
+                  {CLASS_NOT_STARTED_LABEL}
                 </span>
               )}
 
@@ -353,12 +356,21 @@ export function MyClassroomPage() {
                   if (isRecording && !canPlay) {
                     return (
                       <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2.5 text-[14px] font-semibold text-[#9AA3AF]">
-                        Not available
+                        {CLASS_NOT_STARTED_LABEL}
                       </span>
                     );
                   }
 
                   if (!isRecording && !canJoin) {
+                    const phase = resolveLessonSessionPhase(
+                      nextSession.startsAt,
+                      nextSession.durationMinutes,
+                      nextSession.isLive,
+                    );
+                    const statusLabel =
+                      phase === "ended"
+                        ? CLASS_ENDED_LABEL
+                        : CLASS_NOT_STARTED_LABEL;
                     return (
                       <button
                         type="button"
@@ -367,7 +379,7 @@ export function MyClassroomPage() {
                         }
                         className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-5 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3D6E4D]"
                       >
-                        Open
+                        {statusLabel}
                         <ChevronRight className="h-5 w-5" />
                       </button>
                     );
@@ -466,7 +478,7 @@ export function MyClassroomPage() {
           <DashboardEmptyState
             icon={GraduationCap}
             title="Nothing here yet"
-            description="Check back later."
+            description="Check back when your course is ready."
           />
         ) : (
           <div className="space-y-3">
@@ -575,11 +587,11 @@ export function MyClassroomPage() {
                                     </p>
                                   ) : ended ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Class ended
+                                      {CLASS_ENDED_LABEL}
                                     </p>
-                                  ) : locked ? (
+                                  ) : locked || phase === "upcoming" ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Not available
+                                      {CLASS_NOT_STARTED_LABEL}
                                     </p>
                                   ) : recorded ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">

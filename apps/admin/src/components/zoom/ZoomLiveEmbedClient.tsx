@@ -16,7 +16,7 @@ export interface ZoomLiveEmbedClientProps {
 }
 
 function zoomErrorMessage(error: unknown): string {
-  if (!error) return "Something went wrong. Try again later.";
+  if (!error) return "Something went wrong. Refresh and try again.";
 
   const text =
     typeof error === "string"
@@ -37,7 +37,7 @@ function zoomErrorMessage(error: unknown): string {
               .join(" — ")
           : "";
 
-  const normalized = text || "Something went wrong. Try again later.";
+  const normalized = text || "Something went wrong. Refresh and try again.";
   const isSignatureInvalid =
     /signature is invalid/i.test(normalized) ||
     /\b3712\b/.test(normalized) ||
@@ -294,7 +294,8 @@ export function ZoomLiveEmbedClient({
 
       if (!signatureRes.ok) {
         throw new Error(
-          signatureBody.message || "Something went wrong. Try again later.",
+          signatureBody.message ||
+            "Something went wrong. Refresh and try again.",
         );
       }
 

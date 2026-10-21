@@ -21,7 +21,7 @@ export function ProfilePage() {
       ) : profileQuery.isError ? (
         <PageBackFrame fallbackHref="/home">
           <AlertBanner variant="error">
-            Something went wrong. Try again later.
+            Something went wrong. Refresh and try again.
           </AlertBanner>
         </PageBackFrame>
       ) : (

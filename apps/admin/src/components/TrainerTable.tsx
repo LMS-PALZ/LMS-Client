@@ -123,7 +123,10 @@ export function TrainerTable({
             });
           } catch (error) {
             mutationToast.error(
-              getErrorMessage(error, "Something went wrong. Try again later."),
+              getErrorMessage(
+                error,
+                "Something went wrong. Refresh and try again.",
+              ),
             );
             return;
           }

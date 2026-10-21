@@ -126,7 +126,7 @@ export function CourseCurriculumView({
           Something went wrong
         </p>
         <p className="mt-2 max-w-sm text-[14px] text-[#94A3B8]">
-          Try again later.
+          Refresh and try again.
         </p>
       </div>
     );
@@ -141,6 +141,9 @@ export function CourseCurriculumView({
           </p>
           <p className="text-[16px] font-semibold text-[#1D1D1D]">
             Nothing here yet
+          </p>
+          <p className="mt-2 text-[14px] text-[#94A3B8]">
+            Add a module to get started.
           </p>
           <div className="mt-4">
             <AddItemLink label="Add module" onClick={openAddModule} />

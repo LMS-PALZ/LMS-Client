@@ -32,7 +32,7 @@ export function CourseLayoutClient({ moduleId, children }: Props) {
         backHref="/classroom"
         icon={Megaphone}
         title="Nothing here yet"
-        description="Check back later."
+        description="Go back to My Classroom."
       />
     );
   }

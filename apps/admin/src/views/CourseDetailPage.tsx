@@ -99,7 +99,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
       );
     } catch (error) {
       mutationToast.error(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
       );
     }
   };
@@ -114,7 +114,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
     } catch (error) {
       setDeleteOpen(false);
       mutationToast.error(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
       );
     }
   };
@@ -144,7 +144,9 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
     return (
       <section className="space-y-6">
         <GoBack fallbackHref={adminPath("/courses")} />
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">
+          Go back to courses and try again.
+        </AlertBanner>
       </section>
     );
   }
@@ -154,11 +156,11 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
       <GoBack fallbackHref={adminPath("/courses")} />
 
       {updateStatus.isError && (
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       )}
 
       {deleteCourse.isError && (
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       )}
 
       <CourseDetailHeader
@@ -185,7 +187,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
               modules={modules}
               courseId={courseId}
               isLoading={isModulesLoading}
-              error={isModulesError ? "Try again later." : null}
+              error={isModulesError ? "Refresh and try again." : null}
             />
           )}
           {activeTab === "cohorts" && (

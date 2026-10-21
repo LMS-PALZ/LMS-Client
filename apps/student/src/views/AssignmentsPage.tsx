@@ -51,7 +51,7 @@ export function Assignments({
         <EmptyState
           icon={Megaphone}
           title="Nothing here yet"
-          description="Check back later."
+          description="Check back when assignments are posted."
         />
       ) : (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">

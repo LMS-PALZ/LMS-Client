@@ -66,7 +66,11 @@ export function CalenderPage() {
           <DashboardEmptyState
             icon={CalendarDays}
             title="Nothing here yet"
-            description={isError ? "Try again later." : "Check back later."}
+            description={
+              isError
+                ? "Refresh and try again."
+                : "Schedule a class in a course."
+            }
             className="py-16"
           />
         </div>

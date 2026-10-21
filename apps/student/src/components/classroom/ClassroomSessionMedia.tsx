@@ -1,7 +1,12 @@
 "use client";
 
 import { AlertBanner, DashboardEmptyState } from "@ssu/ui";
-import { cn, JOIN_LIVE_CLASS_LABEL } from "@ssu/utils";
+import {
+  CLASS_ENDED_LABEL,
+  CLASS_NOT_STARTED_LABEL,
+  cn,
+  JOIN_LIVE_CLASS_LABEL,
+} from "@ssu/utils";
 import { Video } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -67,7 +72,7 @@ function RecordingEmbed({
     return (
       <VideoFrame className={className}>
         <AlertBanner variant="error" title="Something went wrong">
-          Try again later.
+          Refresh and try again.
         </AlertBanner>
       </VideoFrame>
     );
@@ -149,7 +154,7 @@ export function ClassroomSessionMedia({
         <DashboardEmptyState
           icon={Video}
           title="Not available"
-          description="Try again later."
+          description="Go back and try again."
         />
       </VideoFrame>
     );
@@ -162,7 +167,7 @@ export function ClassroomSessionMedia({
           <DashboardEmptyState
             icon={Video}
             title="Not available"
-            description="Try again later."
+            description="Go back and try again."
           />
         </VideoFrame>
       );
@@ -176,7 +181,7 @@ export function ClassroomSessionMedia({
       <VideoFrame className={className}>
         <DashboardEmptyState
           icon={Video}
-          title="Class ended"
+          title={CLASS_ENDED_LABEL}
           description="Nothing to play right now."
         />
       </VideoFrame>
@@ -187,8 +192,8 @@ export function ClassroomSessionMedia({
     <VideoFrame className={className}>
       <DashboardEmptyState
         icon={Video}
-        title="Not available"
-        description="Try again later."
+        title={CLASS_NOT_STARTED_LABEL}
+        description="Session has ended or not started yet."
       />
     </VideoFrame>
   );

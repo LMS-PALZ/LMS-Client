@@ -104,7 +104,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
       }
     } catch (error) {
       mutationToast.error(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
       );
       throw error;
     }
@@ -128,7 +128,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
       }
     } catch (error) {
       mutationToast.error(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
       );
       throw error;
     }
@@ -143,7 +143,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
       setSuccessOpen(true);
     } catch (error) {
       mutationToast.error(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
       );
     }
   };
@@ -178,7 +178,9 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     return (
       <section className="space-y-6">
         <GoBack fallbackHref={adminPath("/courses")} />
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">
+          Go back to courses and try again.
+        </AlertBanner>
       </section>
     );
   }
@@ -210,7 +212,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
           program={program}
           modules={modules}
           isLoadingModules={isModulesLoading}
-          modulesError={isModulesError ? "Try again later." : null}
+          modulesError={isModulesError ? "Refresh and try again." : null}
           isSaving={isMutating}
           onSaveModule={saveModule}
           onDeleteActivity={handleDeleteActivity}

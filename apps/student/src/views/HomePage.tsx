@@ -26,6 +26,7 @@ import {
   formatSessionTime,
 } from "@/lib/assignment-display";
 import { classroomSessionHref } from "@/lib/classroom/recording-embed";
+import { resolveLessonSessionPhase } from "@/lib/calendar/session-phase";
 import {
   hasRecordingUrl,
   isLiveJoinEnabled,
@@ -37,7 +38,12 @@ import {
   formatSessionDayLabel,
 } from "@/lib/sessions/today-sessions";
 import { ClassroomCourseCard } from "@/views/Classroom/ClassroomCourseCard";
-import { JOIN_LIVE_CLASS_LABEL, WATCH_RECORDED_CLASS_LABEL } from "@ssu/utils";
+import {
+  CLASS_ENDED_LABEL,
+  CLASS_NOT_STARTED_LABEL,
+  JOIN_LIVE_CLASS_LABEL,
+  WATCH_RECORDED_CLASS_LABEL,
+} from "@ssu/utils";
 import { GraduationCap, Notebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -138,7 +144,7 @@ export function HomePage() {
             <DashboardEmptyState
               icon={GraduationCap}
               title="Nothing here yet"
-              description="Check back later."
+              description="See My Classroom for updates."
             />
           }
           sessions={sessionList.map((s) => {
@@ -146,13 +152,20 @@ export function HomePage() {
             const canPlay = recorded && isRecordingPlayEnabled(s);
             const canJoin = !recorded && isLiveJoinEnabled(s);
             const locked = recorded && !canPlay;
+            const phase = resolveLessonSessionPhase(
+              s.startsAt,
+              s.durationMinutes,
+              s.isLive,
+            );
             const label = locked
-              ? "Not available"
+              ? CLASS_NOT_STARTED_LABEL
               : canPlay
                 ? WATCH_RECORDED_CLASS_LABEL
                 : canJoin
                   ? JOIN_LIVE_CLASS_LABEL
-                  : "Open";
+                  : phase === "ended"
+                    ? CLASS_ENDED_LABEL
+                    : CLASS_NOT_STARTED_LABEL;
             return {
               id: s.id,
               title: s.title,
@@ -232,7 +245,7 @@ export function HomePage() {
         />
         {assignments.isError && (
           <AlertBanner variant="error" title="Something went wrong">
-            Try again later.
+            Refresh and try again.
           </AlertBanner>
         )}
         {assignments.isLoading ? (
@@ -241,7 +254,7 @@ export function HomePage() {
           <DashboardEmptyState
             icon={Notebook}
             title="Nothing here yet"
-            description="Check back later."
+            description="See Assessments for updates."
           />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">

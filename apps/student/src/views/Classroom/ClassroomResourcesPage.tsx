@@ -12,7 +12,7 @@ export function ClassroomResourcesPage({
       <DashboardEmptyState
         icon={FileText}
         title="Nothing here yet"
-        description="Check back later."
+        description="Check back when resources are posted."
       />
     );
   }

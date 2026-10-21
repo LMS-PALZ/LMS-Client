@@ -12,7 +12,7 @@ export default function DashboardError({
   return (
     <AppStatusPage
       title="Something went wrong"
-      description="Try again later."
+      description="Try again, or go back home."
       homeHref={adminPath()}
       onRetry={reset}
     />

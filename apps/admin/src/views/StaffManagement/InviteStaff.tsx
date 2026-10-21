@@ -50,7 +50,7 @@ export function InviteStaff({ onClose, onSuccess }: InviteStaffProps) {
       onSuccess(values.email);
     } catch (error) {
       mutationToast.error(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
       );
     }
   });
@@ -58,7 +58,7 @@ export function InviteStaff({ onClose, onSuccess }: InviteStaffProps) {
   return (
     <form onSubmit={onSubmit} className="w-full space-y-5">
       {inviteStaff.isError && (
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

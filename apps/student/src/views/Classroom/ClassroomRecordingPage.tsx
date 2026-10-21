@@ -32,8 +32,8 @@ export function ClassroomRecordingPage({
     return (
       <DashboardEmptyState
         icon={Video}
-        title="Not available"
-        description="Try again later."
+        title="Nothing here yet"
+        description="Check back when the recording is ready."
       />
     );
   }

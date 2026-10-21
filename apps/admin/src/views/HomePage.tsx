@@ -251,7 +251,7 @@ export function HomePage() {
                   Nothing here yet
                 </p>
                 <p className="mt-1 text-[13px] text-[#6B7280]">
-                  Check back later.
+                  Add a live session in a course.
                 </p>
               </div>
             )}

@@ -131,7 +131,7 @@ export function AssessmentsPage() {
 
       {assignments.isError && (
         <AlertBanner variant="error">
-          Something went wrong. Try again later.
+          Something went wrong. Refresh and try again.
         </AlertBanner>
       )}
 
@@ -191,7 +191,7 @@ export function AssessmentsPage() {
           <DashboardEmptyState
             icon={ClipboardList}
             title="Nothing here yet"
-            description="Check back later."
+            description="Check back when assessments are posted."
           />
         ) : (
           <>

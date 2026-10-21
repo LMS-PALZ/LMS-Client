@@ -79,7 +79,7 @@ export function RegisterStudent({
       onSuccess(values, selectedLabel);
     } catch (error) {
       onError(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
         getValues(),
       );
     }

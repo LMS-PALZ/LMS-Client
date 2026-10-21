@@ -98,7 +98,9 @@ export function CoursesPage() {
         ) : null}
       </div>
 
-      {isError && <AlertBanner variant="error">Try again later.</AlertBanner>}
+      {isError && (
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
+      )}
 
       <CoursesToolbar
         count={filteredCourses.length}
@@ -115,7 +117,7 @@ export function CoursesPage() {
         />
       ) : filteredCourses.length === 0 ? (
         <div className="flex min-h-[320px] items-center justify-center rounded-[18px] bg-[#F7F9FB] px-6 text-center text-[14px] text-[#94A3B8]">
-          No courses match your search or filter.
+          Try a different search.
         </div>
       ) : (
         <CoursesList courses={filteredCourses} />

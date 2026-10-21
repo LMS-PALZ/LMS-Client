@@ -37,7 +37,9 @@ export function PendingTrainersPage() {
         title="Trainer approvals"
         breadcrumbs={[{ label: "Admin" }, { label: "Pending trainers" }]}
       />
-      {q.isError && <AlertBanner variant="error">Try again later.</AlertBanner>}
+      {q.isError && (
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
+      )}
       {!q.data?.length ? (
         <EmptyState
           icon={UserCheck}

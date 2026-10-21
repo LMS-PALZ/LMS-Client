@@ -76,7 +76,9 @@ export function UsersPage() {
         title="Users"
         breadcrumbs={[{ label: "Admin" }, { label: "Users" }]}
       />
-      {q.isError && <AlertBanner variant="error">Try again later.</AlertBanner>}
+      {q.isError && (
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
+      )}
       {!q.data?.length ? (
         <EmptyState
           icon={Users}

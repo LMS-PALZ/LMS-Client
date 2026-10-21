@@ -7,7 +7,7 @@ import {
   useClassroomPlayback,
 } from "@/contexts/ClassroomPlaybackContext";
 import { LiveIndicator } from "@ssu/ui";
-import { cn } from "@ssu/utils";
+import { CLASS_ENDED_LABEL, CLASS_NOT_STARTED_LABEL, cn } from "@ssu/utils";
 import { CheckCircle2, ChevronDown, Circle, Play } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -307,6 +307,16 @@ function ClassroomCourseLayoutShellInner({
                           {lesson.isLive && !lesson.recordingUrl?.trim() ? (
                             <p className="mt-1 text-[12px] font-medium text-[#C92A2A]">
                               Live now
+                            </p>
+                          ) : lesson.sessionPhase === "ended" &&
+                            !lesson.recordingUrl?.trim() ? (
+                            <p className="mt-1 text-[12px] text-[#6B7280]">
+                              {CLASS_ENDED_LABEL}
+                            </p>
+                          ) : lesson.sessionPhase === "upcoming" &&
+                            !lesson.recordingUrl?.trim() ? (
+                            <p className="mt-1 text-[12px] text-[#6B7280]">
+                              {CLASS_NOT_STARTED_LABEL}
                             </p>
                           ) : lesson.recordingUrl?.trim() ? (
                             <p className="mt-1 text-[12px] text-[#6B7280]">

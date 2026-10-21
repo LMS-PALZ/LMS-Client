@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@ssu/utils";
+import { CLASS_NOT_STARTED_LABEL, cn } from "@ssu/utils";
 import { CalendarDays, Clock3, ChevronRight } from "lucide-react";
 import { EmptyState, LiveIndicator } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
@@ -39,7 +39,7 @@ export function LiveSessions({
         <EmptyState
           icon={Megaphone}
           title="Nothing here yet"
-          description="Check back later."
+          description="See My Classroom for updates."
         />
       ) : (
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-3">
@@ -52,7 +52,7 @@ export function LiveSessions({
                 <LiveIndicator label="Live" size="xs" tone="default" />
               ) : (
                 <span className="inline-flex items-center rounded-full bg-[#E2EBFF] px-3 py-1 text-[9px] font-semibold text-[#356DFF]">
-                  Upcoming
+                  {CLASS_NOT_STARTED_LABEL}
                 </span>
               )}
 
@@ -84,7 +84,7 @@ export function LiveSessions({
                     : "cursor-not-allowed text-[#D1D5DB]"
                 }`}
               >
-                {joinLabel}
+                {session.joinable ? joinLabel : CLASS_NOT_STARTED_LABEL}
 
                 <ChevronRight size={16} />
               </button>

@@ -366,7 +366,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       mutationToast.error(
         error instanceof Error
           ? error.message
-          : "Something went wrong. Try again later.",
+          : "Something went wrong. Refresh and try again.",
       );
     }
   };
@@ -384,7 +384,9 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
     return (
       <section className="space-y-6">
         <GoBack fallbackHref={backHref} />
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">
+          Go back to the course and try again.
+        </AlertBanner>
       </section>
     );
   }
@@ -393,7 +395,9 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
     return (
       <section className="space-y-6">
         <GoBack fallbackHref={backHref} />
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">
+          Go back to the course and try again.
+        </AlertBanner>
       </section>
     );
   }
@@ -406,7 +410,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       </h1>
 
       {upsertClassroom.isError && (
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       )}
 
       {!isEditing ? (

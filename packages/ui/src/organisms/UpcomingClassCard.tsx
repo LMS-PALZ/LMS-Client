@@ -1,5 +1,6 @@
 "use client";
 
+import { CLASS_NOT_STARTED_LABEL } from "@ssu/utils";
 import { ChevronRight } from "lucide-react";
 
 interface UpcomingClassCardProps {
@@ -34,7 +35,7 @@ export function UpcomingClassCard({
       className="group flex w-full items-center gap-3 rounded-2xl border border-[#EEF2F6] bg-[#FAFBFC] px-4 py-3.5 text-left transition hover:border-[#D4E2D8] hover:bg-white"
     >
       <span className="shrink-0 rounded-full bg-[#DBEAFE] px-3 py-1 text-[12px] font-medium text-[#2563EB]">
-        Upcoming
+        {CLASS_NOT_STARTED_LABEL}
       </span>
 
       <div className="min-w-0 flex-1">

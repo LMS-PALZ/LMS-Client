@@ -34,7 +34,9 @@ export function StudentDetailsClient({ id }: Props) {
     return (
       <div className="space-y-4">
         <GoBack fallbackHref={adminPath("/students")} />
-        <AlertBanner variant="error">Try again later.</AlertBanner>
+        <AlertBanner variant="error">
+          Go back to students and try again.
+        </AlertBanner>
       </div>
     );
   }

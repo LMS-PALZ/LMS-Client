@@ -140,7 +140,7 @@ export function TransactionsPage() {
           <EmptyState
             icon={Receipt}
             title="Something went wrong"
-            description="Try again later."
+            description="Refresh and try again."
           />
         ) : (
           <TransactionsTable
@@ -161,7 +161,7 @@ export function TransactionsPage() {
         onOpenChange={handleModalChange}
         transaction={detailQuery.data}
         isLoading={detailQuery.isLoading}
-        errorMessage={detailQuery.isError ? "Try again later." : undefined}
+        errorMessage={detailQuery.isError ? "Close and try again." : undefined}
       />
     </div>
   );

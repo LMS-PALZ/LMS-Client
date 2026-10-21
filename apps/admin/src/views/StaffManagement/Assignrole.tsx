@@ -40,7 +40,7 @@ export function Assignrole({ tutorId, onClose, onSuccess }: AssignroleProps) {
       onSuccess();
     } catch (error) {
       mutationToast.error(
-        getErrorMessage(error, "Something went wrong. Try again later."),
+        getErrorMessage(error, "Something went wrong. Refresh and try again."),
       );
     }
   };
@@ -64,7 +64,7 @@ export function Assignrole({ tutorId, onClose, onSuccess }: AssignroleProps) {
         />
       </div>
 
-      {error && <p className="text-sm text-red-500">Try again later.</p>}
+      {error && <p className="text-sm text-red-500">Refresh and try again.</p>}
 
       <div className="flex justify-end gap-3">
         <Button

@@ -95,7 +95,7 @@ function SuspendStudentDialog({
       variant="confirm"
       confirmVariant="danger"
       title={`Suspend ${fullName}?`}
-      description="Continue?"
+      description="Confirm to continue."
       confirmLabel="Suspend"
       isConfirming={updateStudentStatus.isPending}
       onCancel={onCancel}
@@ -108,7 +108,10 @@ function SuspendStudentDialog({
           onSuccess();
         } catch (error) {
           mutationToast.error(
-            getErrorMessage(error, "Something went wrong. Try again later."),
+            getErrorMessage(
+              error,
+              "Something went wrong. Refresh and try again.",
+            ),
           );
         }
       }}
@@ -134,7 +137,7 @@ function ActivateStudentDialog({
       variant="confirm"
       confirmVariant="primary"
       title={`Activate ${fullName}?`}
-      description="Continue?"
+      description="Confirm to continue."
       confirmLabel="Activate"
       isConfirming={updateStudentStatus.isPending}
       onCancel={onCancel}
@@ -147,7 +150,10 @@ function ActivateStudentDialog({
           onSuccess();
         } catch (error) {
           mutationToast.error(
-            getErrorMessage(error, "Something went wrong. Try again later."),
+            getErrorMessage(
+              error,
+              "Something went wrong. Refresh and try again.",
+            ),
           );
         }
       }}
@@ -183,7 +189,10 @@ function DeleteStudentDialog({
           onSuccess();
         } catch (error) {
           mutationToast.error(
-            getErrorMessage(error, "Something went wrong. Try again later."),
+            getErrorMessage(
+              error,
+              "Something went wrong. Refresh and try again.",
+            ),
           );
         }
       }}

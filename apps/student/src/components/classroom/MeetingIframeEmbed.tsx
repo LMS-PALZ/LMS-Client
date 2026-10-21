@@ -26,7 +26,7 @@ export function MeetingIframeEmbed({
           className,
         )}
       >
-        Not available.
+        Go back and try again.
       </div>
     );
   }

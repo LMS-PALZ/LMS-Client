@@ -11,7 +11,7 @@ export function CertificatePage() {
         <DashboardEmptyState
           icon={Award}
           title="Nothing here yet"
-          description="Check back later."
+          description="Check back when certificates are ready."
           className="py-16"
         />
       </div>

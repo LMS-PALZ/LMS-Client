@@ -19,6 +19,7 @@ import {
   PageBackFrame,
   usePageBreadcrumbs,
 } from "@ssu/ui";
+import { CLASS_NOT_STARTED_LABEL } from "@ssu/utils";
 import { Video } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
@@ -96,7 +97,7 @@ export function ClassroomSessionLayout({
         backHref="/home"
         icon={Video}
         title="Nothing here yet"
-        description="Check back later."
+        description="Go back to My Classroom."
       />
     );
   }
@@ -115,7 +116,7 @@ export function ClassroomSessionLayout({
     return (
       <PageBackFrame fallbackHref={CLASSROOM_BACK_HREF}>
         <AlertBanner variant="error" title="Something went wrong">
-          Try again later.
+          Go back and try again.
         </AlertBanner>
       </PageBackFrame>
     );
@@ -127,7 +128,7 @@ export function ClassroomSessionLayout({
         backHref={CLASSROOM_BACK_HREF}
         icon={Video}
         title="Not available"
-        description="Try again later."
+        description="Go back to My Classroom."
       />
     );
   }
@@ -216,8 +217,8 @@ export function ClassroomSessionLayout({
       <DashboardEmptyState
         backHref={CLASSROOM_BACK_HREF}
         icon={Video}
-        title="Not available"
-        description="Try again later."
+        title={CLASS_NOT_STARTED_LABEL}
+        description="Session has ended or not started yet."
       />
     );
   }
