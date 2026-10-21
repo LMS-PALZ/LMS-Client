@@ -1,4 +1,5 @@
 import type { LiveSessionItem } from "@ssu/types";
+import { sessionActionLabel } from "@ssu/utils";
 
 const DEFAULT_LIVE_WINDOW_MINUTES = 120;
 
@@ -20,6 +21,7 @@ export function isLiveJoinEnabled(
   now = new Date(),
 ): boolean {
   const startMs = readStartMs(session.startsAt);
+  // No schedule → only trust an explicit live flag (never invent a window).
   if (startMs == null) return Boolean(session.isLive);
 
   const nowMs = now.getTime();
@@ -76,5 +78,5 @@ export function resolveHomeSessionCardStatus(
 export function homeSessionActionLabel(
   session: Pick<LiveSessionItem, "recordingUrl">,
 ): string {
-  return hasRecordingUrl(session) ? "Play class recording" : "Join live class";
+  return sessionActionLabel(hasRecordingUrl(session));
 }

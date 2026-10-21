@@ -44,6 +44,7 @@ export interface StudentMeLiveLesson {
   durationMinutes?: number;
   liveSessionUrl?: string | null;
   zoomJoinUrl?: string | null;
+  recordingUrl?: string | null;
 }
 
 export type StudentMeLiveGeneralProgram = StudentMeLiveLesson;

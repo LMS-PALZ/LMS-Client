@@ -30,7 +30,8 @@ export function mapClassroomLessonsToSessions(
         lesson.lessonType === "recording",
     )
     .map((lesson) => {
-      const startsAt = lesson.startsAt ?? "";
+      const startsAt = lesson.startsAt?.trim() ?? "";
+      const hasRecording = Boolean(lesson.recordingUrl?.trim());
       const extended = lesson as ProgramClassroomLesson & {
         isLiveNow?: boolean;
       };
@@ -38,15 +39,10 @@ export function mapClassroomLessonsToSessions(
         id: lesson.id,
         title: lesson.title,
         courseName: programTitle,
-        startsAt:
-          startsAt ||
-          (lesson.lessonType === "live_session"
-            ? new Date().toISOString()
-            : ""),
+        // Never invent "now" — that made every unscheduled live_session look Live.
+        startsAt,
         // Pre-recorded sessions must never appear as live Zoom classes.
-        isLive: lesson.recordingUrl?.trim()
-          ? false
-          : isLessonLive(extended.isLiveNow),
+        isLive: hasRecording ? false : isLessonLive(extended.isLiveNow),
         meetingUrl: lesson.zoomJoinUrl || lesson.liveSessionUrl,
         zoomJoinUrl: lesson.zoomJoinUrl,
         description: lesson.overview ?? lesson.summary,
@@ -55,10 +51,17 @@ export function mapClassroomLessonsToSessions(
         durationMinutes: lesson.durationMinutes,
       };
     })
-    .filter((lesson) => lesson.id && lesson.title)
-    .sort(
-      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-    );
+    .filter((lesson) => {
+      if (!lesson.id || !lesson.title) return false;
+      // Recordings can appear without a schedule; live Zoom needs a real start.
+      if (lesson.recordingUrl?.trim()) return true;
+      return Boolean(lesson.startsAt?.trim());
+    })
+    .sort((a, b) => {
+      const aTime = a.startsAt ? new Date(a.startsAt).getTime() : 0;
+      const bTime = b.startsAt ? new Date(b.startsAt).getTime() : 0;
+      return aTime - bTime;
+    });
 }
 
 function readString(value: unknown): string {
@@ -124,19 +127,22 @@ function mapLiveGeneralToSessions(
     .filter((item) => item.lessonId && item.lessonTitle)
     .map((item) => {
       const recordingUrl = readString(item.recordingUrl) || undefined;
+      const startsAt = readString(item.startsAt);
       return {
         id: item.lessonId,
         title: item.lessonTitle,
         courseName: item.programTitle || "",
-        startsAt: item.startsAt || new Date().toISOString(),
-        // Never mark a pre-recorded session as a live Zoom class.
+        // Never invent "now" — same trap as classroom mapping.
+        startsAt,
+        // This feed is currently-live general classes; recordings stay non-live.
         isLive: !recordingUrl,
         meetingUrl: item.liveSessionUrl ?? undefined,
         zoomJoinUrl: item.zoomJoinUrl ?? undefined,
         recordingUrl,
         programId: item.programId,
       };
-    });
+    })
+    .filter((item) => item.recordingUrl || item.startsAt);
 }
 
 function mergeSessionEntries(
@@ -272,9 +278,11 @@ export const studentDashboardApi = {
       );
     }
 
-    return Array.from(byId.values()).sort(
-      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-    );
+    return Array.from(byId.values()).sort((a, b) => {
+      const aTime = a.startsAt ? new Date(a.startsAt).getTime() : 0;
+      const bTime = b.startsAt ? new Date(b.startsAt).getTime() : 0;
+      return aTime - bTime;
+    });
   },
 
   async getAssignments(): Promise<AssignmentListItem[]> {

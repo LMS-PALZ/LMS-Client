@@ -28,7 +28,6 @@ const TUTOR_BLOCKED_PREFIXES = [
   "/auditlog",
   "/certificates",
   "/courses/builder",
-  "/createassignment",
 ];
 
 export function normalizeAdminPortalRole(

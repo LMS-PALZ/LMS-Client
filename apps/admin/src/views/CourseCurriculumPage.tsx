@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminPath } from "@ssu/config/portal-paths";
 import {
+  programClassroomKeys,
   useAdminProgram,
   useProgramClassroomModules,
   useUpdateProgramStatusMutation,
@@ -11,8 +12,12 @@ import {
   getErrorMessage,
   mutationToast,
 } from "@ssu/queries";
-import type { ProgramClassroomModule } from "@ssu/types";
+import type {
+  ProgramClassroomLesson,
+  ProgramClassroomModule,
+} from "@ssu/types";
 import { AlertBanner, Button, GoBack, usePageBreadcrumbs } from "@ssu/ui";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   CourseBuilderShell,
   CourseCurriculumView,
@@ -26,8 +31,12 @@ interface CourseCurriculumPageProps {
   courseId: string;
 }
 
+const DELETE_UNAVAILABLE_MESSAGE =
+  "Delete isn’t available yet. Ask backend for DELETE endpoints for modules and activities.";
+
 export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const {
     data: program,
     isLoading: isProgramLoading,
@@ -46,6 +55,21 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   const [successVariant, setSuccessVariant] =
     useState<CourseStatus>("published");
 
+  const isMutating = updateStatus.isPending || upsertClassroom.isPending;
+
+  const refetchModules = async () => {
+    const ids = new Set(
+      [courseId, program?.id].filter((id): id is string => Boolean(id?.trim())),
+    );
+    await Promise.all(
+      [...ids].map((id) =>
+        queryClient.refetchQueries({
+          queryKey: programClassroomKeys.modules(id),
+        }),
+      ),
+    );
+  };
+
   const handleSuccessOpenChange = (open: boolean) => {
     setSuccessOpen(open);
     if (!open) {
@@ -53,26 +77,40 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     }
   };
 
+  const classroomStatus =
+    program?.status === "published" ? "published" : "draft";
+
+  /** Add module — upsert only the new module. */
   const saveModules = async (nextModules: ProgramClassroomModule[]) => {
     const latestModule = nextModules.at(-1);
-    if (!program || upsertClassroom.isPending) return;
+    if (!program || !latestModule || upsertClassroom.isPending) return;
 
     try {
       await upsertClassroom.mutateAsync({
         programId: program.id,
         payload: buildUpsertClassroomPayload(
           program,
-          latestModule ? [latestModule] : [],
-          program.status === "published" ? "published" : "draft",
+          [latestModule],
+          classroomStatus,
         ),
       });
-      mutationToast.success("Course activity saved");
+      await refetchModules();
+      mutationToast.success("Module saved");
     } catch (error) {
-      mutationToast.error(
-        error instanceof Error ? error.message : "Failed to save modules.",
-      );
+      mutationToast.error(getErrorMessage(error, "Failed to save module."));
       throw error;
     }
+  };
+
+  const handleDeleteModule = async (_module: ProgramClassroomModule) => {
+    mutationToast.info(DELETE_UNAVAILABLE_MESSAGE);
+  };
+
+  const handleDeleteActivity = async (
+    _module: ProgramClassroomModule,
+    _lesson: ProgramClassroomLesson,
+  ) => {
+    mutationToast.info(DELETE_UNAVAILABLE_MESSAGE);
   };
 
   const saveCourse = async (status: "draft" | "published") => {
@@ -130,22 +168,12 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     <section className="space-y-6">
       <GoBack fallbackHref={adminPath(`/courses/${courseId}`)} />
 
-      {(updateStatus.isError || upsertClassroom.isError) && (
-        <AlertBanner variant="error">
-          {updateStatus.error instanceof Error
-            ? updateStatus.error.message
-            : upsertClassroom.error instanceof Error
-              ? upsertClassroom.error.message
-              : "Failed to update course."}
-        </AlertBanner>
-      )}
-
       <CourseBuilderShell
         activeStep={2}
         showStepper
         onSaveDraft={() => void saveCourse("draft")}
         onPublish={() => void saveCourse("published")}
-        isSaving={updateStatus.isPending || upsertClassroom.isPending}
+        isSaving={isMutating}
         footer={
           <div className="flex justify-end border-t border-[#EEF2F6] px-6 py-5">
             <Button
@@ -168,8 +196,10 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
               ? modulesError.message
               : null
           }
-          isSaving={upsertClassroom.isPending}
+          isSaving={isMutating}
           onSaveModules={saveModules}
+          onDeleteModule={handleDeleteModule}
+          onDeleteActivity={handleDeleteActivity}
         />
       </CourseBuilderShell>
 

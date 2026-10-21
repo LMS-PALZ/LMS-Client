@@ -1,4 +1,4 @@
-import { updateStudentStatus } from "@ssu/api";
+import { updateStudentStatus, type StudentStatusAction } from "@ssu/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -11,18 +11,14 @@ export function useUpdateStudentStatusMutation() {
       status,
     }: {
       userId: string;
-      status: "active" | "suspended";
+      status: StudentStatusAction;
     }) => updateStudentStatus(userId, status),
 
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       toast.success(data?.message ?? "Student status updated successfully.");
 
-      qc.invalidateQueries({
+      void qc.invalidateQueries({
         queryKey: ["students"],
-      });
-
-      qc.invalidateQueries({
-        queryKey: ["student", variables.userId],
       });
     },
 

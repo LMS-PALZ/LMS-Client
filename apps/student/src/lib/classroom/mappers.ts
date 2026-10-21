@@ -106,18 +106,24 @@ export function mapClassroomResponse(data: any): {
     topic: module.title,
     expanded: false,
     lessons: module.lessons.map((lesson: any): ClassroomLesson => {
+      const hasRecording = Boolean(
+        typeof lesson.recordingUrl === "string" && lesson.recordingUrl.trim(),
+      );
+      // Pre-recorded wins over live_session so cards don't show Live + Join.
       const type =
-        lesson.lessonType === "live_session"
-          ? "live"
-          : lesson.lessonType === "reading"
-            ? "reading"
-            : "recorded";
+        lesson.lessonType === "reading"
+          ? "reading"
+          : hasRecording || lesson.lessonType === "recording"
+            ? "recorded"
+            : lesson.lessonType === "live_session"
+              ? "live"
+              : "recorded";
       const sessionPhase =
         type === "live"
           ? resolveLessonSessionPhase(
               lesson.startsAt,
               lesson.durationMinutes,
-              lesson.isLiveNow,
+              hasRecording ? false : lesson.isLiveNow,
             )
           : undefined;
 
@@ -130,7 +136,9 @@ export function mapClassroomResponse(data: any): {
         description: lesson.overview ?? lesson.summary,
         isLive: sessionPhase === "live",
         recordingUrl: lesson.recordingUrl,
-        meetUrl: lesson.zoomJoinUrl || lesson.liveSessionUrl || "",
+        meetUrl: hasRecording
+          ? ""
+          : lesson.zoomJoinUrl || lesson.liveSessionUrl || "",
         sessionPhase,
       };
     }),

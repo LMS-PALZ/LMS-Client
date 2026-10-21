@@ -12,7 +12,13 @@ import { findNextTodaySession } from "@/lib/sessions/today-sessions";
 import { mapClassroomLessonsToSessions } from "@ssu/api";
 import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
 import { DashboardEmptyState, LiveIndicator } from "@ssu/ui";
-import { cn, displayValue, EMPTY_DISPLAY } from "@ssu/utils";
+import {
+  cn,
+  displayValue,
+  EMPTY_DISPLAY,
+  JOIN_LIVE_CLASS_LABEL,
+  WATCH_RECORDED_CLASS_LABEL,
+} from "@ssu/utils";
 import {
   CalendarDays,
   ChevronDown,
@@ -68,14 +74,13 @@ function lessonActionLabel(lesson: {
 
   if (hasRecording) {
     if (!actionEnabled) return "Starts at scheduled time";
-    return "Play class recording";
+    return WATCH_RECORDED_CLASS_LABEL;
   }
 
   if (lesson.lessonType === "live_session") {
     if (phase === "ended") return null;
     if (!actionEnabled) return "Starts at scheduled time";
-    if (phase === "live") return "Join live class";
-    return "Join live class";
+    return JOIN_LIVE_CLASS_LABEL;
   }
 
   return "Open lesson";
@@ -133,16 +138,20 @@ export function MyClassroomPage() {
       : [];
 
     const liveExtra = hasLiveGeneralProgram
-      ? liveGeneralPrograms.map((item) => ({
-          id: item.lessonId,
-          title: item.lessonTitle,
-          courseName: item.programTitle || "",
-          startsAt: item.startsAt,
-          isLive: true,
-          meetingUrl: item.liveSessionUrl ?? undefined,
-          zoomJoinUrl: item.zoomJoinUrl ?? undefined,
-          programId: item.programId,
-        }))
+      ? liveGeneralPrograms.map((item) => {
+          const recordingUrl = item.recordingUrl?.trim() || undefined;
+          return {
+            id: item.lessonId,
+            title: item.lessonTitle,
+            courseName: item.programTitle || "",
+            startsAt: item.startsAt?.trim() ?? "",
+            isLive: !recordingUrl,
+            meetingUrl: item.liveSessionUrl ?? undefined,
+            zoomJoinUrl: item.zoomJoinUrl ?? undefined,
+            recordingUrl,
+            programId: item.programId,
+          };
+        })
       : [];
 
     return findNextTodaySession([...enrolledSessions, ...liveExtra]);
@@ -336,7 +345,9 @@ export function MyClassroomPage() {
                       }
                       className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-5 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3D6E4D]"
                     >
-                      {isRecording ? "Play class recording" : "Join live class"}
+                      {isRecording
+                        ? WATCH_RECORDED_CLASS_LABEL
+                        : JOIN_LIVE_CLASS_LABEL}
                       <ChevronRight className="h-5 w-5" />
                     </button>
                   );
@@ -389,7 +400,7 @@ export function MyClassroomPage() {
                     </div>
                   </div>
                   <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#4E845F] px-4 py-2 text-[15px] font-semibold text-white">
-                    Play
+                    {WATCH_RECORDED_CLASS_LABEL}
                     <ChevronRight className="h-5 w-5" />
                   </span>
                 </button>

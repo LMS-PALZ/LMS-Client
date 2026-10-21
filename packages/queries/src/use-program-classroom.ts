@@ -4,8 +4,25 @@ import {
   upsertProgramClassroom,
 } from "@ssu/api";
 import type { UpsertProgramClassroomPayload } from "@ssu/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { programClassroomKeys } from "./keys";
+
+async function refetchClassroom(qc: QueryClient, programId: string) {
+  await Promise.all([
+    qc.invalidateQueries({ queryKey: programClassroomKeys.all }),
+    qc.refetchQueries({
+      queryKey: programClassroomKeys.modules(programId),
+    }),
+    qc.refetchQueries({
+      queryKey: programClassroomKeys.classroom(programId),
+    }),
+  ]);
+}
 
 export function useProgramClassroomModules(programId: string, enabled = true) {
   return useQuery({
@@ -46,13 +63,8 @@ export function useUpsertProgramClassroomMutation() {
       if (!res.ok) throw new Error(res.message);
       return res.data;
     },
-    onSuccess: (_data, variables) => {
-      void qc.invalidateQueries({
-        queryKey: programClassroomKeys.modules(variables.programId),
-      });
-      void qc.invalidateQueries({
-        queryKey: programClassroomKeys.classroom(variables.programId),
-      });
+    onSuccess: async (_data, variables) => {
+      await refetchClassroom(qc, variables.programId);
     },
   });
 }

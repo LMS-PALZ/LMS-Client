@@ -61,14 +61,18 @@ export function buildHomeSessionCards(
 
   return sessions
     .filter((session) => {
-      if (!session.startsAt) return false;
+      if (hasRecordingUrl(session)) {
+        if (!session.startsAt?.trim()) return true;
+        const start = new Date(session.startsAt);
+        if (Number.isNaN(start.getTime())) return true;
+        const startMs = start.getTime();
+        return startMs > nowMs || isSameLocalDay(start, now);
+      }
+
+      if (!session.startsAt?.trim()) return false;
       const start = new Date(session.startsAt);
       if (Number.isNaN(start.getTime())) return false;
       const startMs = start.getTime();
-
-      if (hasRecordingUrl(session)) {
-        return startMs > nowMs || isSameLocalDay(start, now);
-      }
 
       if (session.isLive || isLiveJoinEnabled(session, now)) return true;
       return startMs > nowMs;
@@ -79,7 +83,9 @@ export function buildHomeSessionCards(
       const bLive =
         !hasRecordingUrl(b) && (b.isLive || isLiveJoinEnabled(b, now));
       if (aLive !== bLive) return aLive ? -1 : 1;
-      return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+      const aTime = a.startsAt ? new Date(a.startsAt).getTime() : 0;
+      const bTime = b.startsAt ? new Date(b.startsAt).getTime() : 0;
+      return aTime - bTime;
     })
     .slice(0, 3);
 }

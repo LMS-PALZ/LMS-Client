@@ -3,6 +3,7 @@ export {
   DeleteActivityModal,
 } from "./DeleteActivityModal";
 export { DeleteCourseModal } from "./DeleteCourseModal";
+export { DeleteModuleModal } from "./DeleteModuleModal";
 export { AddCohortModal } from "./AddCohortModal";
 export { AddInstructorModal } from "./AddInstructorModal";
 export { AddItemLink } from "./AddItemLink";
