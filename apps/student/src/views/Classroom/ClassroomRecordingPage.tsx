@@ -23,7 +23,7 @@ export function ClassroomRecordingPage({
       <DashboardEmptyState
         icon={Video}
         title="Class is live"
-        description="Join the live session from the player above."
+        description="Join the live class from the player above."
       />
     );
   }

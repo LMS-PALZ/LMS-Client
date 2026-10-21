@@ -4,7 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminProgram, useProgramClassroomModules } from "@ssu/queries";
 import { AlertBanner, Button, GoBack, usePageBreadcrumbs } from "@ssu/ui";
-import { toVideoEmbedUrl } from "@ssu/utils";
+import {
+  JOIN_LIVE_CLASS_LABEL,
+  WATCH_RECORDED_CLASS_LABEL,
+  toVideoEmbedUrl,
+} from "@ssu/utils";
 import { Check, Copy, Radio, Video } from "lucide-react";
 import { AdminCourseDetailSkeleton } from "@/components/skeletons";
 import {
@@ -54,15 +58,16 @@ export function CourseLessonDetailPage({
   const meetingNumber = lesson ? resolveLessonMeetingNumber(lesson) : "";
 
   const courseHref = adminPath(`/courses/${courseId}`);
-  const isLiveSession = lesson?.lessonType === "live_session";
   const recordingUrl = lesson?.recordingUrl?.trim() ?? "";
-  const recordingEmbedUrl = recordingUrl ? toVideoEmbedUrl(recordingUrl) : "";
+  const hasRecording = Boolean(recordingUrl);
+  const isLiveSession = lesson?.lessonType === "live_session" && !hasRecording;
+  const recordingEmbedUrl = hasRecording ? toVideoEmbedUrl(recordingUrl) : "";
 
   useEffect(() => {
     if (!isWatching) return;
     setIsVideoLoading(true);
   }, [isWatching, recordingEmbedUrl]);
-  const canJoinZoom = Boolean(meetUrl) && !recordingUrl;
+  const canJoinZoom = Boolean(meetUrl) && !hasRecording;
 
   usePageBreadcrumbs([
     { label: "Courses", href: adminPath("/courses") },
@@ -131,7 +136,7 @@ export function CourseLessonDetailPage({
               <h1 className="truncate text-[22px] font-semibold text-[#1D1D1D]">
                 {lesson.title}
               </h1>
-              {lesson.isLiveNow ? (
+              {lesson.isLiveNow && !hasRecording ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-[12px] font-medium text-[#B91C1C]">
                   <Radio className="h-3.5 w-3.5" />
                   Live now
@@ -165,7 +170,11 @@ export function CourseLessonDetailPage({
               Type
             </dt>
             <dd className="mt-1 text-[14px] text-[#1D1D1D]">
-              {isLiveSession ? "Live session" : lesson.lessonType}
+              {hasRecording
+                ? "Recorded class"
+                : isLiveSession
+                  ? "Live session"
+                  : lesson.lessonType}
             </dd>
           </div>
           <div>
@@ -188,7 +197,7 @@ export function CourseLessonDetailPage({
           ) : null}
         </dl>
 
-        {recordingUrl ? (
+        {hasRecording ? (
           <div className="mt-6">
             <Button
               type="button"
@@ -196,7 +205,7 @@ export function CourseLessonDetailPage({
               className="inline-flex items-center gap-2"
             >
               <Video className="h-4 w-4" />
-              Watch live class
+              {WATCH_RECORDED_CLASS_LABEL}
             </Button>
           </div>
         ) : null}
@@ -211,7 +220,7 @@ export function CourseLessonDetailPage({
               className="inline-flex items-center gap-2"
             >
               <Video className="h-4 w-4" />
-              Join live session
+              {JOIN_LIVE_CLASS_LABEL}
             </Button>
             {meetUrl ? (
               <button

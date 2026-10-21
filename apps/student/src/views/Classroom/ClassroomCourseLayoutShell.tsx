@@ -301,9 +301,13 @@ function ClassroomCourseLayoutShellInner({
                           <p className="text-[14px] font-medium text-[#1D1D1D]">
                             {lesson.title}
                           </p>
-                          {lesson.isLive ? (
+                          {lesson.isLive && !lesson.recordingUrl?.trim() ? (
                             <p className="mt-1 text-[12px] font-medium text-[#C92A2A]">
                               Live now
+                            </p>
+                          ) : lesson.recordingUrl?.trim() ? (
+                            <p className="mt-1 text-[12px] text-[#6B7280]">
+                              Recording available
                             </p>
                           ) : lesson.subtitle ? (
                             <p className="mt-1 text-[12px] text-[#6B7280]">

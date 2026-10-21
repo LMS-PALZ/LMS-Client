@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
 import { Button } from "@ssu/ui";
 
 export interface StatusDialogProps {
@@ -8,6 +9,7 @@ export interface StatusDialogProps {
 
   title: string;
   description?: string;
+  children?: ReactNode;
 
   onDismiss?: () => void;
   dismissLabel?: string;
@@ -17,6 +19,7 @@ export interface StatusDialogProps {
   cancelLabel?: string;
   confirmLabel?: string;
   isConfirming?: boolean;
+  confirmDisabled?: boolean;
   confirmVariant?: "danger" | "primary";
 
   icon?: React.ReactNode;
@@ -26,6 +29,7 @@ export function StatusDialog({
   variant,
   title,
   description,
+  children,
   onDismiss,
   dismissLabel = "Dismiss",
   onCancel,
@@ -33,6 +37,7 @@ export function StatusDialog({
   cancelLabel = "Cancel",
   confirmLabel = "Suspend",
   isConfirming = false,
+  confirmDisabled = false,
   confirmVariant = "danger",
   icon,
 }: StatusDialogProps) {
@@ -57,6 +62,10 @@ export function StatusDialog({
           {description}
         </p>
       )}
+
+      {children ? (
+        <div className="mt-4 w-full max-w-[320px] text-left">{children}</div>
+      ) : null}
 
       {variant === "success" ? (
         <Button
@@ -108,7 +117,7 @@ export function StatusDialog({
             variant={confirmVariant}
             size="lg"
             onClick={onConfirm}
-            disabled={isConfirming}
+            disabled={isConfirming || confirmDisabled}
             className="flex-1 rounded-[30px] text-white"
           >
             {isConfirming ? "Processing..." : confirmLabel}

@@ -87,7 +87,9 @@ export async function login(
 }
 
 export type InviteStaffErrorCode =
-  "invalid" | "duplicate_email" | "server_error";
+  | "invalid"
+  | "duplicate_email"
+  | "server_error";
 
 export async function inviteStaff(data: {
   email: string;
@@ -382,7 +384,9 @@ export async function resetPassword(
 }
 
 export type ForgetPasswordErrorCode =
-  "invalid" | "server_error" | "payment_required";
+  | "invalid"
+  | "server_error"
+  | "payment_required";
 
 function isUnpaidPasswordRecoveryMessage(message: string): boolean {
   const normalized = message.toLowerCase();
@@ -1246,11 +1250,13 @@ function mapStudentMeLiveLesson(value: unknown) {
     programTitle: readMeString(row.programTitle ?? row.courseName),
     lessonId,
     lessonTitle: readMeString(row.lessonTitle ?? row.title),
-    startsAt: readMeString(row.startsAt) || new Date().toISOString(),
+    // Never invent "now" — that made every live-general stub look Live today.
+    startsAt: readMeString(row.startsAt),
     durationMinutes:
       typeof row.durationMinutes === "number" ? row.durationMinutes : undefined,
     liveSessionUrl: readMeString(row.liveSessionUrl) || null,
     zoomJoinUrl: readMeString(row.zoomJoinUrl) || null,
+    recordingUrl: readMeString(row.recordingUrl) || null,
   };
 }
 
@@ -1357,9 +1363,12 @@ export async function updateStaffStatus(
   };
 }
 
+export type StudentStatusAction = "active" | "suspended";
+
+/** PATCH /api/v1/admins/students/{userId}/status — active | suspended only. */
 export async function updateStudentStatus(
   userId: string,
-  status: "active" | "suspended",
+  status: StudentStatusAction,
 ) {
   const token = getStoredAuthToken();
 
@@ -1378,6 +1387,47 @@ export async function updateStudentStatus(
     data: res.data.data,
     message: res.data.message,
   };
+}
+
+/** DELETE /api/v1/admins/students/{userId} — permanently remove student. */
+export async function deleteAdminStudent(userId: string) {
+  const token = getStoredAuthToken();
+  const trimmedId = userId.trim();
+  if (!trimmedId) {
+    return {
+      ok: false as const,
+      message: "Student id is required.",
+    };
+  }
+
+  try {
+    const res = await axios.delete(
+      `${API_BASE_URL}/api/v1/admins/students/${trimmedId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return {
+      ok: true as const,
+      data: res.data?.data,
+      message:
+        (typeof res.data?.message === "string" && res.data.message) ||
+        "Student deleted successfully.",
+    };
+  } catch (error: unknown) {
+    const message =
+      (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message ||
+      (error instanceof Error ? error.message : "") ||
+      "Failed to delete student.";
+    return {
+      ok: false as const,
+      message,
+    };
+  }
 }
 
 export async function assignRole({

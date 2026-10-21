@@ -1,6 +1,6 @@
 "use client";
 
-import { usePendingTrainers } from "@ssu/queries";
+import { mutationToast, usePendingTrainers } from "@ssu/queries";
 import {
   AlertBanner,
   Button,
@@ -63,7 +63,7 @@ export function PendingTrainersPage() {
                   type="button"
                   variant="secondary"
                   size="sm"
-                  onClick={() => window.alert("Demo: rejected")}
+                  onClick={() => mutationToast.info("Rejected")}
                 >
                   Reject
                 </Button>
@@ -71,7 +71,7 @@ export function PendingTrainersPage() {
                   type="button"
                   variant="primary"
                   size="sm"
-                  onClick={() => window.alert("Demo: approved")}
+                  onClick={() => mutationToast.info("Approved")}
                 >
                   Approve
                 </Button>

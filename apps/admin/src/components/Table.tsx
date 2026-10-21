@@ -9,6 +9,7 @@ import { EllipsisVertical } from "lucide-react";
 import {
   getErrorMessage,
   mutationToast,
+  useDeleteStudentMutation,
   useUpdateStudentStatusMutation,
 } from "@ssu/queries";
 import { StatusDialog } from "@/components/StatusDialog";
@@ -76,14 +77,126 @@ interface StudentsTableProps {
   emptyMessage?: string;
 }
 
+function SuspendStudentDialog({
+  studentId,
+  fullName,
+  onCancel,
+  onSuccess,
+}: {
+  studentId: string;
+  fullName: string;
+  onCancel: () => void;
+  onSuccess: () => void;
+}) {
+  const updateStudentStatus = useUpdateStudentStatusMutation();
+
+  return (
+    <StatusDialog
+      variant="confirm"
+      confirmVariant="danger"
+      title={`Suspend ${fullName}?`}
+      description="They will lose access to the student portal until reinstated."
+      confirmLabel="Suspend"
+      isConfirming={updateStudentStatus.isPending}
+      onCancel={onCancel}
+      onConfirm={async () => {
+        try {
+          await updateStudentStatus.mutateAsync({
+            userId: studentId,
+            status: "suspended",
+          });
+          onSuccess();
+        } catch (error) {
+          mutationToast.error(
+            getErrorMessage(error, "Failed to suspend student."),
+          );
+        }
+      }}
+    />
+  );
+}
+
+function ActivateStudentDialog({
+  studentId,
+  fullName,
+  onCancel,
+  onSuccess,
+}: {
+  studentId: string;
+  fullName: string;
+  onCancel: () => void;
+  onSuccess: () => void;
+}) {
+  const updateStudentStatus = useUpdateStudentStatusMutation();
+
+  return (
+    <StatusDialog
+      variant="confirm"
+      confirmVariant="primary"
+      title={`Activate ${fullName}?`}
+      description="They will regain access to the student portal."
+      confirmLabel="Activate"
+      isConfirming={updateStudentStatus.isPending}
+      onCancel={onCancel}
+      onConfirm={async () => {
+        try {
+          await updateStudentStatus.mutateAsync({
+            userId: studentId,
+            status: "active",
+          });
+          onSuccess();
+        } catch (error) {
+          mutationToast.error(
+            getErrorMessage(error, "Failed to activate student."),
+          );
+        }
+      }}
+    />
+  );
+}
+
+function DeleteStudentDialog({
+  studentId,
+  fullName,
+  onCancel,
+  onSuccess,
+}: {
+  studentId: string;
+  fullName: string;
+  onCancel: () => void;
+  onSuccess: () => void;
+}) {
+  const deleteStudent = useDeleteStudentMutation();
+
+  return (
+    <StatusDialog
+      variant="confirm"
+      confirmVariant="danger"
+      title={`Delete ${fullName}?`}
+      description="This permanently removes the student from the platform. This action cannot be undone."
+      confirmLabel="Delete"
+      isConfirming={deleteStudent.isPending}
+      onCancel={onCancel}
+      onConfirm={async () => {
+        try {
+          await deleteStudent.mutateAsync(studentId);
+          onSuccess();
+        } catch (error) {
+          mutationToast.error(
+            getErrorMessage(error, "Failed to delete student."),
+          );
+        }
+      }}
+    />
+  );
+}
+
 function StudentActions({ student }: { student: Student }) {
   const { openModal, closeModal } = useAdminModal();
-  const updateStudentStatus = useUpdateStudentStatusMutation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const isSuspended = String(student.status).toLowerCase() === "suspended";
-  const actionLabel = isSuspended ? "Activate" : "Suspend";
-  const nextStatus = isSuspended ? "active" : "suspended";
+  const statusActionLabel = isSuspended ? "Activate" : "Suspend";
   const fullName = `${student.firstName} ${student.lastName}`.trim();
 
   useEffect(() => {
@@ -96,42 +209,70 @@ function StudentActions({ student }: { student: Student }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleAction = () => {
+  const showSuccess = (title: string, description: string) => {
+    openModal(
+      "",
+      <StatusDialog
+        variant="success"
+        title={title}
+        description={description}
+        onDismiss={closeModal}
+      />,
+    );
+  };
+
+  const handleStatusAction = () => {
+    setOpen(false);
+    if (isSuspended) {
+      openModal(
+        "Activate student",
+        <ActivateStudentDialog
+          studentId={student.id}
+          fullName={fullName}
+          onCancel={closeModal}
+          onSuccess={() => {
+            closeModal();
+            showSuccess(
+              "Activated successfully",
+              `${fullName}'s status has been updated.`,
+            );
+          }}
+        />,
+      );
+      return;
+    }
+
+    openModal(
+      "Suspend student",
+      <SuspendStudentDialog
+        studentId={student.id}
+        fullName={fullName}
+        onCancel={closeModal}
+        onSuccess={() => {
+          closeModal();
+          showSuccess(
+            "Suspended successfully",
+            `${fullName}'s status has been updated.`,
+          );
+        }}
+      />,
+    );
+  };
+
+  const handleDelete = () => {
     setOpen(false);
     openModal(
-      actionLabel,
-      <StatusDialog
-        variant="confirm"
-        confirmVariant={isSuspended ? "primary" : "danger"}
-        title={`${actionLabel} ${fullName}?`}
-        description={
-          isSuspended
-            ? "They will regain access to the student portal."
-            : "They will lose access to the student portal until reinstated."
-        }
-        confirmLabel={actionLabel}
+      "Delete student",
+      <DeleteStudentDialog
+        studentId={student.id}
+        fullName={fullName}
         onCancel={closeModal}
-        onConfirm={async () => {
-          try {
-            await updateStudentStatus.mutateAsync({
-              userId: student.id,
-              status: nextStatus,
-            });
-            closeModal();
-            openModal(
-              "",
-              <StatusDialog
-                variant="success"
-                title={`${actionLabel}d successfully`}
-                description={`${fullName}'s status has been updated.`}
-                onDismiss={closeModal}
-              />,
-            );
-          } catch (error) {
-            mutationToast.error(
-              getErrorMessage(error, "Failed to update student status."),
-            );
-          }
+        onSuccess={() => {
+          closeModal();
+          showSuccess(
+            "Deleted successfully",
+            `${fullName} has been removed from the platform.`,
+          );
         }}
       />,
     );
@@ -151,15 +292,22 @@ function StudentActions({ student }: { student: Student }) {
         <EllipsisVertical />
       </button>
       {open ? (
-        <div className="absolute bottom-full right-0 z-50 mb-2 w-[150px] rounded-[12px] border border-[#E8EDF5] bg-white py-1 shadow-lg">
+        <div className="absolute bottom-full right-0 z-50 mb-2 w-[160px] rounded-[12px] border border-[#E8EDF5] bg-white py-1 shadow-lg">
           <button
             type="button"
-            onClick={handleAction}
+            onClick={handleStatusAction}
             className={`w-full px-4 py-2.5 text-left text-[14px] hover:bg-[#F7F9FB] ${
               isSuspended ? "text-[#1D1D1D]" : "text-[#C62828]"
             }`}
           >
-            {actionLabel}
+            {statusActionLabel}
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="w-full px-4 py-2.5 text-left text-[14px] text-[#C62828] hover:bg-[#F7F9FB]"
+          >
+            Delete
           </button>
         </div>
       ) : null}

@@ -291,6 +291,10 @@ export async function getProgramClassroom(programId: string) {
   }
 }
 
+/**
+ * Create or update classroom curriculum.
+ * Swagger: PUT /api/v1/tutors/programs/{programId}/classroom/modules
+ */
 export async function upsertProgramClassroom(
   programId: string,
   payload: UpsertProgramClassroomPayload,
@@ -303,41 +307,53 @@ export async function upsertProgramClassroom(
     };
   }
 
-  try {
-    const res = await axios.put(
-      `${API_BASE_URL}/api/v1/tutors/programs/${trimmedId}/classroom`,
-      payload,
-      { headers: authHeaders() },
-    );
+  const paths = [
+    `${API_BASE_URL}/api/v1/tutors/programs/${trimmedId}/classroom/modules`,
+    `${API_BASE_URL}/api/v1/tutors/programs/${trimmedId}/classroom`,
+  ];
 
-    const root = res.data as Record<string, unknown>;
-    const data =
-      root.data && typeof root.data === "object"
-        ? (root.data as Record<string, unknown>)
-        : root;
-    const classroom =
-      data.classroom && typeof data.classroom === "object"
-        ? (data.classroom as Record<string, unknown>)
-        : data;
+  let lastMessage = "Failed to save course content.";
 
-    const summary: ProgramClassroomSummary = {
-      id: readString(classroom.id) || undefined,
-      title: readString(classroom.title) || undefined,
-      description: readString(classroom.description) || undefined,
-      status:
-        readString(classroom.status) === "published" ? "published" : "draft",
-      modules: extractModuleRows(res.data).slice(-1),
-    };
+  for (const path of paths) {
+    try {
+      const res = await axios.put(path, payload, { headers: authHeaders() });
 
-    return {
-      ok: true as const,
-      data: summary,
-      message: readString(root.message),
-    };
-  } catch (error: unknown) {
-    return {
-      ok: false as const,
-      message: getErrorMessage(error, "Failed to save course content."),
-    };
+      const root = res.data as Record<string, unknown>;
+      const data =
+        root.data && typeof root.data === "object"
+          ? (root.data as Record<string, unknown>)
+          : root;
+      const classroom =
+        data.classroom && typeof data.classroom === "object"
+          ? (data.classroom as Record<string, unknown>)
+          : data;
+
+      const summary: ProgramClassroomSummary = {
+        id: readString(classroom.id) || undefined,
+        title: readString(classroom.title) || undefined,
+        description: readString(classroom.description) || undefined,
+        status:
+          readString(classroom.status) === "published" ? "published" : "draft",
+        modules: extractModuleRows(res.data),
+      };
+
+      return {
+        ok: true as const,
+        data: summary,
+        message: readString(root.message),
+      };
+    } catch (error: unknown) {
+      lastMessage = getErrorMessage(error, lastMessage);
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
+      if (status && status !== 404) {
+        return { ok: false as const, message: lastMessage };
+      }
+    }
   }
+
+  return {
+    ok: false as const,
+    message: lastMessage,
+  };
 }

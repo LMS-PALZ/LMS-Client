@@ -77,7 +77,7 @@ export function useAdminProgram(programId: string, enabled = true) {
       });
 
       for (const [, data] of cachedLists) {
-        const match = data?.items.find((item) => item.id === programId);
+        const match = data?.items?.find((item) => item.id === programId);
         if (match) return match;
       }
 

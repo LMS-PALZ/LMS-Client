@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertBanner, DashboardEmptyState } from "@ssu/ui";
-import { cn } from "@ssu/utils";
+import { cn, JOIN_LIVE_CLASS_LABEL } from "@ssu/utils";
 import { Video } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -119,7 +119,7 @@ function LiveMeetingLaunch({
     <VideoFrame className={className}>
       <DashboardEmptyState
         icon={Video}
-        title="Join the live class"
+        title={JOIN_LIVE_CLASS_LABEL}
         description="The Zoom meeting opens in a new window so you can join outside this app."
       />
       <button
@@ -127,7 +127,7 @@ function LiveMeetingLaunch({
         onClick={() => openMeetingWindow(meetUrl)}
         className="mt-4 inline-flex items-center rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
       >
-        Join live session
+        {JOIN_LIVE_CLASS_LABEL}
       </button>
     </VideoFrame>
   );
