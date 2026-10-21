@@ -32,9 +32,6 @@ interface CourseCurriculumPageProps {
   courseId: string;
 }
 
-const MODULE_DELETE_UNAVAILABLE_MESSAGE =
-  "Module delete isn’t available yet. You can delete individual activities.";
-
 export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -85,30 +82,32 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   const classroomStatus =
     program?.status === "published" ? "published" : "draft";
 
-  /** Add module — upsert only the new module. */
-  const saveModules = async (nextModules: ProgramClassroomModule[]) => {
-    const latestModule = nextModules.at(-1);
-    if (!program || !latestModule || upsertClassroom.isPending) return;
+  /** Create a module, or rename one (keeps lessons; skips past startsAt). */
+  const saveModule = async (module: ProgramClassroomModule) => {
+    if (!program || upsertClassroom.isPending) return;
+
+    const isNewModule = module.id.startsWith("temp-");
 
     try {
-      await upsertClassroom.mutateAsync({
+      const res = await upsertClassroom.mutateAsync({
         programId: program.id,
         payload: buildUpsertClassroomPayload(
           program,
-          [latestModule],
+          [module],
           classroomStatus,
+          // Rename must still send lessons (published classroom rule), but
+          // omit past startsAt so the API does not reject the save.
+          { omitPastStartsAt: !isNewModule },
         ),
       });
       await refetchModules();
-      mutationToast.success("Module saved");
+      if (res.message?.trim()) {
+        mutationToast.success(res.message);
+      }
     } catch (error) {
       mutationToast.error(getErrorMessage(error, "Failed to save module."));
       throw error;
     }
-  };
-
-  const handleDeleteModule = async (_module: ProgramClassroomModule) => {
-    mutationToast.info(MODULE_DELETE_UNAVAILABLE_MESSAGE);
   };
 
   const handleDeleteActivity = async (
@@ -118,13 +117,15 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     if (!program?.id || deleteLesson.isPending) return;
 
     try {
-      await deleteLesson.mutateAsync({
+      const res = await deleteLesson.mutateAsync({
         programId: program.id,
         moduleId: module.id,
         lessonId: lesson.id,
       });
       await refetchModules();
-      mutationToast.success("Activity deleted");
+      if (res.message?.trim()) {
+        mutationToast.success(res.message);
+      }
     } catch (error) {
       mutationToast.error(getErrorMessage(error, "Failed to delete activity."));
       throw error;
@@ -215,8 +216,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
               : null
           }
           isSaving={isMutating}
-          onSaveModules={saveModules}
-          onDeleteModule={handleDeleteModule}
+          onSaveModule={saveModule}
           onDeleteActivity={handleDeleteActivity}
         />
       </CourseBuilderShell>

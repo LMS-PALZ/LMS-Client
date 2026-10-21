@@ -45,11 +45,26 @@ export function countTotalLessons(modules: ProgramClassroomModule[]): number {
   );
 }
 
+function isFutureStartsAt(value: string | undefined): boolean {
+  if (!value?.trim()) return false;
+  const ms = new Date(value).getTime();
+  return Number.isFinite(ms) && ms > Date.now();
+}
+
 export function buildUpsertClassroomPayload(
   program: AdminProgram,
   modules: ProgramClassroomModule[],
   status: CourseStatus = "draft",
+  options?: {
+    /**
+     * When true, skip past `startsAt` values so module rename / meta updates
+     * do not fail API "must be in the future" validation. Lessons are still
+     * sent so a published classroom keeps at least one published lesson.
+     */
+    omitPastStartsAt?: boolean;
+  },
 ): UpsertProgramClassroomPayload {
+  const omitPastStartsAt = options?.omitPastStartsAt === true;
   const resolvedStatus = resolveClassroomStatus(modules, status);
 
   return {
@@ -62,19 +77,26 @@ export function buildUpsertClassroomPayload(
       summary: module.summary ?? module.description,
       weekLabel: module.weekLabel ?? `Week ${moduleIndex + 1}`,
       order: module.order ?? moduleIndex + 1,
-      lessons: (module.lessons ?? []).map((lesson, lessonIndex) => ({
-        ...(isTemporaryId(lesson.id) ? {} : { id: lesson.id }),
-        title: lesson.title,
-        summary: lesson.summary,
-        overview: lesson.overview,
-        lessonType: lesson.lessonType,
-        order: lesson.order ?? lessonIndex + 1,
-        isPublished: lesson.isPublished ?? true,
-        durationMinutes: lesson.durationMinutes,
-        startsAt: lesson.startsAt,
-        recordingUrl: lesson.recordingUrl,
-        resources: lesson.resources,
-      })),
+      lessons: (module.lessons ?? []).map((lesson, lessonIndex) => {
+        const startsAt = lesson.startsAt;
+        const includeStartsAt =
+          Boolean(startsAt?.trim()) &&
+          (!omitPastStartsAt || isFutureStartsAt(startsAt));
+
+        return {
+          ...(isTemporaryId(lesson.id) ? {} : { id: lesson.id }),
+          title: lesson.title,
+          summary: lesson.summary,
+          overview: lesson.overview,
+          lessonType: lesson.lessonType,
+          order: lesson.order ?? lessonIndex + 1,
+          isPublished: lesson.isPublished ?? true,
+          durationMinutes: lesson.durationMinutes,
+          ...(includeStartsAt ? { startsAt } : {}),
+          recordingUrl: lesson.recordingUrl,
+          resources: lesson.resources,
+        };
+      }),
     })),
   };
 }

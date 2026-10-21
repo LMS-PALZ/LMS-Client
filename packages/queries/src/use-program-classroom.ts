@@ -62,7 +62,7 @@ export function useUpsertProgramClassroomMutation() {
     }) => {
       const res = await upsertProgramClassroom(programId, payload);
       if (!res.ok) throw new Error(res.message);
-      return res.data;
+      return { data: res.data, message: res.message };
     },
     onSuccess: async (_data, variables) => {
       await refetchClassroom(qc, variables.programId);
