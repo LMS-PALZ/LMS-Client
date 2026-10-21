@@ -2,7 +2,8 @@ import type {
   ProgramClassroomLesson,
   ProgramClassroomModule,
 } from "@ssu/types";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
+// import { Trash2 } from "lucide-react"; // restore with delete module button
 import type { ModuleAccordionMode } from "../../types/activity";
 import { ActionButton } from "./ActionButton";
 import { ExpandToggle } from "./ExpandToggle";
@@ -14,6 +15,7 @@ interface ModuleHeaderProps {
   mode: ModuleAccordionMode;
   onToggleModule: (moduleId: string) => void;
   onEditModule?: (module: ProgramClassroomModule) => void;
+  /** Hidden until module DELETE exists. */
   onDeleteModule?: (module: ProgramClassroomModule) => void;
 }
 
@@ -24,7 +26,6 @@ export function ModuleHeader({
   mode,
   onToggleModule,
   onEditModule,
-  onDeleteModule,
 }: ModuleHeaderProps) {
   const isEdit = mode === "edit";
 
@@ -53,6 +54,7 @@ export function ModuleHeader({
           >
             <Pencil className="h-[18px] w-[18px]" strokeWidth={1.75} />
           </ActionButton>
+          {/* Module DELETE is not available yet — hide until backend supports it.
           <ActionButton
             label="Delete module"
             tone="danger"
@@ -60,6 +62,7 @@ export function ModuleHeader({
           >
             <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.75} />
           </ActionButton>
+          */}
         </div>
       )}
 

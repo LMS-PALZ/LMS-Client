@@ -16,7 +16,7 @@ import type { PendingLessonDelete } from "../types/activity";
 import { AddItemLink } from "./AddItemLink";
 import { AddModuleModal } from "./AddModuleModal";
 import { DeleteActivityModal } from "./DeleteActivityModal";
-import { DeleteModuleModal } from "./DeleteModuleModal";
+// import { DeleteModuleModal } from "./DeleteModuleModal";
 import { ModuleAccordion } from "./ModuleAccordion";
 
 interface CourseCurriculumViewProps {
@@ -25,8 +25,7 @@ interface CourseCurriculumViewProps {
   isLoadingModules?: boolean;
   modulesError?: string | null;
   isSaving?: boolean;
-  onSaveModules: (modules: ProgramClassroomModule[]) => Promise<void>;
-  onDeleteModule: (module: ProgramClassroomModule) => Promise<void>;
+  onSaveModule: (module: ProgramClassroomModule) => Promise<void>;
   onDeleteActivity: (
     module: ProgramClassroomModule,
     lesson: ProgramClassroomLesson,
@@ -39,54 +38,59 @@ export function CourseCurriculumView({
   isLoadingModules = false,
   modulesError = null,
   isSaving = false,
-  onSaveModules,
-  onDeleteModule,
+  onSaveModule,
   onDeleteActivity,
 }: CourseCurriculumViewProps) {
   const router = useRouter();
   const { expandedModuleId, setExpandedModuleId, toggleModule } =
     useExpandedModule(modules);
   const [moduleModalOpen, setModuleModalOpen] = useState(false);
+  const [editingModule, setEditingModule] =
+    useState<ProgramClassroomModule | null>(null);
   const [deleteActivityOpen, setDeleteActivityOpen] = useState(false);
-  const [deleteModuleOpen, setDeleteModuleOpen] = useState(false);
   const [pendingDelete, setPendingDelete] =
     useState<PendingLessonDelete | null>(null);
-  const [pendingModuleDelete, setPendingModuleDelete] =
-    useState<ProgramClassroomModule | null>(null);
 
   const hasModules = modules.length > 0;
 
   const openAddModule = () => {
+    setEditingModule(null);
     setModuleModalOpen(true);
   };
 
   const openEditModule = (module: ProgramClassroomModule) => {
-    goToActivity(module, "live_session");
+    setEditingModule(module);
+    setModuleModalOpen(true);
+  };
+
+  const closeModuleModal = (open: boolean) => {
+    setModuleModalOpen(open);
+    if (!open) setEditingModule(null);
   };
 
   const saveModule = async (title: string) => {
-    const nextModules = [
-      ...modules,
-      {
-        id: createId("temp-module"),
+    if (editingModule) {
+      await onSaveModule({
+        ...editingModule,
         title,
-        weekLabel: `Week ${modules.length + 1}`,
-        lessonCount: 0,
-        lessons: [],
-        order: modules.length + 1,
-      },
-    ];
+      });
+      setModuleModalOpen(false);
+      setEditingModule(null);
+      return;
+    }
 
-    await onSaveModules(nextModules);
+    const created: ProgramClassroomModule = {
+      id: createId("temp-module"),
+      title,
+      weekLabel: `Week ${modules.length + 1}`,
+      lessonCount: 0,
+      lessons: [],
+      order: modules.length + 1,
+    };
+
+    await onSaveModule(created);
     setModuleModalOpen(false);
-    setExpandedModuleId(nextModules[nextModules.length - 1]?.id ?? null);
-  };
-
-  const confirmDeleteModule = async () => {
-    if (!pendingModuleDelete) return;
-    await onDeleteModule(pendingModuleDelete);
-    setDeleteModuleOpen(false);
-    setPendingModuleDelete(null);
+    setExpandedModuleId(created.id);
   };
 
   const confirmDeleteActivity = async () => {
@@ -145,8 +149,10 @@ export function CourseCurriculumView({
 
         <AddModuleModal
           open={moduleModalOpen}
-          onOpenChange={setModuleModalOpen}
+          onOpenChange={closeModuleModal}
           onSave={(name) => void saveModule(name)}
+          initialName={editingModule?.title ?? ""}
+          title={editingModule ? "Edit module" : "Add a module"}
           isSaving={isSaving}
         />
       </>
@@ -164,10 +170,6 @@ export function CourseCurriculumView({
           onToggleModule={toggleModule}
           mode="edit"
           onEditModule={openEditModule}
-          onDeleteModule={(module) => {
-            setPendingModuleDelete(module);
-            setDeleteModuleOpen(true);
-          }}
           onEditActivity={(module, lesson) =>
             goToActivity(module, lesson.lessonType, lesson.id)
           }
@@ -181,20 +183,11 @@ export function CourseCurriculumView({
 
       <AddModuleModal
         open={moduleModalOpen}
-        onOpenChange={setModuleModalOpen}
+        onOpenChange={closeModuleModal}
         onSave={(name) => void saveModule(name)}
+        initialName={editingModule?.title ?? ""}
+        title={editingModule ? "Edit module" : "Add a module"}
         isSaving={isSaving}
-      />
-
-      <DeleteModuleModal
-        open={deleteModuleOpen}
-        moduleTitle={pendingModuleDelete?.title}
-        onOpenChange={(open) => {
-          setDeleteModuleOpen(open);
-          if (!open) setPendingModuleDelete(null);
-        }}
-        onConfirm={() => void confirmDeleteModule()}
-        isDeleting={isSaving}
       />
 
       <DeleteActivityModal
