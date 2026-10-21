@@ -248,10 +248,10 @@ export function HomePage() {
             ) : (
               <div className="rounded-2xl border border-dashed border-[#E5E7EB] bg-[#FAFBFC] px-4 py-8 text-center">
                 <p className="text-[14px] font-medium text-[#1D1D1D]">
-                  No upcoming live classes
+                  Nothing here yet
                 </p>
                 <p className="mt-1 text-[13px] text-[#6B7280]">
-                  Scheduled sessions will show up here.
+                  Add a live session in a course.
                 </p>
               </div>
             )}

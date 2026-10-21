@@ -12,8 +12,8 @@ export function ClassroomPage() {
       />
       <EmptyState
         icon={School}
-        title="Classroom (demo)"
-        description="Connect your API to list and edit training Classroom here."
+        title="Nothing here yet"
+        description="Check back later."
       />
     </div>
   );

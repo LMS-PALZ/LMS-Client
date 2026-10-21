@@ -15,7 +15,7 @@ export interface ZoomLiveEmbedClientProps {
 }
 
 function zoomErrorMessage(error: unknown): string {
-  if (!error) return "Unable to join the Zoom meeting.";
+  if (!error) return "Something went wrong. Refresh and try again.";
 
   const text =
     typeof error === "string"
@@ -36,7 +36,7 @@ function zoomErrorMessage(error: unknown): string {
               .join(" — ")
           : "";
 
-  const normalized = text || "Unable to join the Zoom meeting.";
+  const normalized = text || "Something went wrong. Refresh and try again.";
   const isSignatureInvalid =
     /signature is invalid/i.test(normalized) ||
     /\b3712\b/.test(normalized) ||
@@ -297,7 +297,7 @@ export function ZoomLiveEmbedClient({
         if (!signatureRes.ok) {
           throw new Error(
             signatureBody.message ||
-              "Unable to authorize the Zoom meeting. Check SDK credentials.",
+              "Something went wrong. Refresh and try again.",
           );
         }
 
@@ -374,7 +374,7 @@ export function ZoomLiveEmbedClient({
           <div className="absolute inset-0 flex items-center justify-center bg-[#242424] px-6 text-center">
             <div>
               <p className="text-[16px] font-semibold text-white">
-                Could not join live class
+                Something went wrong
               </p>
               <p className="mt-2 max-w-md text-[14px] leading-6 text-[#BDC1C6]">
                 {errorMessage}
@@ -400,7 +400,7 @@ export function ZoomLiveEmbedClient({
           {galleryMode === false && (
             <span
               className="shrink-0 rounded-full bg-amber-400/20 px-2 py-0.5 text-[11px] font-medium text-amber-300"
-              title="This browser cannot use SharedArrayBuffer, so Zoom shows one video at a time instead of the gallery."
+              title="Video layout is limited in this browser."
             >
               Single video
             </span>

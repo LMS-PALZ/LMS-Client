@@ -77,13 +77,13 @@ export function UsersPage() {
         breadcrumbs={[{ label: "Admin" }, { label: "Users" }]}
       />
       {q.isError && (
-        <AlertBanner variant="error">Unable to load users.</AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       )}
       {!q.data?.length ? (
         <EmptyState
           icon={Users}
-          title="No users"
-          description="Demo list is empty."
+          title="Nothing here yet"
+          description="Check back later."
         />
       ) : (
         <DataTable columns={columns} data={q.data} searchable />

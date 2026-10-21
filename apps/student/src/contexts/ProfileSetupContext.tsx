@@ -8,6 +8,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
 import { isProfileSetupBypassed } from "@/lib/profile-setup-bypass";
@@ -27,6 +28,7 @@ const ProfileSetupContext = createContext<ProfileSetupContextValue | null>(
 export function ProfileSetupProvider({ children }: { children: ReactNode }) {
   const profileQuery = useStudentProfile();
   const profile = useProfileStore((state) => state.user);
+  const [forceSetupOpen, setForceSetupOpen] = useState(false);
 
   const bypassProfileSetup = isProfileSetupBypassed();
 
@@ -39,10 +41,11 @@ export function ProfileSetupProvider({ children }: { children: ReactNode }) {
     !bypassProfileSetup &&
     !isProfileLoading &&
     !profileComplete &&
-    profile?.profileUploaded === false;
+    (forceSetupOpen || profile?.profileUploaded === false);
 
   const openProfileSetup = useCallback(() => {
     if (profileComplete) return;
+    setForceSetupOpen(true);
   }, [profileComplete]);
 
   const ensureProfileForAction = useCallback(() => {

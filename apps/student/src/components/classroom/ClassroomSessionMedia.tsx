@@ -1,7 +1,12 @@
 "use client";
 
 import { AlertBanner, DashboardEmptyState } from "@ssu/ui";
-import { cn, JOIN_LIVE_CLASS_LABEL } from "@ssu/utils";
+import {
+  CLASS_ENDED_LABEL,
+  CLASS_NOT_STARTED_LABEL,
+  cn,
+  JOIN_LIVE_CLASS_LABEL,
+} from "@ssu/utils";
 import { Video } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -66,8 +71,8 @@ function RecordingEmbed({
   if (status === "error") {
     return (
       <VideoFrame className={className}>
-        <AlertBanner variant="error" title="Could not load this class">
-          The class video did not load. Check your connection and try again.
+        <AlertBanner variant="error" title="Something went wrong">
+          Refresh and try again.
         </AlertBanner>
       </VideoFrame>
     );
@@ -120,7 +125,7 @@ function LiveMeetingLaunch({
       <DashboardEmptyState
         icon={Video}
         title={JOIN_LIVE_CLASS_LABEL}
-        description="The Zoom meeting opens in a new window so you can join outside this app."
+        description="Opens in a new window."
       />
       <button
         type="button"
@@ -148,8 +153,8 @@ export function ClassroomSessionMedia({
       <VideoFrame className={className}>
         <DashboardEmptyState
           icon={Video}
-          title="Meeting link not available"
-          description="This session is live, but no join link was provided. Please contact your instructor or check back shortly."
+          title="Not available"
+          description="Go back and try again."
         />
       </VideoFrame>
     );
@@ -161,8 +166,8 @@ export function ClassroomSessionMedia({
         <VideoFrame className={className}>
           <DashboardEmptyState
             icon={Video}
-            title="No class video yet"
-            description="A recording for this class is not available yet."
+            title="Not available"
+            description="Go back and try again."
           />
         </VideoFrame>
       );
@@ -176,8 +181,8 @@ export function ClassroomSessionMedia({
       <VideoFrame className={className}>
         <DashboardEmptyState
           icon={Video}
-          title="This class has ended"
-          description="A recording for this class is not available yet."
+          title={CLASS_ENDED_LABEL}
+          description="Nothing to play right now."
         />
       </VideoFrame>
     );
@@ -187,8 +192,8 @@ export function ClassroomSessionMedia({
     <VideoFrame className={className}>
       <DashboardEmptyState
         icon={Video}
-        title="No class video yet"
-        description="This session does not have a recording or a live meeting link."
+        title={CLASS_NOT_STARTED_LABEL}
+        description="Session has ended or not started yet."
       />
     </VideoFrame>
   );

@@ -31,8 +31,8 @@ export function CourseLayoutClient({ moduleId, children }: Props) {
       <EmptyState
         backHref="/classroom"
         icon={Megaphone}
-        title="You don't have any course video yet"
-        description="When you do, they'll show up here"
+        title="Nothing here yet"
+        description="Go back to My Classroom."
       />
     );
   }

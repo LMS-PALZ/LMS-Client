@@ -20,12 +20,14 @@ export function CoursesEmptyState({
         <NotebookPen className="h-7 w-7 text-[#94A3B8]" aria-hidden />
       </div>
       <h2 className="text-[16px] font-semibold text-[#1D1D1D]">
-        {isTutor ? "No courses assigned yet" : "You haven't added a course yet"}
+        Nothing here yet
       </h2>
       <p className="mt-2 max-w-sm text-[14px] text-[#94A3B8]">
-        {isTutor
-          ? "When an admin assigns you to a course, it will show up here."
-          : "When you do, they'll show up here"}
+        {onAddCourse
+          ? "Add a course to get started."
+          : isTutor
+            ? "Ask an admin if you need access."
+            : "Check back later."}
       </p>
       {onAddCourse ? (
         <div className="mt-6">

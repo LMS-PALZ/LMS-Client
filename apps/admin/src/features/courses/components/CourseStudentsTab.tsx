@@ -28,7 +28,7 @@ export function CourseStudentsTab({
   const [yearFilter, setYearFilter] = useState("All years");
   const [search, setSearch] = useState("");
 
-  const { data, isLoading, isError, error } = useProgramApplicants(programId, {
+  const { data, isLoading, isError } = useProgramApplicants(programId, {
     page,
     limit: rowsPerPage,
   });
@@ -64,9 +64,7 @@ export function CourseStudentsTab({
   if (isError) {
     return (
       <div className="flex min-h-[280px] items-center justify-center text-[14px] text-[#94A3B8]">
-        {error instanceof Error
-          ? error.message
-          : "Failed to load enrolled students."}
+        Refresh and try again.
       </div>
     );
   }

@@ -364,7 +364,9 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       router.push(backHref);
     } catch (error) {
       mutationToast.error(
-        error instanceof Error ? error.message : "Failed to save activity.",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Refresh and try again.",
       );
     }
   };
@@ -383,7 +385,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       <section className="space-y-6">
         <GoBack fallbackHref={backHref} />
         <AlertBanner variant="error">
-          Could not find the module for this activity.
+          Go back to the course and try again.
         </AlertBanner>
       </section>
     );
@@ -394,7 +396,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       <section className="space-y-6">
         <GoBack fallbackHref={backHref} />
         <AlertBanner variant="error">
-          Could not find this activity to edit.
+          Go back to the course and try again.
         </AlertBanner>
       </section>
     );
@@ -408,11 +410,7 @@ export function CourseActivityPage({ courseId }: CourseActivityPageProps) {
       </h1>
 
       {upsertClassroom.isError && (
-        <AlertBanner variant="error">
-          {upsertClassroom.error instanceof Error
-            ? upsertClassroom.error.message
-            : "Failed to save activity."}
-        </AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       )}
 
       {!isEditing ? (

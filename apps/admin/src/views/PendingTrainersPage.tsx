@@ -38,10 +38,14 @@ export function PendingTrainersPage() {
         breadcrumbs={[{ label: "Admin" }, { label: "Pending trainers" }]}
       />
       {q.isError && (
-        <AlertBanner variant="error">Unable to load applications.</AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       )}
       {!q.data?.length ? (
-        <EmptyState icon={UserCheck} title="No pending applications" />
+        <EmptyState
+          icon={UserCheck}
+          title="Nothing here yet"
+          description="Check back later."
+        />
       ) : (
         <ul className="space-y-3">
           {q.data.map((t) => (

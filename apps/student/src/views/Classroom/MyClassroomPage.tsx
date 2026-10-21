@@ -1,12 +1,14 @@
 "use client";
 
-import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import { resolveLessonSessionPhase } from "@/lib/calendar/session-phase";
-import { classroomSessionHref } from "@/lib/classroom/recording-embed";
+import {
+  classroomSessionHref,
+  type ClassroomSessionOpenMode,
+} from "@/lib/classroom/recording-embed";
 import {
   hasRecordingUrl,
+  isLiveJoinEnabled,
   isRecordingPlayEnabled,
-  isSessionActionEnabled,
 } from "@/lib/sessions/session-access";
 import { findNextTodaySession } from "@/lib/sessions/today-sessions";
 import { mapClassroomLessonsToSessions } from "@ssu/api";
@@ -16,6 +18,8 @@ import {
   cn,
   displayValue,
   EMPTY_DISPLAY,
+  CLASS_ENDED_LABEL,
+  CLASS_NOT_STARTED_LABEL,
   JOIN_LIVE_CLASS_LABEL,
   WATCH_RECORDED_CLASS_LABEL,
 } from "@ssu/utils";
@@ -58,37 +62,64 @@ function lessonActionLabel(lesson: {
   startsAt?: string;
   durationMinutes?: number;
   isLiveNow?: boolean;
-}): string | null {
+}): string {
   const hasRecording = Boolean(lesson.recordingUrl?.trim());
   const phase = resolveLessonSessionPhase(
     lesson.startsAt,
     lesson.durationMinutes,
     lesson.isLiveNow,
   );
-  const actionEnabled = isSessionActionEnabled({
+  const canPlayRecording = isRecordingPlayEnabled({
+    startsAt: lesson.startsAt ?? "",
+  });
+  const canJoinLive = isLiveJoinEnabled({
     startsAt: lesson.startsAt ?? "",
     durationMinutes: lesson.durationMinutes,
     isLive: Boolean(lesson.isLiveNow),
-    recordingUrl: lesson.recordingUrl,
   });
 
   if (hasRecording) {
-    if (!actionEnabled) return "Starts at scheduled time";
+    if (!canPlayRecording) return CLASS_NOT_STARTED_LABEL;
     return WATCH_RECORDED_CLASS_LABEL;
   }
 
   if (lesson.lessonType === "live_session") {
-    if (phase === "ended") return null;
-    if (!actionEnabled) return "Starts at scheduled time";
+    if (phase === "ended") return CLASS_ENDED_LABEL;
+    if (!canJoinLive) return CLASS_NOT_STARTED_LABEL;
     return JOIN_LIVE_CLASS_LABEL;
   }
 
-  return "Open lesson";
+  return "View Details";
+}
+
+function lessonOpenMode(lesson: {
+  recordingUrl?: string;
+  startsAt?: string;
+  durationMinutes?: number;
+  isLiveNow?: boolean;
+}): ClassroomSessionOpenMode {
+  const hasRecording = Boolean(lesson.recordingUrl?.trim());
+  if (
+    hasRecording &&
+    isRecordingPlayEnabled({ startsAt: lesson.startsAt ?? "" })
+  ) {
+    return "watch";
+  }
+  if (
+    !hasRecording &&
+    isLiveJoinEnabled({
+      startsAt: lesson.startsAt ?? "",
+      durationMinutes: lesson.durationMinutes,
+      isLive: Boolean(lesson.isLiveNow),
+    })
+  ) {
+    return "join";
+  }
+  return "view";
 }
 
 export function MyClassroomPage() {
   const router = useRouter();
-  const { ensureProfileForAction } = useProfileSetup();
   const {
     programId: enrolledProgramId,
     program: enrolledProgram,
@@ -115,13 +146,21 @@ export function MyClassroomPage() {
   const isLoading =
     isProfileLoading || (Boolean(enrolledProgramId) && isClassroomLoading);
 
-  const handleOpenLesson = (lessonId: string, recordingUrl?: string) => {
-    if (!ensureProfileForAction()) return;
+  const handleOpenLesson = (
+    lessonId: string,
+    options?: {
+      recordingUrl?: string | null;
+      mode?: ClassroomSessionOpenMode;
+    },
+  ) => {
+    // Classroom watch/view/join is not gated on profile setup — enrolled
+    // students should reach recordings and class details immediately.
     router.push(
       classroomSessionHref({
         lessonId,
         programId: enrolledProgramId,
-        recordingUrl,
+        recordingUrl: options?.recordingUrl,
+        mode: options?.mode,
       }),
     );
   };
@@ -195,21 +234,14 @@ export function MyClassroomPage() {
     return (
       <DashboardEmptyState
         icon={GraduationCap}
-        title="You are not enrolled in a course yet"
-        description="When you enroll in a program, your classroom will appear here."
+        title="Nothing here yet"
+        description="Ask your admin for access."
       />
     );
   }
 
   const program = data?.program ?? enrolledProgram;
   const isLive = Boolean(nextSession?.isLive);
-  const sessionEnded = nextSession
-    ? resolveLessonSessionPhase(
-        nextSession.startsAt,
-        nextSession.durationMinutes,
-        nextSession.isLive,
-      ) === "ended"
-    : false;
   const hasModules = modules.length > 0;
   const hasTodaySession = Boolean(nextSession);
 
@@ -276,8 +308,8 @@ export function MyClassroomPage() {
           {!hasTodaySession ? (
             <DashboardEmptyState
               icon={GraduationCap}
-              title="No class scheduled for today"
-              description="Your next live session will appear here when one is scheduled for today."
+              title="Nothing here yet"
+              description="Open a class when it's ready."
             />
           ) : (
             <>
@@ -285,7 +317,7 @@ export function MyClassroomPage() {
                 <LiveIndicator label="Live" size="md" tone="classroom" />
               ) : (
                 <span className="inline-flex items-center rounded-full bg-[#E8F4FC] px-3 py-1.5 text-[13px] font-semibold text-[#2B6CB0]">
-                  Upcoming
+                  {CLASS_NOT_STARTED_LABEL}
                 </span>
               )}
 
@@ -315,22 +347,41 @@ export function MyClassroomPage() {
               <div className="mt-10 flex justify-end">
                 {(() => {
                   if (!nextSession) return null;
-                  const canOpen = isSessionActionEnabled(nextSession);
                   const isRecording = hasRecordingUrl(nextSession);
+                  const canPlay =
+                    isRecording && isRecordingPlayEnabled(nextSession);
+                  const canJoin =
+                    !isRecording && isLiveJoinEnabled(nextSession);
 
-                  if (!isRecording && sessionEnded) {
+                  if (isRecording && !canPlay) {
                     return (
                       <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2.5 text-[14px] font-semibold text-[#9AA3AF]">
-                        This class has ended
+                        {CLASS_NOT_STARTED_LABEL}
                       </span>
                     );
                   }
 
-                  if (!canOpen) {
+                  if (!isRecording && !canJoin) {
+                    const phase = resolveLessonSessionPhase(
+                      nextSession.startsAt,
+                      nextSession.durationMinutes,
+                      nextSession.isLive,
+                    );
+                    const statusLabel =
+                      phase === "ended"
+                        ? CLASS_ENDED_LABEL
+                        : CLASS_NOT_STARTED_LABEL;
                     return (
-                      <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2.5 text-[14px] font-semibold text-[#9AA3AF]">
-                        Available at scheduled time
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleOpenLesson(nextSession.id, { mode: "view" })
+                        }
+                        className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-5 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3D6E4D]"
+                      >
+                        {statusLabel}
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
                     );
                   }
 
@@ -338,10 +389,10 @@ export function MyClassroomPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleOpenLesson(
-                          nextSession.id,
-                          nextSession.recordingUrl,
-                        )
+                        handleOpenLesson(nextSession.id, {
+                          recordingUrl: nextSession.recordingUrl,
+                          mode: isRecording ? "watch" : "join",
+                        })
                       }
                       className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-5 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3D6E4D]"
                     >
@@ -371,8 +422,7 @@ export function MyClassroomPage() {
             </span>
           </div>
           <p className="mb-4 text-[13px] text-[#6B7280]">
-            Rewatch posted class recordings anytime — today, next week, or
-            months later.
+            Your class recordings.
           </p>
           <ul className="space-y-2">
             {availableRecordings.map((recording) => (
@@ -380,7 +430,10 @@ export function MyClassroomPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    handleOpenLesson(recording.id, recording.recordingUrl)
+                    handleOpenLesson(recording.id, {
+                      recordingUrl: recording.recordingUrl,
+                      mode: "watch",
+                    })
                   }
                   className="flex w-full items-center justify-between gap-3 rounded-[10px] border border-[#EEF2F6] bg-[#FAFBFD] px-3 py-3 text-left transition hover:border-[#D4E2D8] hover:bg-[#F3F8F4]"
                 >
@@ -424,8 +477,8 @@ export function MyClassroomPage() {
         {!hasModules ? (
           <DashboardEmptyState
             icon={GraduationCap}
-            title="No modules available yet"
-            description="Your course modules will appear here once they are published."
+            title="Nothing here yet"
+            description="Check back when your course is ready."
           />
         ) : (
           <div className="space-y-3">
@@ -474,39 +527,49 @@ export function MyClassroomPage() {
                       ) : (
                         lessons.map((lesson) => {
                           const action = lessonActionLabel(lesson);
+                          const openMode = lessonOpenMode(lesson);
                           const phase = resolveLessonSessionPhase(
                             lesson.startsAt,
                             lesson.durationMinutes,
                             lesson.isLiveNow,
                           );
                           const recorded = Boolean(lesson.recordingUrl?.trim());
-                          const actionEnabled = isSessionActionEnabled({
-                            startsAt: lesson.startsAt ?? "",
-                            durationMinutes: lesson.durationMinutes,
-                            isLive: Boolean(lesson.isLiveNow),
-                            recordingUrl: lesson.recordingUrl,
-                          });
+                          const canPlayRecording =
+                            recorded &&
+                            isRecordingPlayEnabled({
+                              startsAt: lesson.startsAt ?? "",
+                            });
+                          const canJoinLive =
+                            !recorded &&
+                            isLiveJoinEnabled({
+                              startsAt: lesson.startsAt ?? "",
+                              durationMinutes: lesson.durationMinutes,
+                              isLive: Boolean(lesson.isLiveNow),
+                            });
                           const ended =
                             !recorded &&
                             lesson.lessonType === "live_session" &&
                             phase === "ended";
-                          const disabled = ended || !actionEnabled;
+                          // Only lock recordings before their release time.
+                          // Ended live rows stay clickable for details/resources.
+                          const locked = recorded && !canPlayRecording;
+                          const actionActive = canPlayRecording || canJoinLive;
 
                           return (
                             <button
                               key={lesson.id}
                               type="button"
-                              disabled={disabled}
+                              disabled={locked}
                               onClick={() => {
-                                if (disabled) return;
-                                handleOpenLesson(
-                                  lesson.id,
-                                  lesson.recordingUrl,
-                                );
+                                if (locked) return;
+                                handleOpenLesson(lesson.id, {
+                                  recordingUrl: lesson.recordingUrl,
+                                  mode: openMode,
+                                });
                               }}
                               className={cn(
                                 "flex w-full items-center justify-between gap-3 rounded-[8px] px-3 py-2.5 text-left transition",
-                                disabled
+                                locked
                                   ? "cursor-not-allowed opacity-60"
                                   : "hover:bg-white",
                               )}
@@ -524,25 +587,30 @@ export function MyClassroomPage() {
                                     </p>
                                   ) : ended ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Class ended
+                                      {CLASS_ENDED_LABEL}
                                     </p>
-                                  ) : !actionEnabled ? (
+                                  ) : locked || phase === "upcoming" ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Available at scheduled time
+                                      {CLASS_NOT_STARTED_LABEL}
                                     </p>
                                   ) : recorded ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Recording available
+                                      Recording
                                     </p>
                                   ) : null}
                                 </div>
                               </div>
-                              {action ? (
-                                <span className="inline-flex shrink-0 items-center gap-1.5 text-[15px] font-semibold text-[#4E845F]">
-                                  {action}
-                                  <ChevronRight className="h-5 w-5" />
-                                </span>
-                              ) : null}
+                              <span
+                                className={cn(
+                                  "inline-flex shrink-0 items-center gap-1.5 text-[15px] font-semibold",
+                                  actionActive
+                                    ? "text-[#4E845F]"
+                                    : "text-[#94A3B8]",
+                                )}
+                              >
+                                {action}
+                                <ChevronRight className="h-5 w-5" />
+                              </span>
                             </button>
                           );
                         })

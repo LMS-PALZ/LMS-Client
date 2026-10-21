@@ -117,7 +117,10 @@ export function AdminTable({
             });
           } catch (error) {
             mutationToast.error(
-              getErrorMessage(error, "Failed to update staff status."),
+              getErrorMessage(
+                error,
+                "Something went wrong. Refresh and try again.",
+              ),
             );
             return;
           }
@@ -126,8 +129,8 @@ export function AdminTable({
             "",
             <StatusDialog
               variant="success"
-              title={`${actionLabel}d successfully`}
-              description={`${trainer.name}'s status has been updated.`}
+              title="Done"
+              description="Updated."
               onDismiss={closeModal}
             />,
           );

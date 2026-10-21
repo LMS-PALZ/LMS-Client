@@ -12,8 +12,8 @@ export function ProgramsPage() {
       />
       <EmptyState
         icon={BookOpen}
-        title="Programs (demo)"
-        description="Connect your API to list and edit training programs here."
+        title="Nothing here yet"
+        description="Check back later."
       />
     </div>
   );

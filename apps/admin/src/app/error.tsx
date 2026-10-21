@@ -12,7 +12,7 @@ export default function ErrorPage({
   return (
     <AppStatusPage
       title="Something went wrong"
-      description="We could not open this page. Try again, or go back home."
+      description="Try again, or go back home."
       homeHref={adminPath()}
       onRetry={reset}
     />

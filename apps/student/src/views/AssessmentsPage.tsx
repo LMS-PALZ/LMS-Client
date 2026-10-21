@@ -130,7 +130,9 @@ export function AssessmentsPage() {
       </h1>
 
       {assignments.isError && (
-        <AlertBanner variant="error">Could not load assessments.</AlertBanner>
+        <AlertBanner variant="error">
+          Something went wrong. Refresh and try again.
+        </AlertBanner>
       )}
 
       <AssessmentProgressInsight scorePercent={scorePercent} />
@@ -188,8 +190,8 @@ export function AssessmentsPage() {
         ) : filtered.length === 0 ? (
           <DashboardEmptyState
             icon={ClipboardList}
-            title="No assessments found"
-            description="Try a different search or status filter."
+            title="Nothing here yet"
+            description="Check back when assessments are posted."
           />
         ) : (
           <>

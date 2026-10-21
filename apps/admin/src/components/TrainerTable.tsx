@@ -123,7 +123,10 @@ export function TrainerTable({
             });
           } catch (error) {
             mutationToast.error(
-              getErrorMessage(error, "Failed to update staff status."),
+              getErrorMessage(
+                error,
+                "Something went wrong. Refresh and try again.",
+              ),
             );
             return;
           }
@@ -132,8 +135,8 @@ export function TrainerTable({
             "",
             <StatusDialog
               variant="success"
-              title={`${actionLabel}d successfully`}
-              description={`${trainer.name}'s status has been updated.`}
+              title="Done"
+              description="Updated."
               onDismiss={closeModal}
             />,
           );
@@ -154,7 +157,7 @@ export function TrainerTable({
             <StatusDialog
               variant="success"
               title="Invitation sent!"
-              description="You have successfully assign a role to this staff"
+              description="Done."
               onDismiss={closeModal}
             />,
           );

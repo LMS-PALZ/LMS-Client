@@ -50,8 +50,8 @@ export function Assignments({
       {assignments.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title="You don’t have any assignment yet"
-          description="When you do, they’ll show up here"
+          title="Nothing here yet"
+          description="Check back when assignments are posted."
         />
       ) : (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">

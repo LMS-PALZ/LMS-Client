@@ -39,8 +39,8 @@ export function DeleteModuleModal({
           <div className="px-6 py-5">
             <p className="text-[14px] leading-6 text-[#6B7280]">
               {moduleTitle
-                ? `Delete module "${moduleTitle}" and all its activities? This cannot be undone.`
-                : "Delete this module and all its activities? This cannot be undone."}
+                ? `Delete "${moduleTitle}"? This cannot be undone.`
+                : "Delete this module? This cannot be undone."}
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <Button

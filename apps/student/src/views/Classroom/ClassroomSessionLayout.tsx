@@ -6,7 +6,7 @@ import { mapClassroomResponse } from "@/lib/classroom/mappers";
 import { ClassroomCourseProvider } from "@/contexts/ClassroomCourseContext";
 import {
   hasRecordingUrl,
-  isSessionActionEnabled,
+  isRecordingPlayEnabled,
 } from "@/lib/sessions/session-access";
 import {
   useEnrolledProgram,
@@ -19,6 +19,7 @@ import {
   PageBackFrame,
   usePageBreadcrumbs,
 } from "@ssu/ui";
+import { CLASS_NOT_STARTED_LABEL } from "@ssu/utils";
 import { Video } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
@@ -95,8 +96,8 @@ export function ClassroomSessionLayout({
       <DashboardEmptyState
         backHref="/home"
         icon={Video}
-        title="No enrolled course"
-        description="Enroll in a program to access live sessions."
+        title="Nothing here yet"
+        description="Go back to My Classroom."
       />
     );
   }
@@ -114,10 +115,8 @@ export function ClassroomSessionLayout({
   if (classroomQuery.isError && !liveGeneralFallback) {
     return (
       <PageBackFrame fallbackHref={CLASSROOM_BACK_HREF}>
-        <AlertBanner variant="error" title="Could not load this class">
-          {classroomQuery.error instanceof Error
-            ? classroomQuery.error.message
-            : "This class could not be loaded. Please try again."}
+        <AlertBanner variant="error" title="Something went wrong">
+          Go back and try again.
         </AlertBanner>
       </PageBackFrame>
     );
@@ -128,8 +127,8 @@ export function ClassroomSessionLayout({
       <DashboardEmptyState
         backHref={CLASSROOM_BACK_HREF}
         icon={Video}
-        title="No class video yet"
-        description="This class is not available right now."
+        title="Not available"
+        description="Go back to My Classroom."
       />
     );
   }
@@ -208,30 +207,18 @@ export function ClassroomSessionLayout({
     isLive: Boolean(extendedLesson?.isLiveNow || liveGeneralFallback),
     recordingUrl,
   };
-  if (accessSession.startsAt && !isSessionActionEnabled(accessSession)) {
-    const isRecording = hasRecordingUrl(accessSession);
-    if (!isRecording && sessionPhase === "ended") {
-      return (
-        <DashboardEmptyState
-          backHref={CLASSROOM_BACK_HREF}
-          icon={Video}
-          title="Class has ended"
-          description="This live session is over. A recording will appear here if your tutor adds one."
-        />
-      );
-    }
+  // Only lock the page before a recording's release time. Ended live classes
+  // still open so students can view resources; Join stays disabled in the shell.
+  if (
+    hasRecordingUrl(accessSession) &&
+    !isRecordingPlayEnabled(accessSession)
+  ) {
     return (
       <DashboardEmptyState
         backHref={CLASSROOM_BACK_HREF}
         icon={Video}
-        title={
-          isRecording ? "Recording not available yet" : "Class has not started"
-        }
-        description={
-          isRecording
-            ? "This recording will unlock at the scheduled class time. After that you can watch it anytime."
-            : "You can join this live class when the scheduled start time is reached."
-        }
+        title={CLASS_NOT_STARTED_LABEL}
+        description="Session has ended or not started yet."
       />
     );
   }

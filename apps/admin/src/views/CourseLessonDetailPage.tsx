@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminPath } from "@ssu/config/portal-paths";
 import { useAdminProgram, useProgramClassroomModules } from "@ssu/queries";
+import { resolveLessonSessionPhase } from "@/lib/calendar/session-phase";
 import { AlertBanner, Button, GoBack, usePageBreadcrumbs } from "@ssu/ui";
 import {
+  CLASS_ENDED_LABEL,
+  CLASS_NOT_STARTED_LABEL,
   JOIN_LIVE_CLASS_LABEL,
   WATCH_RECORDED_CLASS_LABEL,
   toVideoEmbedUrl,
@@ -32,13 +35,11 @@ export function CourseLessonDetailPage({
     data: program,
     isLoading: isProgramLoading,
     isError: isProgramError,
-    error: programError,
   } = useAdminProgram(courseId);
   const {
     data: modules = [],
     isLoading: isModulesLoading,
     isError: isModulesError,
-    error: modulesError,
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
   const [isWatching, setIsWatching] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
@@ -68,6 +69,11 @@ export function CourseLessonDetailPage({
     setIsVideoLoading(true);
   }, [isWatching, recordingEmbedUrl]);
   const canJoinZoom = Boolean(meetUrl) && !hasRecording;
+  const sessionPhase = resolveLessonSessionPhase(
+    lesson?.startsAt,
+    lesson?.durationMinutes,
+    lesson?.isLiveNow,
+  );
 
   usePageBreadcrumbs([
     { label: "Courses", href: adminPath("/courses") },
@@ -93,9 +99,7 @@ export function CourseLessonDetailPage({
       <div className="space-y-4">
         <GoBack fallbackHref={adminPath("/courses")} />
         <AlertBanner variant="error">
-          {programError instanceof Error
-            ? programError.message
-            : "Unable to load this course."}
+          Go back to courses and try again.
         </AlertBanner>
       </div>
     );
@@ -105,11 +109,7 @@ export function CourseLessonDetailPage({
     return (
       <div className="space-y-4">
         <GoBack fallbackHref={courseHref} />
-        <AlertBanner variant="error">
-          {modulesError instanceof Error
-            ? modulesError.message
-            : "Unable to load course modules."}
-        </AlertBanner>
+        <AlertBanner variant="error">Refresh and try again.</AlertBanner>
       </div>
     );
   }
@@ -119,7 +119,7 @@ export function CourseLessonDetailPage({
       <div className="space-y-4">
         <GoBack fallbackHref={courseHref} />
         <AlertBanner variant="error">
-          This session could not be found in the course modules.
+          Go back to the course and try again.
         </AlertBanner>
       </div>
     );
@@ -140,6 +140,18 @@ export function CourseLessonDetailPage({
                 <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-[12px] font-medium text-[#B91C1C]">
                   <Radio className="h-3.5 w-3.5" />
                   Live now
+                </span>
+              ) : null}
+              {!hasRecording &&
+              !lesson.isLiveNow &&
+              sessionPhase === "upcoming" ? (
+                <span className="rounded-full bg-[#F1F5F9] px-2.5 py-1 text-[12px] font-medium text-[#64748B]">
+                  {CLASS_NOT_STARTED_LABEL}
+                </span>
+              ) : null}
+              {!hasRecording && sessionPhase === "ended" ? (
+                <span className="rounded-full bg-[#F1F5F9] px-2.5 py-1 text-[12px] font-medium text-[#64748B]">
+                  {CLASS_ENDED_LABEL}
                 </span>
               ) : null}
               {lesson.isPublished ? (
@@ -210,7 +222,7 @@ export function CourseLessonDetailPage({
           </div>
         ) : null}
 
-        {isLiveSession && canJoinZoom ? (
+        {isLiveSession && canJoinZoom && sessionPhase !== "ended" ? (
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <Button
               type="button"
