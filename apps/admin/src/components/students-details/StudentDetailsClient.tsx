@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function StudentDetailsClient({ id }: Props) {
-  const { data, isLoading, isError, error } = useStudentDetails(id);
+  const { data, isLoading, isError } = useStudentDetails(id);
   const studentName = data
     ? `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim() || "Student"
     : "Student";
@@ -34,11 +34,7 @@ export function StudentDetailsClient({ id }: Props) {
     return (
       <div className="space-y-4">
         <GoBack fallbackHref={adminPath("/students")} />
-        <AlertBanner variant="error">
-          {error instanceof Error
-            ? error.message
-            : "Could not load student details."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       </div>
     );
   }

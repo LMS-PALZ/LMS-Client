@@ -39,7 +39,7 @@ export function TransactionsPage() {
     setPage(1);
   }, [status]);
 
-  const { data, isLoading, isError, error } = useAdminTransactions({
+  const { data, isLoading, isError } = useAdminTransactions({
     page,
     limit: 10,
     search: debouncedSearch,
@@ -139,12 +139,8 @@ export function TransactionsPage() {
         ) : isError ? (
           <EmptyState
             icon={Receipt}
-            title="Could not load transactions"
-            description={
-              error instanceof Error
-                ? error.message
-                : "Please refresh and try again."
-            }
+            title="Something went wrong"
+            description="Try again later."
           />
         ) : (
           <TransactionsTable
@@ -165,11 +161,7 @@ export function TransactionsPage() {
         onOpenChange={handleModalChange}
         transaction={detailQuery.data}
         isLoading={detailQuery.isLoading}
-        errorMessage={
-          detailQuery.isError && detailQuery.error instanceof Error
-            ? detailQuery.error.message
-            : undefined
-        }
+        errorMessage={detailQuery.isError ? "Try again later." : undefined}
       />
     </div>
   );

@@ -53,13 +53,11 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
     data: program,
     isLoading: isProgramLoading,
     isError: isProgramError,
-    error: programError,
   } = useAdminProgram(courseId);
   const {
     data: modules = [],
     isLoading: isModulesLoading,
     isError: isModulesError,
-    error: modulesError,
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
   const { data: tutorStaff = [] } = useTutorStaff();
   const updateStatus = useUpdateProgramStatusMutation();
@@ -101,7 +99,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
       );
     } catch (error) {
       mutationToast.error(
-        getErrorMessage(error, "Failed to update course status."),
+        getErrorMessage(error, "Something went wrong. Try again later."),
       );
     }
   };
@@ -115,7 +113,9 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
       router.push(adminPath("/courses"));
     } catch (error) {
       setDeleteOpen(false);
-      mutationToast.error(getErrorMessage(error, "Failed to delete course."));
+      mutationToast.error(
+        getErrorMessage(error, "Something went wrong. Try again later."),
+      );
     }
   };
 
@@ -144,11 +144,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
     return (
       <section className="space-y-6">
         <GoBack fallbackHref={adminPath("/courses")} />
-        <AlertBanner variant="error">
-          {programError instanceof Error
-            ? programError.message
-            : "Failed to load course."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       </section>
     );
   }
@@ -158,19 +154,11 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
       <GoBack fallbackHref={adminPath("/courses")} />
 
       {updateStatus.isError && (
-        <AlertBanner variant="error">
-          {updateStatus.error instanceof Error
-            ? updateStatus.error.message
-            : "Failed to update course status."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       )}
 
       {deleteCourse.isError && (
-        <AlertBanner variant="error">
-          {deleteCourse.error instanceof Error
-            ? deleteCourse.error.message
-            : "Failed to delete course."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       )}
 
       <CourseDetailHeader
@@ -197,11 +185,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
               modules={modules}
               courseId={courseId}
               isLoading={isModulesLoading}
-              error={
-                isModulesError && modulesError instanceof Error
-                  ? modulesError.message
-                  : null
-              }
+              error={isModulesError ? "Try again later." : null}
             />
           )}
           {activeTab === "cohorts" && (

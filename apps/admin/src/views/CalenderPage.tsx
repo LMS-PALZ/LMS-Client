@@ -65,12 +65,8 @@ export function CalenderPage() {
         <div className="rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
           <DashboardEmptyState
             icon={CalendarDays}
-            title="No classes scheduled yet"
-            description={
-              isError
-                ? "We couldn't load the schedule right now. Please refresh and try again."
-                : "When live sessions are scheduled across your courses, they will appear here so you can follow up with students and tutors."
-            }
+            title="Nothing here yet"
+            description={isError ? "Try again later." : "Check back later."}
             className="py-16"
           />
         </div>
@@ -82,9 +78,7 @@ export function CalenderPage() {
     <div className="space-y-6">
       <PageHeader title="Calendar" />
       <p className="-mt-2 text-[14px] leading-relaxed text-neutral-600 sm:text-[15px]">
-        All live classes across every course and cohort. Week view is the
-        default so you can see what is happening across the week and follow up
-        with students and tutors. Click a class to open the course.
+        Your schedule.
       </p>
 
       <AdminCalendarLegend />

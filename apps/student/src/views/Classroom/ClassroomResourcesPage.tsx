@@ -11,8 +11,8 @@ export function ClassroomResourcesPage({
     return (
       <DashboardEmptyState
         icon={FileText}
-        title="No resources available"
-        description="Resources for this class will appear here."
+        title="Nothing here yet"
+        description="Check back later."
       />
     );
   }

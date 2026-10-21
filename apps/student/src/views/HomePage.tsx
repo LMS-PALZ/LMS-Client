@@ -137,8 +137,8 @@ export function HomePage() {
           emptyState={
             <DashboardEmptyState
               icon={GraduationCap}
-              title="No classes today"
-              description="Live and upcoming classes scheduled for today will show up here."
+              title="Nothing here yet"
+              description="Check back later."
             />
           }
           sessions={sessionList.map((s) => {
@@ -147,12 +147,12 @@ export function HomePage() {
             const canJoin = !recorded && isLiveJoinEnabled(s);
             const locked = recorded && !canPlay;
             const label = locked
-              ? "Starts at scheduled time"
+              ? "Not available"
               : canPlay
                 ? WATCH_RECORDED_CLASS_LABEL
                 : canJoin
                   ? JOIN_LIVE_CLASS_LABEL
-                  : "View class details";
+                  : "Open";
             return {
               id: s.id,
               title: s.title,
@@ -231,8 +231,8 @@ export function HomePage() {
           className="mb-5"
         />
         {assignments.isError && (
-          <AlertBanner variant="error" title="Could not load assignments">
-            Please try again later.
+          <AlertBanner variant="error" title="Something went wrong">
+            Try again later.
           </AlertBanner>
         )}
         {assignments.isLoading ? (
@@ -240,8 +240,8 @@ export function HomePage() {
         ) : assignmentList.length === 0 ? (
           <DashboardEmptyState
             icon={Notebook}
-            title="You don't have any assignment yet"
-            description="When you do, they'll show up here"
+            title="Nothing here yet"
+            description="Check back later."
           />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">

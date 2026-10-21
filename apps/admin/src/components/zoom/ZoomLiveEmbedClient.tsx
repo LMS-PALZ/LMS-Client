@@ -16,7 +16,7 @@ export interface ZoomLiveEmbedClientProps {
 }
 
 function zoomErrorMessage(error: unknown): string {
-  if (!error) return "Unable to join the Zoom meeting.";
+  if (!error) return "Something went wrong. Try again later.";
 
   const text =
     typeof error === "string"
@@ -37,7 +37,7 @@ function zoomErrorMessage(error: unknown): string {
               .join(" — ")
           : "";
 
-  const normalized = text || "Unable to join the Zoom meeting.";
+  const normalized = text || "Something went wrong. Try again later.";
   const isSignatureInvalid =
     /signature is invalid/i.test(normalized) ||
     /\b3712\b/.test(normalized) ||
@@ -294,8 +294,7 @@ export function ZoomLiveEmbedClient({
 
       if (!signatureRes.ok) {
         throw new Error(
-          signatureBody.message ||
-            "Unable to authorize the Zoom meeting. Check SDK credentials.",
+          signatureBody.message || "Something went wrong. Try again later.",
         );
       }
 
@@ -394,7 +393,7 @@ export function ZoomLiveEmbedClient({
           <div className="absolute inset-0 flex items-center justify-center bg-[#242424] px-6 text-center">
             <div>
               <p className="text-[16px] font-semibold text-white">
-                Could not join live session
+                Something went wrong
               </p>
               <p className="mt-2 max-w-md text-[14px] leading-6 text-[#BDC1C6]">
                 {errorMessage}

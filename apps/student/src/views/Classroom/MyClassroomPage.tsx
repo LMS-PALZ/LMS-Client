@@ -77,17 +77,16 @@ function lessonActionLabel(lesson: {
   });
 
   if (hasRecording) {
-    if (!canPlayRecording) return "Starts at scheduled time";
+    if (!canPlayRecording) return "Not available";
     return WATCH_RECORDED_CLASS_LABEL;
   }
 
   if (lesson.lessonType === "live_session") {
-    if (phase === "ended") return "View class details";
-    if (!canJoinLive) return "View class details";
+    if (phase === "ended" || !canJoinLive) return "View Detials";
     return JOIN_LIVE_CLASS_LABEL;
   }
 
-  return "Open lesson";
+  return "View Details";
 }
 
 function lessonOpenMode(lesson: {
@@ -232,21 +231,14 @@ export function MyClassroomPage() {
     return (
       <DashboardEmptyState
         icon={GraduationCap}
-        title="You are not enrolled in a course yet"
-        description="When you enroll in a program, your classroom will appear here."
+        title="Nothing here yet"
+        description="Check back later."
       />
     );
   }
 
   const program = data?.program ?? enrolledProgram;
   const isLive = Boolean(nextSession?.isLive);
-  const sessionEnded = nextSession
-    ? resolveLessonSessionPhase(
-        nextSession.startsAt,
-        nextSession.durationMinutes,
-        nextSession.isLive,
-      ) === "ended"
-    : false;
   const hasModules = modules.length > 0;
   const hasTodaySession = Boolean(nextSession);
 
@@ -313,8 +305,8 @@ export function MyClassroomPage() {
           {!hasTodaySession ? (
             <DashboardEmptyState
               icon={GraduationCap}
-              title="No class scheduled for today"
-              description="Your next live session will appear here when one is scheduled for today."
+              title="Nothing here yet"
+              description="Check back later."
             />
           ) : (
             <>
@@ -361,23 +353,8 @@ export function MyClassroomPage() {
                   if (isRecording && !canPlay) {
                     return (
                       <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2.5 text-[14px] font-semibold text-[#9AA3AF]">
-                        Available at scheduled time
+                        Not available
                       </span>
-                    );
-                  }
-
-                  if (!isRecording && !canJoin && sessionEnded) {
-                    return (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleOpenLesson(nextSession.id, { mode: "view" })
-                        }
-                        className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-5 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3D6E4D]"
-                      >
-                        View class details
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
                     );
                   }
 
@@ -388,9 +365,9 @@ export function MyClassroomPage() {
                         onClick={() =>
                           handleOpenLesson(nextSession.id, { mode: "view" })
                         }
-                        className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2.5 text-[14px] font-semibold text-[#4A5568] transition hover:bg-[#DDE3EA]"
+                        className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-5 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3D6E4D]"
                       >
-                        View class details
+                        Open
                         <ChevronRight className="h-5 w-5" />
                       </button>
                     );
@@ -433,8 +410,7 @@ export function MyClassroomPage() {
             </span>
           </div>
           <p className="mb-4 text-[13px] text-[#6B7280]">
-            Rewatch posted class recordings anytime — today, next week, or
-            months later.
+            Your class recordings.
           </p>
           <ul className="space-y-2">
             {availableRecordings.map((recording) => (
@@ -489,8 +465,8 @@ export function MyClassroomPage() {
         {!hasModules ? (
           <DashboardEmptyState
             icon={GraduationCap}
-            title="No modules available yet"
-            description="Your course modules will appear here once they are published."
+            title="Nothing here yet"
+            description="Check back later."
           />
         ) : (
           <div className="space-y-3">
@@ -599,21 +575,17 @@ export function MyClassroomPage() {
                                     </p>
                                   ) : ended ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Class ended — resources still available
+                                      Class ended
                                     </p>
                                   ) : locked ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Available at scheduled time
+                                      Not available
                                     </p>
                                   ) : recorded ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      Recording available
+                                      Recording
                                     </p>
-                                  ) : (
-                                    <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                                      View class details
-                                    </p>
-                                  )}
+                                  ) : null}
                                 </div>
                               </div>
                               <span

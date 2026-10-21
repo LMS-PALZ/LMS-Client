@@ -32,13 +32,11 @@ export function CourseLessonDetailPage({
     data: program,
     isLoading: isProgramLoading,
     isError: isProgramError,
-    error: programError,
   } = useAdminProgram(courseId);
   const {
     data: modules = [],
     isLoading: isModulesLoading,
     isError: isModulesError,
-    error: modulesError,
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
   const [isWatching, setIsWatching] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
@@ -92,11 +90,7 @@ export function CourseLessonDetailPage({
     return (
       <div className="space-y-4">
         <GoBack fallbackHref={adminPath("/courses")} />
-        <AlertBanner variant="error">
-          {programError instanceof Error
-            ? programError.message
-            : "Unable to load this course."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       </div>
     );
   }
@@ -105,11 +99,7 @@ export function CourseLessonDetailPage({
     return (
       <div className="space-y-4">
         <GoBack fallbackHref={courseHref} />
-        <AlertBanner variant="error">
-          {modulesError instanceof Error
-            ? modulesError.message
-            : "Unable to load course modules."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       </div>
     );
   }
@@ -118,9 +108,7 @@ export function CourseLessonDetailPage({
     return (
       <div className="space-y-4">
         <GoBack fallbackHref={courseHref} />
-        <AlertBanner variant="error">
-          This session could not be found in the course modules.
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       </div>
     );
   }

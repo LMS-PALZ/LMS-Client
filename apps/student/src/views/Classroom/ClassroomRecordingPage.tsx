@@ -23,7 +23,7 @@ export function ClassroomRecordingPage({
       <DashboardEmptyState
         icon={Video}
         title="Class is live"
-        description="Join the live class from the player above."
+        description="Use the player above."
       />
     );
   }
@@ -32,8 +32,8 @@ export function ClassroomRecordingPage({
     return (
       <DashboardEmptyState
         icon={Video}
-        title="No recording available"
-        description="A recording for this class is not available yet."
+        title="Not available"
+        description="Try again later."
       />
     );
   }

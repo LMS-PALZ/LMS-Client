@@ -48,7 +48,7 @@ export function CoursesPage() {
   const asTutor = shouldFilterProgramsAsTutor(user?.role);
   const canAddCourse = canCreateCourses(user?.role);
 
-  const { data, isLoading, isError, error } = useAdminPrograms(
+  const { data, isLoading, isError } = useAdminPrograms(
     {
       page: 1,
       limit: 100,
@@ -98,11 +98,7 @@ export function CoursesPage() {
         ) : null}
       </div>
 
-      {isError && (
-        <AlertBanner variant="error">
-          {error instanceof Error ? error.message : "Failed to load courses."}
-        </AlertBanner>
-      )}
+      {isError && <AlertBanner variant="error">Try again later.</AlertBanner>}
 
       <CoursesToolbar
         count={filteredCourses.length}

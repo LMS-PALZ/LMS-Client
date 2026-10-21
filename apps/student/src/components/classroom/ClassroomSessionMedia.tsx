@@ -66,8 +66,8 @@ function RecordingEmbed({
   if (status === "error") {
     return (
       <VideoFrame className={className}>
-        <AlertBanner variant="error" title="Could not load this class">
-          The class video did not load. Check your connection and try again.
+        <AlertBanner variant="error" title="Something went wrong">
+          Try again later.
         </AlertBanner>
       </VideoFrame>
     );
@@ -120,7 +120,7 @@ function LiveMeetingLaunch({
       <DashboardEmptyState
         icon={Video}
         title={JOIN_LIVE_CLASS_LABEL}
-        description="The Zoom meeting opens in a new window so you can join outside this app."
+        description="Opens in a new window."
       />
       <button
         type="button"
@@ -148,8 +148,8 @@ export function ClassroomSessionMedia({
       <VideoFrame className={className}>
         <DashboardEmptyState
           icon={Video}
-          title="Meeting link not available"
-          description="This session is live, but no join link was provided. Please contact your instructor or check back shortly."
+          title="Not available"
+          description="Try again later."
         />
       </VideoFrame>
     );
@@ -161,8 +161,8 @@ export function ClassroomSessionMedia({
         <VideoFrame className={className}>
           <DashboardEmptyState
             icon={Video}
-            title="No class video yet"
-            description="A recording for this class is not available yet."
+            title="Not available"
+            description="Try again later."
           />
         </VideoFrame>
       );
@@ -176,8 +176,8 @@ export function ClassroomSessionMedia({
       <VideoFrame className={className}>
         <DashboardEmptyState
           icon={Video}
-          title="This class has ended"
-          description="A recording for this class is not available yet."
+          title="Class ended"
+          description="Nothing to play right now."
         />
       </VideoFrame>
     );
@@ -187,8 +187,8 @@ export function ClassroomSessionMedia({
     <VideoFrame className={className}>
       <DashboardEmptyState
         icon={Video}
-        title="No class video yet"
-        description="This session does not have a recording or a live meeting link."
+        title="Not available"
+        description="Try again later."
       />
     </VideoFrame>
   );

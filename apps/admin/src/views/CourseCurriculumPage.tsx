@@ -39,13 +39,11 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     data: program,
     isLoading: isProgramLoading,
     isError: isProgramError,
-    error: programError,
   } = useAdminProgram(courseId);
   const {
     data: modules = [],
     isLoading: isModulesLoading,
     isError: isModulesError,
-    error: modulesError,
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
   const updateStatus = useUpdateProgramStatusMutation();
   const upsertClassroom = useUpsertProgramClassroomMutation();
@@ -105,7 +103,9 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
         mutationToast.success(res.message);
       }
     } catch (error) {
-      mutationToast.error(getErrorMessage(error, "Failed to save module."));
+      mutationToast.error(
+        getErrorMessage(error, "Something went wrong. Try again later."),
+      );
       throw error;
     }
   };
@@ -127,7 +127,9 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
         mutationToast.success(res.message);
       }
     } catch (error) {
-      mutationToast.error(getErrorMessage(error, "Failed to delete activity."));
+      mutationToast.error(
+        getErrorMessage(error, "Something went wrong. Try again later."),
+      );
       throw error;
     }
   };
@@ -140,7 +142,9 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
       setSuccessVariant(status);
       setSuccessOpen(true);
     } catch (error) {
-      mutationToast.error(getErrorMessage(error, "Failed to update course."));
+      mutationToast.error(
+        getErrorMessage(error, "Something went wrong. Try again later."),
+      );
     }
   };
 
@@ -174,11 +178,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
     return (
       <section className="space-y-6">
         <GoBack fallbackHref={adminPath("/courses")} />
-        <AlertBanner variant="error">
-          {programError instanceof Error
-            ? programError.message
-            : "Failed to load course."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       </section>
     );
   }
@@ -210,11 +210,7 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
           program={program}
           modules={modules}
           isLoadingModules={isModulesLoading}
-          modulesError={
-            isModulesError && modulesError instanceof Error
-              ? modulesError.message
-              : null
-          }
+          modulesError={isModulesError ? "Try again later." : null}
           isSaving={isMutating}
           onSaveModule={saveModule}
           onDeleteActivity={handleDeleteActivity}

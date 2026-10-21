@@ -39,7 +39,7 @@ export default function StaffPage() {
             <StatusDialog
               variant="success"
               title="Invitation sent!"
-              description={`You have successfully sent an invite to ${email}.`}
+              description={`Invite sent to ${email}.`}
               onDismiss={closeModal}
             />,
           );

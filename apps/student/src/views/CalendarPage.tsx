@@ -37,12 +37,8 @@ export function CalendarPage() {
         <div className="rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
           <DashboardEmptyState
             icon={CalendarDays}
-            title="Your calendar will appear here"
-            description={
-              isError
-                ? "We couldn't load your schedule right now. Please refresh and try again."
-                : "When you have live classes, upcoming sessions, and assignment due dates, they will show up here so you can plan your week and never miss a session."
-            }
+            title="Nothing here yet"
+            description={isError ? "Try again later." : "Check back later."}
             className="py-16"
           />
         </div>
@@ -54,10 +50,7 @@ export function CalendarPage() {
     <div className="space-y-6">
       <PageHeader title="Calendar" />
       <p className="-mt-2 text-[14px] leading-relaxed text-neutral-600 sm:text-[15px]">
-        Live classes, recordings, and assignment due dates for your program.
-        Click a live class to join, or a green recording event to rewatch. Past
-        sessions appear on their original date — use the arrows to browse other
-        months. You can also rewatch anytime from My Classroom.
+        Your schedule.
       </p>
 
       <CalendarLegend />

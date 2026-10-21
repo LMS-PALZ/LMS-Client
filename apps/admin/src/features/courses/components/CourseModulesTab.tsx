@@ -39,7 +39,7 @@ export function CourseModulesTab({
   if (modules.length === 0) {
     return (
       <div className="flex min-h-[280px] items-center justify-center text-[14px] text-[#94A3B8]">
-        No modules have been added to this course yet.
+        Nothing here yet.
       </div>
     );
   }

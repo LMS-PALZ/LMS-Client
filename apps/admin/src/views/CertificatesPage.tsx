@@ -12,8 +12,8 @@ export function CertificatesPage() {
       />
       <EmptyState
         icon={BookCheck}
-        title="Certificates (demo)"
-        description="Connect your API to list and edit training Certificates here."
+        title="Nothing here yet"
+        description="Check back later."
       />
     </div>
   );

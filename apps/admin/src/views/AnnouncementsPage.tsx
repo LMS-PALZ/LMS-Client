@@ -17,8 +17,8 @@ export function AnnouncementsPage() {
       />
       <EmptyState
         icon={Megaphone}
-        title="No announcements"
-        description="Broadcast messages to students and tutors from here once wired to your backend."
+        title="Nothing here yet"
+        description="Check back later."
       />
     </div>
   );

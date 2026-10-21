@@ -39,7 +39,9 @@ export function Assignrole({ tutorId, onClose, onSuccess }: AssignroleProps) {
 
       onSuccess();
     } catch (error) {
-      mutationToast.error(getErrorMessage(error, "Failed to assign program."));
+      mutationToast.error(
+        getErrorMessage(error, "Something went wrong. Try again later."),
+      );
     }
   };
 
@@ -62,7 +64,7 @@ export function Assignrole({ tutorId, onClose, onSuccess }: AssignroleProps) {
         />
       </div>
 
-      {error && <p className="text-sm text-red-500">Failed to load programs</p>}
+      {error && <p className="text-sm text-red-500">Try again later.</p>}
 
       <div className="flex justify-end gap-3">
         <Button

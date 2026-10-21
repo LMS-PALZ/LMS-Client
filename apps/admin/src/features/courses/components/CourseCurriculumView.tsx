@@ -123,10 +123,10 @@ export function CourseCurriculumView({
     return (
       <div className="mx-auto flex min-h-[280px] w-full max-w-[640px] flex-col items-center justify-center text-center">
         <p className="text-[16px] font-semibold text-[#1D1D1D]">
-          Could not load modules
+          Something went wrong
         </p>
         <p className="mt-2 max-w-sm text-[14px] text-[#94A3B8]">
-          {modulesError}
+          Try again later.
         </p>
       </div>
     );
@@ -140,7 +140,7 @@ export function CourseCurriculumView({
             {program.title}
           </p>
           <p className="text-[16px] font-semibold text-[#1D1D1D]">
-            Start building your course
+            Nothing here yet
           </p>
           <div className="mt-4">
             <AddItemLink label="Add module" onClick={openAddModule} />

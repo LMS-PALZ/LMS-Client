@@ -38,8 +38,8 @@ export function LiveSessions({
       {sessions.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title="YYou don’t have any classes yet"
-          description="When you do, they’ll show up here"
+          title="Nothing here yet"
+          description="Check back later."
         />
       ) : (
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-3">

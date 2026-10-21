@@ -37,8 +37,7 @@ export function DeleteActivityModal({
 
           <div className="px-6 py-5">
             <p className="text-[14px] leading-6 text-[#6B7280]">
-              Please confirm that you want to delete this activity from this
-              module.
+              Delete this activity?
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <Button
@@ -81,7 +80,7 @@ export function ActivityDeletedModal({
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-[20px] bg-white shadow-modal focus:outline-none">
           <Dialog.Title className="sr-only">Activity deleted</Dialog.Title>
           <Dialog.Description className="sr-only">
-            You have successfully deleted this course activity in the module.
+            Activity deleted.
           </Dialog.Description>
           <Dialog.Close
             className="absolute right-4 top-4 rounded-lg p-2 text-[#94A3B8] transition hover:bg-[#F7F9FB] hover:text-[#1D1D1D]"
@@ -94,7 +93,7 @@ export function ActivityDeletedModal({
             <StatusDialog
               variant="success"
               title="Done"
-              description="You have successfully deleted this Course activity in the module."
+              description="Deleted."
               onDismiss={() => onOpenChange(false)}
             />
           </div>

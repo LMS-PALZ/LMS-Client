@@ -95,8 +95,8 @@ export function ClassroomSessionLayout({
       <DashboardEmptyState
         backHref="/home"
         icon={Video}
-        title="No enrolled course"
-        description="Enroll in a program to access live sessions."
+        title="Nothing here yet"
+        description="Check back later."
       />
     );
   }
@@ -114,10 +114,8 @@ export function ClassroomSessionLayout({
   if (classroomQuery.isError && !liveGeneralFallback) {
     return (
       <PageBackFrame fallbackHref={CLASSROOM_BACK_HREF}>
-        <AlertBanner variant="error" title="Could not load this class">
-          {classroomQuery.error instanceof Error
-            ? classroomQuery.error.message
-            : "This class could not be loaded. Please try again."}
+        <AlertBanner variant="error" title="Something went wrong">
+          Try again later.
         </AlertBanner>
       </PageBackFrame>
     );
@@ -128,8 +126,8 @@ export function ClassroomSessionLayout({
       <DashboardEmptyState
         backHref={CLASSROOM_BACK_HREF}
         icon={Video}
-        title="No class video yet"
-        description="This class is not available right now."
+        title="Not available"
+        description="Try again later."
       />
     );
   }
@@ -218,8 +216,8 @@ export function ClassroomSessionLayout({
       <DashboardEmptyState
         backHref={CLASSROOM_BACK_HREF}
         icon={Video}
-        title="Recording not available yet"
-        description="This recording will unlock at the scheduled class time. After that you can watch it anytime."
+        title="Not available"
+        description="Try again later."
       />
     );
   }

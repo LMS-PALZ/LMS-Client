@@ -10,8 +10,8 @@ export function CertificatePage() {
       <div className="rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
         <DashboardEmptyState
           icon={Award}
-          title="Your certificates will appear here"
-          description="When you complete your program and earn a certificate, it will show up here so you can view and download it."
+          title="Nothing here yet"
+          description="Check back later."
           className="py-16"
         />
       </div>

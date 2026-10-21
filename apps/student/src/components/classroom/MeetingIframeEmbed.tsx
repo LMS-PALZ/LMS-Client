@@ -26,7 +26,7 @@ export function MeetingIframeEmbed({
           className,
         )}
       >
-        Meeting link not available.
+        Not available.
       </div>
     );
   }

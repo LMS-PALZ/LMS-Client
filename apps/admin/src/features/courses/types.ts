@@ -1,8 +1,8 @@
 export type CourseStatus = "draft" | "published";
 
 export const COURSE_SUCCESS_MESSAGES: Record<CourseStatus, string> = {
-  published: "You have successfully published a course.",
-  draft: "You have successfully saved a course as draft.",
+  published: "Published.",
+  draft: "Saved.",
 };
 
 export * from "./types/ui";

@@ -70,7 +70,9 @@ export function CourseBuilderPage() {
       setSuccessVariant(status);
       setSuccessOpen(true);
     } catch (error) {
-      mutationToast.error(getErrorMessage(error, "Failed to save course."));
+      mutationToast.error(
+        getErrorMessage(error, "Something went wrong. Try again later."),
+      );
     }
   };
 
@@ -88,11 +90,7 @@ export function CourseBuilderPage() {
       <GoBack fallbackHref={adminPath("/courses")} />
 
       {createProgram.isError && (
-        <AlertBanner variant="error">
-          {createProgram.error instanceof Error
-            ? createProgram.error.message
-            : "Failed to save course."}
-        </AlertBanner>
+        <AlertBanner variant="error">Try again later.</AlertBanner>
       )}
 
       <CourseBuilderShell

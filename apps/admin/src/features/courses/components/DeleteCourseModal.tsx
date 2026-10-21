@@ -38,9 +38,7 @@ export function DeleteCourseModal({
 
           <div className="px-6 py-5">
             <p className="text-[14px] leading-6 text-[#6B7280]">
-              {courseTitle
-                ? `Please confirm that you want to delete "${courseTitle}". It will be removed from the course list.`
-                : "Please confirm that you want to delete this course. It will be removed from the course list."}
+              {courseTitle ? `Delete "${courseTitle}"?` : "Delete this course?"}
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <Button

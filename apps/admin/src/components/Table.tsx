@@ -95,7 +95,7 @@ function SuspendStudentDialog({
       variant="confirm"
       confirmVariant="danger"
       title={`Suspend ${fullName}?`}
-      description="They will lose access to the student portal until reinstated."
+      description="Continue?"
       confirmLabel="Suspend"
       isConfirming={updateStudentStatus.isPending}
       onCancel={onCancel}
@@ -108,7 +108,7 @@ function SuspendStudentDialog({
           onSuccess();
         } catch (error) {
           mutationToast.error(
-            getErrorMessage(error, "Failed to suspend student."),
+            getErrorMessage(error, "Something went wrong. Try again later."),
           );
         }
       }}
@@ -134,7 +134,7 @@ function ActivateStudentDialog({
       variant="confirm"
       confirmVariant="primary"
       title={`Activate ${fullName}?`}
-      description="They will regain access to the student portal."
+      description="Continue?"
       confirmLabel="Activate"
       isConfirming={updateStudentStatus.isPending}
       onCancel={onCancel}
@@ -147,7 +147,7 @@ function ActivateStudentDialog({
           onSuccess();
         } catch (error) {
           mutationToast.error(
-            getErrorMessage(error, "Failed to activate student."),
+            getErrorMessage(error, "Something went wrong. Try again later."),
           );
         }
       }}
@@ -173,7 +173,7 @@ function DeleteStudentDialog({
       variant="confirm"
       confirmVariant="danger"
       title={`Delete ${fullName}?`}
-      description="This permanently removes the student from the platform. This action cannot be undone."
+      description="This cannot be undone."
       confirmLabel="Delete"
       isConfirming={deleteStudent.isPending}
       onCancel={onCancel}
@@ -183,7 +183,7 @@ function DeleteStudentDialog({
           onSuccess();
         } catch (error) {
           mutationToast.error(
-            getErrorMessage(error, "Failed to delete student."),
+            getErrorMessage(error, "Something went wrong. Try again later."),
           );
         }
       }}
@@ -232,10 +232,7 @@ function StudentActions({ student }: { student: Student }) {
           onCancel={closeModal}
           onSuccess={() => {
             closeModal();
-            showSuccess(
-              "Activated successfully",
-              `${fullName}'s status has been updated.`,
-            );
+            showSuccess("Activated", `${fullName}'s status has been updated.`);
           }}
         />,
       );
@@ -250,10 +247,7 @@ function StudentActions({ student }: { student: Student }) {
         onCancel={closeModal}
         onSuccess={() => {
           closeModal();
-          showSuccess(
-            "Suspended successfully",
-            `${fullName}'s status has been updated.`,
-          );
+          showSuccess("Suspended", `${fullName}'s status has been updated.`);
         }}
       />,
     );
@@ -270,7 +264,7 @@ function StudentActions({ student }: { student: Student }) {
         onSuccess={() => {
           closeModal();
           showSuccess(
-            "Deleted successfully",
+            "Deleted",
             `${fullName} has been removed from the platform.`,
           );
         }}

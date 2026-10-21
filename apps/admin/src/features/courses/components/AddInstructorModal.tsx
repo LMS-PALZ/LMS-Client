@@ -77,17 +77,17 @@ export function AddInstructorModal({
       ) : isError || instructors.length === 0 ? (
         <div className="flex min-h-[260px] flex-col items-center justify-center text-center">
           <p className="text-[16px] font-semibold text-[#1D1D1D]">
-            No instructor found
+            Nothing here yet
           </p>
           <p className="mt-2 max-w-xs text-[14px] text-[#94A3B8]">
-            Please go to the{" "}
+            Add from{" "}
             <Link
               href={adminPath("/staff")}
               className="font-medium text-[#4C7D5B] hover:underline"
             >
-              staff page
-            </Link>{" "}
-            to add an instructor
+              Staff
+            </Link>
+            .
           </p>
         </div>
       ) : (
