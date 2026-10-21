@@ -3,7 +3,7 @@ import { cn } from "@ssu/utils";
 const items = [
   { label: "Live class", className: "bg-[#DC2626]" },
   { label: "Upcoming class", className: "bg-[#2563EB]" },
-  { label: "Past class", className: "bg-[#4E845F]" },
+  { label: "Recording / past class", className: "bg-[#4E845F]" },
   { label: "Assignment due", className: "bg-[#F49221]" },
 ] as const;
 

@@ -5,15 +5,26 @@ import { resolveLessonSessionPhase } from "@/lib/calendar/session-phase";
 import { mapClassroomResponse } from "@/lib/classroom/mappers";
 import { ClassroomCourseProvider } from "@/contexts/ClassroomCourseContext";
 import {
+  hasRecordingUrl,
+  isSessionActionEnabled,
+} from "@/lib/sessions/session-access";
+import {
   useEnrolledProgram,
   useSession,
   useStudentclassroom,
 } from "@ssu/queries";
-import { AlertBanner, DashboardEmptyState } from "@ssu/ui";
+import {
+  AlertBanner,
+  DashboardEmptyState,
+  PageBackFrame,
+  usePageBreadcrumbs,
+} from "@ssu/ui";
 import { Video } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+
+const CLASSROOM_BACK_HREF = "/classroom";
 
 export function ClassroomSessionLayout({
   sessionId,
@@ -69,9 +80,20 @@ export function ClassroomSessionLayout({
     );
   }, [liveGeneralPrograms, sessionId]);
 
+  const classTitle =
+    lesson?.title?.trim() ||
+    liveGeneralFallback?.lessonTitle?.trim() ||
+    "Class";
+
+  usePageBreadcrumbs([
+    { label: "My Classroom", href: CLASSROOM_BACK_HREF },
+    { label: classTitle },
+  ]);
+
   if (!programId && !liveGeneralFallback) {
     return (
       <DashboardEmptyState
+        backHref="/home"
         icon={Video}
         title="No enrolled course"
         description="Enroll in a program to access live sessions."
@@ -81,25 +103,30 @@ export function ClassroomSessionLayout({
 
   if (classroomQuery.isLoading && !liveGeneralFallback) {
     return (
-      <div className="flex min-h-[360px] items-center justify-center rounded-[18px] bg-[#1D1D1D]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-      </div>
+      <PageBackFrame fallbackHref={CLASSROOM_BACK_HREF}>
+        <div className="flex min-h-[360px] items-center justify-center rounded-[18px] bg-[#1D1D1D]">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+        </div>
+      </PageBackFrame>
     );
   }
 
   if (classroomQuery.isError && !liveGeneralFallback) {
     return (
-      <AlertBanner variant="error" title="Could not load this class">
-        {classroomQuery.error instanceof Error
-          ? classroomQuery.error.message
-          : "This class could not be loaded. Please try again."}
-      </AlertBanner>
+      <PageBackFrame fallbackHref={CLASSROOM_BACK_HREF}>
+        <AlertBanner variant="error" title="Could not load this class">
+          {classroomQuery.error instanceof Error
+            ? classroomQuery.error.message
+            : "This class could not be loaded. Please try again."}
+        </AlertBanner>
+      </PageBackFrame>
     );
   }
 
   if (!classroomQuery.data && !liveGeneralFallback) {
     return (
       <DashboardEmptyState
+        backHref={CLASSROOM_BACK_HREF}
         icon={Video}
         title="No class video yet"
         description="This class is not available right now."
@@ -174,6 +201,40 @@ export function ClassroomSessionLayout({
     extendedLesson?.isLiveNow || Boolean(liveGeneralFallback),
   );
   const recordingUrl = lesson?.recordingUrl?.trim() || "";
+  const accessSession = {
+    startsAt: lesson?.startsAt ?? liveGeneralFallback?.startsAt ?? "",
+    durationMinutes:
+      lesson?.durationMinutes ?? liveGeneralFallback?.durationMinutes,
+    isLive: Boolean(extendedLesson?.isLiveNow || liveGeneralFallback),
+    recordingUrl,
+  };
+  if (accessSession.startsAt && !isSessionActionEnabled(accessSession)) {
+    const isRecording = hasRecordingUrl(accessSession);
+    if (!isRecording && sessionPhase === "ended") {
+      return (
+        <DashboardEmptyState
+          backHref={CLASSROOM_BACK_HREF}
+          icon={Video}
+          title="Class has ended"
+          description="This live session is over. A recording will appear here if your tutor adds one."
+        />
+      );
+    }
+    return (
+      <DashboardEmptyState
+        backHref={CLASSROOM_BACK_HREF}
+        icon={Video}
+        title={
+          isRecording ? "Recording not available yet" : "Class has not started"
+        }
+        description={
+          isRecording
+            ? "This recording will unlock at the scheduled class time. After that you can watch it anytime."
+            : "You can join this live class when the scheduled start time is reached."
+        }
+      />
+    );
+  }
   const zoomUrl =
     lesson?.zoomJoinUrl ||
     lesson?.liveSessionUrl ||

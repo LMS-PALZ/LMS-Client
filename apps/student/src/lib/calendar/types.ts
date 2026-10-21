@@ -8,7 +8,7 @@ export interface StudentCalendarEvent {
   start: string;
   end: string;
   allDay?: boolean;
-  href: string;
+  href?: string;
   sessionPhase?: SessionPhase;
   kind: CalendarEventKind;
   courseTitle: string;

@@ -1,20 +1,37 @@
 import { cn } from "@ssu/utils";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Play } from "lucide-react";
 import type { ReactNode } from "react";
 import { LiveIndicator } from "../LiveIndicator";
+
+export type SessionCardStatus = "live" | "upcoming" | "recorded";
 
 export interface SessionCardProps {
   title: string;
   time: string;
   date: string;
-  status: "live" | "upcoming";
+  status: SessionCardStatus;
   action?: ReactNode;
   className?: string;
+  /** Soften the card when Join / Play is not yet available. */
+  disabled?: boolean;
 }
 
-function SessionStatusBadge({ status }: { status: "live" | "upcoming" }) {
+function SessionStatusBadge({ status }: { status: SessionCardStatus }) {
   if (status === "live") {
     return <LiveIndicator label="Live" size="sm" tone="default" />;
+  }
+
+  if (status === "recorded") {
+    return (
+      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#E8F3EC] px-2.5 py-1 text-[11px] font-semibold text-[#4C7D5B]">
+        <span
+          className="h-2 w-2 shrink-0 rounded-full bg-[#4C7D5B]"
+          aria-hidden
+        />
+        <Play className="h-3 w-3 fill-[#4C7D5B] text-[#4C7D5B]" aria-hidden />
+        Recording
+      </span>
+    );
   }
 
   return (
@@ -31,16 +48,18 @@ export function SessionCard({
   status,
   action,
   className,
+  disabled = false,
 }: SessionCardProps) {
   return (
     <article
       className={cn(
         "flex min-h-[235px] flex-col gap-2.5 rounded-2xl border border-neutral-200/90 bg-white p-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:min-h-[245px] sm:p-4",
+        disabled && "opacity-70",
         className,
       )}
     >
       <SessionStatusBadge status={status} />
-      <h3 className="text-[14px] font-semibold leading-snug text-neutral-900 line-clamp-3 sm:text-[15px]">
+      <h3 className="line-clamp-3 text-[14px] font-semibold leading-snug text-neutral-900 sm:text-[15px]">
         {title}
       </h3>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-neutral-500 sm:text-[13px]">

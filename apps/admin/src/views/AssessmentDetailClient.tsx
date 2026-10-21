@@ -6,6 +6,7 @@ import {
   useAdminModal,
   GradeSubmissionForm,
   GoBack,
+  usePageBreadcrumbs,
 } from "@ssu/ui";
 import { canGradeAssessments } from "@/lib/admin-roles";
 import { adminPath } from "@ssu/config/portal-paths";
@@ -19,6 +20,13 @@ export function AssessmentClient({ assessmentId }: Props) {
   const { data: user } = useSession();
   const { openModal, closeModal } = useAdminModal();
   const canGrade = canGradeAssessments(user?.role);
+
+  usePageBreadcrumbs([
+    { label: "Assessment", href: adminPath("/assessment") },
+    {
+      label: data?.assessment?.title?.trim() || "Details",
+    },
+  ]);
 
   const handleViewSubmission = (submission: any) => {
     openModal(

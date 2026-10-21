@@ -27,6 +27,11 @@ import {
 } from "@/lib/assignment-display";
 import { classroomSessionHref } from "@/lib/classroom/recording-embed";
 import {
+  homeSessionActionLabel,
+  isSessionActionEnabled,
+  resolveHomeSessionCardStatus,
+} from "@/lib/sessions/session-access";
+import {
   buildHomeSessionCards,
   formatSessionDayLabel,
 } from "@/lib/sessions/today-sessions";
@@ -91,6 +96,7 @@ export function HomePage() {
     progress.data?.enrolledProgramTitle || program?.title || "your course";
 
   const openClass = (session: (typeof sessionList)[number]) => {
+    if (!isSessionActionEnabled(session)) return;
     router.push(
       classroomSessionHref({
         lessonId: session.id,
@@ -129,22 +135,32 @@ export function HomePage() {
               description="Live and upcoming classes scheduled for today will show up here."
             />
           }
-          sessions={sessionList.map((s) => ({
-            id: s.id,
-            title: s.title,
-            time: formatSessionTime(s.startsAt),
-            date: formatSessionDayLabel(s.startsAt),
-            status: s.isLive ? ("live" as const) : ("upcoming" as const),
-            action: (
-              <button
-                type="button"
-                onClick={() => openClass(s)}
-                className="font-semibold text-[#4E845F] hover:underline"
-              >
-                {s.recordingUrl ? "Watch live class >" : "Join live session >"}
-              </button>
-            ),
-          }))}
+          sessions={sessionList.map((s) => {
+            const actionEnabled = isSessionActionEnabled(s);
+            return {
+              id: s.id,
+              title: s.title,
+              time: formatSessionTime(s.startsAt),
+              date: formatSessionDayLabel(s.startsAt),
+              status: resolveHomeSessionCardStatus(s),
+              disabled: !actionEnabled,
+              action: (
+                <button
+                  type="button"
+                  onClick={() => openClass(s)}
+                  disabled={!actionEnabled}
+                  className={
+                    actionEnabled
+                      ? "font-semibold text-[#4E845F] hover:underline"
+                      : "cursor-not-allowed font-semibold text-[#94A3B8]"
+                  }
+                >
+                  {homeSessionActionLabel(s)}
+                  {actionEnabled ? " >" : ""}
+                </button>
+              ),
+            };
+          })}
         />
       </div>
 

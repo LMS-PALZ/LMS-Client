@@ -2,7 +2,6 @@
 
 import { GoBack, type AssignmentSummaryStatusVariant } from "@ssu/ui";
 import { cn } from "@ssu/utils";
-import Link from "next/link";
 
 const statusPillStyles: Record<AssignmentSummaryStatusVariant, string> = {
   todo: "bg-[#E0F2FE] text-[#2563EB]",
@@ -48,26 +47,6 @@ export function AssessmentDetailHeader({
   return (
     <header className={cn("space-y-4", className)}>
       <GoBack fallbackHref="/assessments" />
-
-      <nav
-        aria-label="Breadcrumb"
-        className="text-[13px] text-neutral-500 sm:text-[14px]"
-      >
-        <ol className="flex flex-wrap items-center gap-1.5">
-          <li>
-            <Link
-              href="/assessments"
-              className="font-medium text-neutral-500 transition hover:text-brand-green"
-            >
-              Assessment
-            </Link>
-          </li>
-          <li aria-hidden className="text-neutral-400">
-            &gt;
-          </li>
-          <li className="line-clamp-1 font-medium text-neutral-700">{title}</li>
-        </ol>
-      </nav>
 
       <span
         className={cn(

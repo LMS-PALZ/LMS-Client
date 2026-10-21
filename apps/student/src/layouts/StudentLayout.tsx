@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { RouteBreadcrumbs } from "@/components/RouteBreadcrumbs";
 import { ProfileSetupProvider } from "@/contexts/ProfileSetupContext";
 import { getStudentPageTitle } from "@/lib/studentRoutes";
 
@@ -94,6 +95,7 @@ export function StudentLayout({ children }: { children: ReactNode }) {
           />
         }
       >
+        <RouteBreadcrumbs />
         {children}
       </DashboardLayout>
     </ProfileSetupProvider>

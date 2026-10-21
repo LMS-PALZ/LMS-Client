@@ -1,4 +1,5 @@
 import type { LiveSessionItem } from "@ssu/types";
+import { hasRecordingUrl, isLiveJoinEnabled } from "./session-access";
 
 function isSameLocalDay(a: Date, b: Date): boolean {
   return (
@@ -20,9 +21,11 @@ export function filterTodayRemainingSessions(
     if (Number.isNaN(start.getTime())) return false;
     if (!isSameLocalDay(start, now)) return false;
 
-    if (session.lessonType === "recording") return true;
+    if (hasRecordingUrl(session) || session.lessonType === "recording") {
+      return true;
+    }
 
-    if (session.isLive) return true;
+    if (session.isLive || isLiveJoinEnabled(session, now)) return true;
 
     return start.getTime() > now.getTime();
   });
@@ -37,12 +40,19 @@ export function findNextTodaySession(
   if (todaySessions.length === 0) return null;
 
   return [...todaySessions].sort((a, b) => {
-    if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+    const aLive =
+      !hasRecordingUrl(a) && (a.isLive || isLiveJoinEnabled(a, now));
+    const bLive =
+      !hasRecordingUrl(b) && (b.isLive || isLiveJoinEnabled(b, now));
+    if (aLive !== bLive) return aLive ? -1 : 1;
     return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
   })[0];
 }
 
-/** Home preview: live-now classes plus upcoming ones, at most three. Past classes stay off the list. */
+/**
+ * Home preview: live classes (now or upcoming) plus today's recordings
+ * (upcoming or already started so students can play them). Max three.
+ */
 export function buildHomeSessionCards(
   sessions: LiveSessionItem[],
   now = new Date(),
@@ -51,13 +61,24 @@ export function buildHomeSessionCards(
 
   return sessions
     .filter((session) => {
-      if (session.isLive) return true;
       if (!session.startsAt) return false;
-      const start = new Date(session.startsAt).getTime();
-      return !Number.isNaN(start) && start > nowMs;
+      const start = new Date(session.startsAt);
+      if (Number.isNaN(start.getTime())) return false;
+      const startMs = start.getTime();
+
+      if (hasRecordingUrl(session)) {
+        return startMs > nowMs || isSameLocalDay(start, now);
+      }
+
+      if (session.isLive || isLiveJoinEnabled(session, now)) return true;
+      return startMs > nowMs;
     })
     .sort((a, b) => {
-      if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+      const aLive =
+        !hasRecordingUrl(a) && (a.isLive || isLiveJoinEnabled(a, now));
+      const bLive =
+        !hasRecordingUrl(b) && (b.isLive || isLiveJoinEnabled(b, now));
+      if (aLive !== bLive) return aLive ? -1 : 1;
       return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
     })
     .slice(0, 3);

@@ -15,7 +15,12 @@ import {
 } from "@/lib/assignment-display";
 import { useStudentAssessmentById } from "@ssu/queries";
 import { useAssessmentSubmissionStore } from "@ssu/store";
-import { AlertBanner, DetailPageSkeleton, GoBack } from "@ssu/ui";
+import {
+  AlertBanner,
+  DetailPageSkeleton,
+  GoBack,
+  usePageBreadcrumbs,
+} from "@ssu/ui";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -24,6 +29,12 @@ export function AssignmentDetailPage() {
   const id = typeof params.id === "string" ? params.id : "";
 
   const studentAssessment = useStudentAssessmentById(id);
+  const assignmentTitle = studentAssessment.data?.title?.trim() || "Assignment";
+
+  usePageBreadcrumbs([
+    { label: "Assessment", href: "/assessments" },
+    { label: assignmentTitle },
+  ]);
 
   const isSubmitted = useAssessmentSubmissionStore(
     (s) => s.byAssignment[id]?.isSubmitted ?? false,

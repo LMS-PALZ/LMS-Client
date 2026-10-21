@@ -1,9 +1,10 @@
 "use client";
 
-import { DatePicker, FormField, Input, TimePicker } from "@ssu/ui";
+import { DatePicker, FormField, Input } from "@ssu/ui";
 import { cn } from "@ssu/utils";
 import type { LiveSessionActivityFormProps } from "../../types/activity";
 import { activityFieldClassName } from "./activity-form-styles";
+import { SessionReadingField } from "./SessionReadingField";
 import { RecordingUrlField, ResourceLinksField } from "./UploadSection";
 
 export function LiveSessionActivityForm({
@@ -21,6 +22,10 @@ export function LiveSessionActivityForm({
   resources,
   onResourcesChange,
   titlePlaceholder = "Social Media Strategy: Viral Campaigns",
+  showRecordingUrl = false,
+  recordingUrlRequired = false,
+  readingContent = "",
+  onReadingContentChange,
 }: LiveSessionActivityFormProps) {
   return (
     <>
@@ -43,11 +48,18 @@ export function LiveSessionActivityForm({
           />
         </FormField>
         <FormField id="live-time" label="Time">
-          <TimePicker
+          <input
             id="live-time"
-            value={sessionTime}
-            onChange={onSessionTimeChange}
-            buttonClassName={cn(activityFieldClassName, "h-11 rounded-lg px-3")}
+            type="time"
+            step={60}
+            value={sessionTime ?? ""}
+            onChange={(event) =>
+              onSessionTimeChange(event.target.value || null)
+            }
+            className={cn(
+              activityFieldClassName,
+              "h-11 w-full rounded-lg px-3 text-[14px] text-[#1D1D1D] outline-none",
+            )}
           />
         </FormField>
       </div>
@@ -74,11 +86,32 @@ export function LiveSessionActivityForm({
         </p>
       </div>
 
-      <RecordingUrlField
-        url={recordingUrl}
-        onUrlChange={onRecordingUrlChange}
-        error={recordingUrlError}
+      {showRecordingUrl ? (
+        <div className="space-y-1">
+          <RecordingUrlField
+            url={recordingUrl}
+            onUrlChange={onRecordingUrlChange}
+            error={recordingUrlError}
+          />
+          {recordingUrlRequired ? (
+            <p className="text-[12px] text-[#64748B]">
+              A recording URL is required. Zoom will not be created for this
+              session.
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <p className="rounded-lg bg-[#F4FBF6] px-3 py-2 text-[13px] text-[#4C7D5B]">
+          Students will get a Zoom join link when you save. No recording URL is
+          needed for a live class.
+        </p>
+      )}
+
+      <SessionReadingField
+        content={readingContent}
+        onContentChange={onReadingContentChange ?? (() => {})}
       />
+
       <ResourceLinksField
         resources={resources}
         onResourcesChange={onResourcesChange}

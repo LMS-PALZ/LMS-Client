@@ -81,6 +81,12 @@ export interface LiveSessionActivityFormProps {
   resources: ActivityResourceDraft[];
   onResourcesChange: (value: ActivityResourceDraft[]) => void;
   titlePlaceholder?: string;
+  /** Pre-recorded flow shows the URL field; live class hides it. */
+  showRecordingUrl?: boolean;
+  recordingUrlRequired?: boolean;
+  /** Optional reading / notes for this session. */
+  readingContent?: string;
+  onReadingContentChange?: (value: string) => void;
 }
 
 export interface ActivityFormState {

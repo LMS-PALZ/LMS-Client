@@ -4,7 +4,7 @@ import { SessionCard, type SessionCardProps } from "../SessionCard";
 
 export interface LiveSessionItemView extends Pick<
   SessionCardProps,
-  "title" | "time" | "date" | "status"
+  "title" | "time" | "date" | "status" | "disabled"
 > {
   id: string;
   action?: ReactNode;
@@ -46,6 +46,7 @@ export function LiveSessionsPanel({
               time={session.time}
               date={session.date}
               status={session.status}
+              disabled={session.disabled}
               action={session.action}
             />
           ))}

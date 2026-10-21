@@ -3,7 +3,7 @@
 import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
 import { mapClassroomResponse } from "@/lib/classroom/mappers";
 import { ClassroomCourseLayoutShell } from "@/views/Classroom/ClassroomCourseLayoutShell";
-import { Spinner, EmptyState } from "@ssu/ui";
+import { PageBackFrame, Spinner, EmptyState } from "@ssu/ui";
 import { Megaphone } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -18,15 +18,18 @@ export function CourseLayoutClient({ moduleId, children }: Props) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Spinner className="h-8 w-8 animate-spin text-[#4E845F]" />
-      </div>
+      <PageBackFrame fallbackHref="/classroom">
+        <div className="flex min-h-[400px] items-center justify-center">
+          <Spinner className="h-8 w-8 animate-spin text-[#4E845F]" />
+        </div>
+      </PageBackFrame>
     );
   }
 
   if (isError || !data) {
     return (
       <EmptyState
+        backHref="/classroom"
         icon={Megaphone}
         title="You don't have any course video yet"
         description="When you do, they'll show up here"

@@ -3,6 +3,11 @@
 import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import { resolveLessonSessionPhase } from "@/lib/calendar/session-phase";
 import { classroomSessionHref } from "@/lib/classroom/recording-embed";
+import {
+  hasRecordingUrl,
+  isRecordingPlayEnabled,
+  isSessionActionEnabled,
+} from "@/lib/sessions/session-access";
 import { findNextTodaySession } from "@/lib/sessions/today-sessions";
 import { mapClassroomLessonsToSessions } from "@ssu/api";
 import { useEnrolledProgram, useStudentclassroom } from "@ssu/queries";
@@ -15,6 +20,7 @@ import {
   Circle,
   Clock3,
   GraduationCap,
+  Play,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -53,16 +59,23 @@ function lessonActionLabel(lesson: {
     lesson.durationMinutes,
     lesson.isLiveNow,
   );
+  const actionEnabled = isSessionActionEnabled({
+    startsAt: lesson.startsAt ?? "",
+    durationMinutes: lesson.durationMinutes,
+    isLive: Boolean(lesson.isLiveNow),
+    recordingUrl: lesson.recordingUrl,
+  });
 
   if (hasRecording) {
-    if (phase === "live") return "Watch live class";
-    return "Watch recording";
+    if (!actionEnabled) return "Starts at scheduled time";
+    return "Play class recording";
   }
 
   if (lesson.lessonType === "live_session") {
     if (phase === "ended") return null;
-    if (phase === "live") return "Join live session";
-    return "View class";
+    if (!actionEnabled) return "Starts at scheduled time";
+    if (phase === "live") return "Join live class";
+    return "Join live class";
   }
 
   return "Open lesson";
@@ -140,6 +153,26 @@ export function MyClassroomPage() {
     hasLiveGeneralProgram,
     liveGeneralPrograms,
   ]);
+
+  /** Posted recordings students can rewatch anytime (after release time). */
+  const availableRecordings = useMemo(() => {
+    const classroomModules = data?.classroom?.modules ?? [];
+    return classroomModules.flatMap((module) =>
+      (module.lessons ?? [])
+        .filter(
+          (lesson) =>
+            Boolean(lesson.recordingUrl?.trim()) &&
+            isRecordingPlayEnabled({ startsAt: lesson.startsAt ?? "" }),
+        )
+        .map((lesson) => ({
+          id: lesson.id,
+          title: lesson.title,
+          recordingUrl: lesson.recordingUrl,
+          moduleTitle: module.title,
+          weekLabel: module.weekLabel,
+        })),
+    );
+  }, [data?.classroom?.modules]);
 
   if (isLoading) {
     return (
@@ -271,36 +304,100 @@ export function MyClassroomPage() {
               </div>
 
               <div className="mt-10 flex justify-end">
-                {nextSession?.recordingUrl ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleOpenLesson(nextSession.id, nextSession.recordingUrl)
-                    }
-                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
-                  >
-                    Watch live class
-                    <ChevronRight size={16} />
-                  </button>
-                ) : sessionEnded ? (
-                  <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2 text-[12px] font-medium text-[#9AA3AF]">
-                    This class has ended
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleOpenLesson(nextSession!.id)}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#3D6E4D]"
-                  >
-                    Join live session
-                    <ChevronRight size={16} />
-                  </button>
-                )}
+                {(() => {
+                  if (!nextSession) return null;
+                  const canOpen = isSessionActionEnabled(nextSession);
+                  const isRecording = hasRecordingUrl(nextSession);
+
+                  if (!isRecording && sessionEnded) {
+                    return (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2.5 text-[14px] font-semibold text-[#9AA3AF]">
+                        This class has ended
+                      </span>
+                    );
+                  }
+
+                  if (!canOpen) {
+                    return (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-[#E8EDF3] px-4 py-2.5 text-[14px] font-semibold text-[#9AA3AF]">
+                        Available at scheduled time
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenLesson(
+                          nextSession.id,
+                          nextSession.recordingUrl,
+                        )
+                      }
+                      className="inline-flex items-center gap-2 rounded-full bg-[#4E845F] px-5 py-2.5 text-[15px] font-semibold text-white transition hover:bg-[#3D6E4D]"
+                    >
+                      {isRecording ? "Play class recording" : "Join live class"}
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  );
+                })()}
               </div>
             </>
           )}
         </div>
       </section>
+
+      {availableRecordings.length > 0 ? (
+        <section className="rounded-[18px] border border-[#EEF2F6] bg-white p-4 md:p-5">
+          <div className="mb-1 flex items-center gap-2">
+            <h2 className="text-[18px] font-semibold text-[#1D1D1D]">
+              Class recordings
+            </h2>
+            <span className="text-[#D2D8E2]">|</span>
+            <span className="text-[13px] text-[#7A8594]">
+              {availableRecordings.length}{" "}
+              {availableRecordings.length === 1 ? "recording" : "recordings"}
+            </span>
+          </div>
+          <p className="mb-4 text-[13px] text-[#6B7280]">
+            Rewatch posted class recordings anytime — today, next week, or
+            months later.
+          </p>
+          <ul className="space-y-2">
+            {availableRecordings.map((recording) => (
+              <li key={recording.id}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleOpenLesson(recording.id, recording.recordingUrl)
+                  }
+                  className="flex w-full items-center justify-between gap-3 rounded-[10px] border border-[#EEF2F6] bg-[#FAFBFD] px-3 py-3 text-left transition hover:border-[#D4E2D8] hover:bg-[#F3F8F4]"
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F3EC] text-[#4C7D5B]">
+                      <Play className="h-3.5 w-3.5 fill-current" aria-hidden />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[14px] font-medium text-[#1D1D1D]">
+                        {recording.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-[12px] text-[#6B7280]">
+                        {[recording.weekLabel, recording.moduleTitle]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#4E845F] px-4 py-2 text-[15px] font-semibold text-white">
+                    Play
+                    <ChevronRight className="h-5 w-5" />
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="rounded-[18px] border border-[#EEF2F6] bg-white p-4 md:p-5">
         <div className="mb-4 flex items-center gap-2">
@@ -371,10 +468,18 @@ export function MyClassroomPage() {
                             lesson.durationMinutes,
                             lesson.isLiveNow,
                           );
-                          const disabled =
-                            !lesson.recordingUrl?.trim() &&
+                          const recorded = Boolean(lesson.recordingUrl?.trim());
+                          const actionEnabled = isSessionActionEnabled({
+                            startsAt: lesson.startsAt ?? "",
+                            durationMinutes: lesson.durationMinutes,
+                            isLive: Boolean(lesson.isLiveNow),
+                            recordingUrl: lesson.recordingUrl,
+                          });
+                          const ended =
+                            !recorded &&
                             lesson.lessonType === "live_session" &&
                             phase === "ended";
+                          const disabled = ended || !actionEnabled;
 
                           return (
                             <button
@@ -401,15 +506,20 @@ export function MyClassroomPage() {
                                   <p className="truncate text-[14px] font-medium text-[#1D1D1D]">
                                     {lesson.title}
                                   </p>
-                                  {lesson.isLiveNow ? (
+                                  {!recorded &&
+                                  (lesson.isLiveNow || phase === "live") ? (
                                     <p className="mt-0.5 text-[12px] font-medium text-[#C92A2A]">
                                       Live now
                                     </p>
-                                  ) : disabled ? (
+                                  ) : ended ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
                                       Class ended
                                     </p>
-                                  ) : lesson.recordingUrl ? (
+                                  ) : !actionEnabled ? (
+                                    <p className="mt-0.5 text-[12px] text-[#6B7280]">
+                                      Available at scheduled time
+                                    </p>
+                                  ) : recorded ? (
                                     <p className="mt-0.5 text-[12px] text-[#6B7280]">
                                       Recording available
                                     </p>
@@ -417,9 +527,9 @@ export function MyClassroomPage() {
                                 </div>
                               </div>
                               {action ? (
-                                <span className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-[#4E845F]">
+                                <span className="inline-flex shrink-0 items-center gap-1.5 text-[15px] font-semibold text-[#4E845F]">
                                   {action}
-                                  <ChevronRight className="h-3.5 w-3.5" />
+                                  <ChevronRight className="h-5 w-5" />
                                 </span>
                               ) : null}
                             </button>
