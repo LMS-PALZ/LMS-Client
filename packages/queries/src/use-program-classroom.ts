@@ -1,4 +1,5 @@
 import {
+  deleteProgramLesson,
   getProgramClassroom,
   getProgramClassroomModules,
   upsertProgramClassroom,
@@ -62,6 +63,30 @@ export function useUpsertProgramClassroomMutation() {
       const res = await upsertProgramClassroom(programId, payload);
       if (!res.ok) throw new Error(res.message);
       return res.data;
+    },
+    onSuccess: async (_data, variables) => {
+      await refetchClassroom(qc, variables.programId);
+    },
+  });
+}
+
+/** DELETE .../classroom/modules/{moduleId}/lessons/{lessonId} */
+export function useDeleteProgramLessonMutation() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      programId,
+      moduleId,
+      lessonId,
+    }: {
+      programId: string;
+      moduleId: string;
+      lessonId: string;
+    }) => {
+      const res = await deleteProgramLesson(programId, moduleId, lessonId);
+      if (!res.ok) throw new Error(res.message);
+      return res;
     },
     onSuccess: async (_data, variables) => {
       await refetchClassroom(qc, variables.programId);
