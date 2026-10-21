@@ -6,6 +6,7 @@ import { adminPath } from "@ssu/config/portal-paths";
 import {
   programClassroomKeys,
   useAdminProgram,
+  useDeleteProgramLessonMutation,
   useProgramClassroomModules,
   useUpdateProgramStatusMutation,
   useUpsertProgramClassroomMutation,
@@ -31,8 +32,8 @@ interface CourseCurriculumPageProps {
   courseId: string;
 }
 
-const DELETE_UNAVAILABLE_MESSAGE =
-  "Delete isn’t available yet. Ask backend for DELETE endpoints for modules and activities.";
+const MODULE_DELETE_UNAVAILABLE_MESSAGE =
+  "Module delete isn’t available yet. You can delete individual activities.";
 
 export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   const router = useRouter();
@@ -51,11 +52,15 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   } = useProgramClassroomModules(courseId, Boolean(program?.id));
   const updateStatus = useUpdateProgramStatusMutation();
   const upsertClassroom = useUpsertProgramClassroomMutation();
+  const deleteLesson = useDeleteProgramLessonMutation();
   const [successOpen, setSuccessOpen] = useState(false);
   const [successVariant, setSuccessVariant] =
     useState<CourseStatus>("published");
 
-  const isMutating = updateStatus.isPending || upsertClassroom.isPending;
+  const isMutating =
+    updateStatus.isPending ||
+    upsertClassroom.isPending ||
+    deleteLesson.isPending;
 
   const refetchModules = async () => {
     const ids = new Set(
@@ -103,14 +108,27 @@ export function CourseCurriculumPage({ courseId }: CourseCurriculumPageProps) {
   };
 
   const handleDeleteModule = async (_module: ProgramClassroomModule) => {
-    mutationToast.info(DELETE_UNAVAILABLE_MESSAGE);
+    mutationToast.info(MODULE_DELETE_UNAVAILABLE_MESSAGE);
   };
 
   const handleDeleteActivity = async (
-    _module: ProgramClassroomModule,
-    _lesson: ProgramClassroomLesson,
+    module: ProgramClassroomModule,
+    lesson: ProgramClassroomLesson,
   ) => {
-    mutationToast.info(DELETE_UNAVAILABLE_MESSAGE);
+    if (!program?.id || deleteLesson.isPending) return;
+
+    try {
+      await deleteLesson.mutateAsync({
+        programId: program.id,
+        moduleId: module.id,
+        lessonId: lesson.id,
+      });
+      await refetchModules();
+      mutationToast.success("Activity deleted");
+    } catch (error) {
+      mutationToast.error(getErrorMessage(error, "Failed to delete activity."));
+      throw error;
+    }
   };
 
   const saveCourse = async (status: "draft" | "published") => {

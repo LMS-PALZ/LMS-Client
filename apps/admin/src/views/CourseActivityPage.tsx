@@ -109,7 +109,7 @@ function ActivityFormModal({
         if (!nextOpen) onClose();
       }}
       title={`${isEditing ? "Edit" : "Create"} ${sessionModeLabel(mode)}`}
-      className="max-w-[640px] overflow-hidden"
+      className="max-w-[640px]"
       footer={null}
     >
       <ActivityFormFields

@@ -1,7 +1,8 @@
 "use client";
 
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { cn, formatDateDDMMYYYY } from "@ssu/utils";
 import "./date-picker.css";
 
@@ -31,6 +32,9 @@ const MONTHS = [
   "November",
   "December",
 ];
+
+const PANEL_WIDTH = 288;
+const PANEL_ESTIMATED_HEIGHT = 320;
 
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -184,7 +188,17 @@ export function DatePicker({
   const fallbackId = useId();
   const fieldId = id || fallbackId;
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [panelStyle, setPanelStyle] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const closeCalendar = () => {
     setOpen(false);
@@ -195,28 +209,92 @@ export function DatePicker({
     closeCalendar();
   };
 
+  useLayoutEffect(() => {
+    if (!open) {
+      setPanelStyle(null);
+      return;
+    }
+
+    function updatePosition() {
+      const trigger = rootRef.current;
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      let left = popoverAlign === "end" ? rect.right - PANEL_WIDTH : rect.left;
+      left = Math.max(8, Math.min(left, window.innerWidth - PANEL_WIDTH - 8));
+
+      let top = rect.bottom + 8;
+      if (
+        top + PANEL_ESTIMATED_HEIGHT > window.innerHeight &&
+        rect.top > PANEL_ESTIMATED_HEIGHT
+      ) {
+        top = rect.top - PANEL_ESTIMATED_HEIGHT - 8;
+      }
+
+      setPanelStyle({ top, left });
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open, popoverAlign]);
+
   useEffect(() => {
     if (!open) return;
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target as Node;
-      if (rootRef.current?.contains(target)) {
-        return;
-      }
+      if (rootRef.current?.contains(target)) return;
+      if (panelRef.current?.contains(target)) return;
       closeCalendar();
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") closeCalendar();
+    }
+
     document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
 
+  const panel =
+    open && mounted && panelStyle
+      ? createPortal(
+          <div
+            ref={panelRef}
+            data-ssu-date-picker-panel
+            style={{
+              position: "fixed",
+              top: panelStyle.top,
+              left: panelStyle.left,
+              width: PANEL_WIDTH,
+              // Radix dialog sets pointer-events:none on body; restore for the panel.
+              pointerEvents: "auto",
+              zIndex: 200,
+            }}
+            className="pointer-events-auto rounded-[14px] border border-[#EEF2F6] bg-white p-3 shadow-xl"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <MonthCalendar
+              value={value}
+              minDate={minDate}
+              onSelect={handleSelect}
+            />
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <div
-      ref={rootRef}
-      className={cn("relative", open ? "z-[100]" : "z-10", className)}
-    >
+    <div ref={rootRef} className={cn("relative z-10", className)}>
       <button
         id={fieldId}
         type="button"
@@ -233,21 +311,7 @@ export function DatePicker({
           {value ? formatDateDDMMYYYY(value) : placeholder}
         </span>
       </button>
-
-      {open && (
-        <div
-          className={cn(
-            "absolute top-full z-[60] mt-2 w-[288px] rounded-[14px] border border-[#EEF2F6] bg-white p-3 shadow-xl",
-            popoverAlign === "end" ? "right-0" : "left-0",
-          )}
-        >
-          <MonthCalendar
-            value={value}
-            minDate={minDate}
-            onSelect={handleSelect}
-          />
-        </div>
-      )}
+      {panel}
     </div>
   );
 }

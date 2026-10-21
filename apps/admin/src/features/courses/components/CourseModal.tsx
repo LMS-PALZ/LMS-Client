@@ -28,9 +28,30 @@ export function CourseModal({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Dialog.Content
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[calc(100%-2rem)] max-w-[480px] -translate-x-1/2 -translate-y-1/2 flex-col overflow-visible rounded-[20px] bg-white shadow-modal focus:outline-none",
+            "fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[calc(100%-2rem)] max-w-[480px] -translate-x-1/2 -translate-y-1/2 flex-col rounded-[20px] bg-white shadow-modal focus:outline-none",
             className,
+            // Keep after `className` so callers cannot clip date pickers with overflow-hidden.
+            "overflow-visible",
           )}
+          onInteractOutside={(event) => {
+            // Portaled date-picker panels render outside Dialog.Content.
+            const target = event.target as HTMLElement | null;
+            if (target?.closest("[data-ssu-date-picker-panel]")) {
+              event.preventDefault();
+            }
+          }}
+          onPointerDownOutside={(event) => {
+            const target = event.target as HTMLElement | null;
+            if (target?.closest("[data-ssu-date-picker-panel]")) {
+              event.preventDefault();
+            }
+          }}
+          onFocusOutside={(event) => {
+            const target = event.target as HTMLElement | null;
+            if (target?.closest("[data-ssu-date-picker-panel]")) {
+              event.preventDefault();
+            }
+          }}
         >
           <div className="flex shrink-0 items-center justify-between border-b border-[#EEF2F6] px-6 py-4">
             <Dialog.Title className="text-[18px] font-semibold text-[#1D1D1D]">
@@ -44,7 +65,8 @@ export function CourseModal({
             </Dialog.Close>
           </div>
 
-          <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-4">
+          {/* overflow-visible so absolute/portaled calendars are not clipped */}
+          <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-visible px-6 py-4">
             {children}
           </div>
 

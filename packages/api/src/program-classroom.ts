@@ -357,3 +357,44 @@ export async function upsertProgramClassroom(
     message: lastMessage,
   };
 }
+
+/**
+ * Delete a lesson (activity) from a classroom module.
+ * Swagger: DELETE /api/v1/tutors/programs/{programId}/classroom/modules/{moduleId}/lessons/{lessonId}
+ */
+export async function deleteProgramLesson(
+  programId: string,
+  moduleId: string,
+  lessonId: string,
+) {
+  const trimmedProgramId = programId.trim();
+  const trimmedModuleId = moduleId.trim();
+  const trimmedLessonId = lessonId.trim();
+
+  if (!trimmedProgramId || !trimmedModuleId || !trimmedLessonId) {
+    return {
+      ok: false as const,
+      message: "Program, module, and lesson ids are required.",
+    };
+  }
+
+  try {
+    const res = await axios.delete(
+      `${API_BASE_URL}/api/v1/tutors/programs/${trimmedProgramId}/classroom/modules/${trimmedModuleId}/lessons/${trimmedLessonId}`,
+      { headers: authHeaders() },
+    );
+
+    const root = res.data as { message?: string } | undefined;
+    return {
+      ok: true as const,
+      message:
+        (typeof root?.message === "string" && root.message.trim()) ||
+        "Activity deleted successfully.",
+    };
+  } catch (error: unknown) {
+    return {
+      ok: false as const,
+      message: getErrorMessage(error, "Failed to delete activity."),
+    };
+  }
+}
