@@ -43,6 +43,34 @@ function withAutoplay(embedUrl: string, muted = false): string {
   return url.toString();
 }
 
+/** True when the URL is a Google Drive / Docs file link. */
+export function isGoogleDriveUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  try {
+    const host = new URL(trimmed).hostname.replace(/^www\./, "");
+    return host === "drive.google.com" || host === "docs.google.com";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Drive viewer URL for a full browser tab, where the student's Google sign-in
+ * applies. Credentialless iframes never send Google cookies.
+ */
+export function toGoogleDriveOpenUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  try {
+    const parsed = new URL(trimmed);
+    const id = googleDriveFileId(parsed);
+    return id ? `https://drive.google.com/file/d/${id}/view` : trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
 /** Turns a public video link into an embeddable player URL that starts when it loads. */
 export function toVideoEmbedUrl(url: string): string {
   const trimmed = url.trim();
