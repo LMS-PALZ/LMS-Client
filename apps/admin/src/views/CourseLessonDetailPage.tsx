@@ -8,7 +8,9 @@ import { AlertBanner, Button, GoBack, usePageBreadcrumbs } from "@ssu/ui";
 import {
   CLASS_ENDED_LABEL,
   CLASS_NOT_STARTED_LABEL,
+  isGoogleDriveUrl,
   JOIN_LIVE_CLASS_LABEL,
+  toGoogleDriveOpenUrl,
   WATCH_RECORDED_CLASS_LABEL,
   toVideoEmbedUrl,
 } from "@ssu/utils";
@@ -285,6 +287,26 @@ export function CourseLessonDetailPage({
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
+        </div>
+      ) : null}
+
+      {isWatching && isGoogleDriveUrl(recordingUrl) ? (
+        <div className="flex w-full max-w-[880px] flex-wrap items-center justify-between gap-3 rounded-[12px] bg-[#F3F6F8] px-4 py-3">
+          <p className="text-[13px] text-[#64748B]">
+            Video not playing? Open it in a new chrome tab.
+          </p>
+          <Button
+            type="button"
+            onClick={() =>
+              window.open(
+                toGoogleDriveOpenUrl(recordingUrl),
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
+          >
+            Open in new tab (Pop out)
+          </Button>
         </div>
       ) : null}
 
