@@ -108,10 +108,10 @@ export function toVideoEmbedUrl(url: string): string {
     }
 
     if (host === "drive.google.com" || host === "docs.google.com") {
+      // No autoplay — mobile browsers block it and Drive then shows a blank
+      // frame until the student taps. Let them start playback with a tap.
       const id = googleDriveFileId(parsed);
-      return id
-        ? withAutoplay(`https://drive.google.com/file/d/${id}/preview`)
-        : trimmed;
+      return id ? `https://drive.google.com/file/d/${id}/preview` : trimmed;
     }
   } catch {
     return trimmed;
