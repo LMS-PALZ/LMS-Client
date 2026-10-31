@@ -60,14 +60,14 @@ function openExternalWindow(url: string) {
 // offer a full-tab fallback where sign-in works.
 function DriveOpenFallback({ url }: { url: string }) {
   return (
-    <div className="mt-3 grid grid-cols-[3fr_2fr] items-center gap-4 rounded-[12px] bg-[#F3F6F8] px-4 py-3">
-      <p className="text-[16px] font-medium text-[#4B5563]">
-        Video not playing? Open it in a new chrome tab.
+    <div className="relative z-10 mt-3 flex flex-col items-center gap-3 rounded-[12px] bg-[#F3F6F8] px-4 py-3 text-center sm:grid sm:grid-cols-[3fr_2fr] sm:items-center sm:gap-4 sm:text-left">
+      <p className="text-[14px] font-medium text-[#4B5563] sm:text-[16px]">
+        Video not playing? Open it in a new tab.
       </p>
       <button
         type="button"
         onClick={() => openExternalWindow(toGoogleDriveOpenUrl(url))}
-        className="inline-flex w-full items-center justify-center rounded-full bg-[#4E845F]/15 px-6 py-3 text-[16px] font-semibold text-[#4E845F] transition hover:bg-[#3D6E4D] hover:text-white"
+        className="inline-flex w-full items-center justify-center rounded-full bg-[#4E845F]/20 px-6 py-3 text-[15px] font-semibold text-[#4E845F] transition hover:bg-[#3D6E4D] hover:text-white sm:text-[16px]"
       >
         Open in new tab (Pop out)
       </button>
@@ -111,7 +111,7 @@ function RecordingEmbed({
           }
           className="mt-4 inline-flex items-center rounded-full bg-[#4E845F] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#3D6E4D]"
         >
-          Open in new tab
+          Open in new tab (Pop out)
         </button>
       </VideoFrame>
     );
@@ -119,7 +119,14 @@ function RecordingEmbed({
 
   return (
     <div className={className}>
-      <div className="relative aspect-video w-full overflow-hidden rounded-[18px] bg-[#1D1D1D]">
+      <div
+        className={cn(
+          "relative w-full overflow-hidden rounded-[18px] bg-[#1D1D1D]",
+          // Drive’s preview chrome sits inside the iframe; a pure 16:9 box
+          // clips the bottom of the video on narrow screens.
+          isDrive ? "aspect-[6/5] sm:aspect-video" : "aspect-video",
+        )}
+      >
         {status === "loading" ? (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />

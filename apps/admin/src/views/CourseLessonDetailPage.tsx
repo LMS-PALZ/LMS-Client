@@ -268,7 +268,13 @@ export function CourseLessonDetailPage({
       </div>
 
       {isWatching && recordingEmbedUrl ? (
-        <div className="relative aspect-video w-full max-w-[880px] overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-[#1D1D1D] shadow-sm">
+        <div
+          className={`relative w-full max-w-[880px] overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-[#1D1D1D] shadow-sm ${
+            isGoogleDriveUrl(recordingUrl)
+              ? "aspect-[6/5] sm:aspect-video"
+              : "aspect-video"
+          }`}
+        >
           {isVideoLoading ? (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
@@ -291,12 +297,13 @@ export function CourseLessonDetailPage({
       ) : null}
 
       {isWatching && isGoogleDriveUrl(recordingUrl) ? (
-        <div className="flex w-full max-w-[880px] flex-wrap items-center justify-between gap-3 rounded-[12px] bg-[#F3F6F8] px-4 py-3">
-          <p className="text-[13px] text-[#64748B]">
-            Video not playing? Open it in a new chrome tab.
+        <div className="relative z-10 mt-3 flex w-full max-w-[880px] flex-col items-center gap-3 rounded-[12px] bg-[#F3F6F8] px-4 py-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          <p className="text-[14px] font-medium text-[#64748B] sm:text-[13px]">
+            Video not playing? Open it in a new tab.
           </p>
           <Button
             type="button"
+            className="w-full sm:w-auto"
             onClick={() =>
               window.open(
                 toGoogleDriveOpenUrl(recordingUrl),
