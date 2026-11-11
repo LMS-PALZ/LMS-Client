@@ -294,7 +294,7 @@ export const studentDashboardApi = {
 
     const classroomId = classroomRes.data.classroom.id;
     const [assessmentsRes, gradesRes] = await Promise.all([
-      getStudentAssessments(classroomId),
+      getStudentAssessments(programId),
       getStudentAssessmentGrades(classroomId),
     ]);
 
