@@ -48,7 +48,7 @@ import { GraduationCap, Notebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useEffect } from "react";
-import { useProfileStore, useSignupStore } from "@ssu/store";
+import { useProfileStore } from "@ssu/store";
 
 function greeting(first: string) {
   const h = new Date().getHours();
@@ -63,6 +63,7 @@ export function HomePage() {
   const {
     data: profileData,
     program,
+    programId: enrolledProgramId,
     generalPrograms,
     liveGeneralPrograms,
     hasLiveGeneralProgram,
@@ -70,8 +71,7 @@ export function HomePage() {
   const progress = useStudentProgress();
   const sessions = useUpcomingSessions();
   useProfileDetail();
-  const programId = useSignupStore((state) => state.user?.programId ?? "");
-  const assignments = useStudentassignments(programId);
+  const assignments = useStudentassignments(enrolledProgramId);
   const setprofile = useProfileStore((state) => state.setUser);
 
   useEffect(() => {

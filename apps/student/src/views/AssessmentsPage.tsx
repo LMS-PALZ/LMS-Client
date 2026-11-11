@@ -6,6 +6,7 @@ import {
 } from "@/components/assessments";
 import { assignmentCardProps } from "@/lib/assignment-display";
 import {
+  useEnrolledProgram,
   useStudentOverallProgress,
   useStudentassignments,
   useMySubmissions,
@@ -22,7 +23,6 @@ import { ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useSignupStore } from "@ssu/store";
 
 type AssessmentTab = "Assigned" | "Submitted";
 
@@ -47,7 +47,7 @@ export function AssessmentsPage() {
     }
   }, [searchTab]);
 
-  const programId = useSignupStore((state) => state.user?.programId ?? "");
+  const { programId } = useEnrolledProgram();
 
   const assignments = useStudentassignments(programId);
   const { data: submissions, isLoading: submissionsLoading } = useMySubmissions(

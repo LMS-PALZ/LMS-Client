@@ -128,15 +128,16 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return err.response?.data?.message || err.message || fallback;
 }
 
-export async function getStudentAssessments(classroomId: string) {
-  const trimmedId = classroomId.trim();
+export async function getStudentAssessments(programId: string) {
+  const trimmedId = programId.trim();
   if (!trimmedId) {
     return { ok: true as const, data: [] as AssignmentListItem[], message: "" };
   }
 
   try {
+    // Swagger: GET /api/v1/students/assessments/program/{programId}
     const res = await axios.get(
-      `${API_BASE_URL}/api/v1/students/assessment/${trimmedId}`,
+      `${API_BASE_URL}/api/v1/students/assessments/program/${trimmedId}`,
       { headers: authHeaders() },
     );
 
