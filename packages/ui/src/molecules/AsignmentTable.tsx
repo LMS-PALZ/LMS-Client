@@ -315,7 +315,9 @@ export function AssignmentTable({
         accessorKey: "module",
         header: "Course",
         cell: ({ row }) => (
-          <span className="text-sm">{row.original.module}</span>
+          <span className="text-sm">
+            {row.original.programTitle || row.original.module}
+          </span>
         ),
       },
       {
@@ -391,7 +393,7 @@ export function AssignmentTable({
       />
       {!isLoading && rows.length === 0 ? (
         <p className="pt-2 text-center text-[14px] text-[#94A3B8]">
-          No assessments found for this course.
+          No assessments found.
         </p>
       ) : null}
     </div>

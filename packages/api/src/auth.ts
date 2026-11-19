@@ -1,4 +1,4 @@
-import type { AuthUser } from "@ssu/types";
+import type { AuthUser, StaffAssignment } from "@ssu/types";
 import axios from "axios";
 import {
   clearPortalAuthStorage,
@@ -944,15 +944,48 @@ export async function getAssessmentsByProgram(
   status = "",
   search = "",
 ) {
+  const trimmedProgramId = programId.trim();
+  if (!trimmedProgramId) {
+    return {
+      ok: false as const,
+      message: "Course id is required.",
+    };
+  }
+
+  return fetchStaffAssessments(
+    `${API_BASE_URL}/api/v1/staff/assessments/program/${trimmedProgramId}`,
+    page,
+    limit,
+    status,
+    search,
+  );
+}
+
+/** All assessments across every course (admin / super admin view). */
+export async function getAllStaffAssessments(
+  page = 1,
+  limit = 8,
+  status = "",
+  search = "",
+) {
+  return fetchStaffAssessments(
+    `${API_BASE_URL}/api/v1/staff/assessments`,
+    page,
+    limit,
+    status,
+    search,
+  );
+}
+
+async function fetchStaffAssessments(
+  url: string,
+  page: number,
+  limit: number,
+  status: string,
+  search: string,
+) {
   try {
     const token = getStoredAuthToken();
-    const trimmedProgramId = programId.trim();
-    if (!trimmedProgramId) {
-      return {
-        ok: false as const,
-        message: "Course id is required.",
-      };
-    }
 
     const normalizedStatus = status.trim().toLowerCase();
     const params: Record<string, string | number> = { page, limit };
@@ -967,15 +1000,12 @@ export async function getAssessmentsByProgram(
     }
     if (search.trim()) params.search = search.trim();
 
-    const res = await axios.get(
-      `${API_BASE_URL}/api/v1/staff/assessments/program/${trimmedProgramId}`,
-      {
-        params,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const res = await axios.get(url, {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     const body = res.data as Record<string, unknown> | null;
     const payload =
@@ -983,18 +1013,91 @@ export async function getAssessmentsByProgram(
         ? (body.data as Record<string, unknown>)
         : (body ?? {});
 
-    const assessments = Array.isArray(payload.assessments)
-      ? payload.assessments
-      : Array.isArray(payload.items)
-        ? payload.items
-        : Array.isArray(payload)
-          ? payload
-          : [];
+    const rawAssessments: unknown[] = Array.isArray(body?.data)
+      ? body.data
+      : Array.isArray(payload.assessments)
+        ? payload.assessments
+        : Array.isArray(payload.items)
+          ? payload.items
+          : Array.isArray(payload)
+            ? payload
+            : [];
+
+    // `programId` may come back populated ({ _id, title, slug }). Flatten it
+    // to the id string (the edit form expects that) and surface the course
+    // title so mixed-course lists can show it.
+    const assessments = rawAssessments.flatMap((item): StaffAssignment[] => {
+      if (!item || typeof item !== "object") return [];
+      const row = item as Record<string, unknown>;
+      const program =
+        row.programId && typeof row.programId === "object"
+          ? (row.programId as Record<string, unknown>)
+          : null;
+      const programTitle =
+        typeof row.programTitle === "string"
+          ? row.programTitle
+          : typeof program?.title === "string"
+            ? program.title
+            : undefined;
+      const normalized: Record<string, unknown> = { ...row };
+      if (program) normalized.programId = String(program._id ?? "");
+      if (programTitle) normalized.programTitle = programTitle;
+      return [normalized as unknown as StaffAssignment];
+    });
 
     const paginationRaw =
       payload.pagination && typeof payload.pagination === "object"
         ? (payload.pagination as Record<string, unknown>)
-        : {};
+        : null;
+
+    if (!paginationRaw) {
+      // No pagination metadata — the endpoint returned the full list, so
+      // filter and page it client-side.
+      const statusFilter =
+        typeof params.status === "string" ? params.status : "";
+      const searchTerm = search.trim().toLowerCase();
+      const filtered = assessments.filter((row) => {
+        const rowStatus = String(row.status ?? "").toLowerCase();
+        if (
+          statusFilter &&
+          rowStatus !== statusFilter &&
+          !(statusFilter === "archived" && rowStatus === "archive")
+        ) {
+          return false;
+        }
+        if (!searchTerm) return true;
+        return [row.title, row.module, row.programTitle].some((value) =>
+          String(value ?? "")
+            .toLowerCase()
+            .includes(searchTerm),
+        );
+      });
+
+      const total = filtered.length;
+      const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+      const currentPage = Math.min(Math.max(1, page), Math.max(1, totalPages));
+      const offset = (currentPage - 1) * limit;
+
+      return {
+        ok: true as const,
+        data: {
+          assessments: filtered.slice(offset, offset + limit),
+          pagination: {
+            page: currentPage,
+            limit,
+            offset,
+            total,
+            totalPages,
+            hasNextPage: currentPage < totalPages,
+            hasPreviousPage: currentPage > 1,
+          },
+        },
+        message:
+          typeof body?.message === "string"
+            ? body.message
+            : "Assessments fetched successfully.",
+      };
+    }
 
     const total =
       typeof paginationRaw.total === "number"

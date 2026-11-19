@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ClipboardList } from "lucide-react";
 import {
   useAdminPrograms,
+  useAllStaffAssessments,
   useAssessmentsByProgram,
   useSession,
 } from "@ssu/queries";
@@ -69,13 +70,25 @@ export function AssessmentsPage() {
     setProgramId(fallbackProgramId);
   }, [fallbackProgramId, isProgramsLoading, programId, programStillAvailable]);
 
-  const { data, isError, error, isLoading } = useAssessmentsByProgram(
-    programId,
+  // Tutors see assessments for their selected course; admins / super admins
+  // see every assessment across all courses via /staff/assessments.
+  const programAssessments = useAssessmentsByProgram(
+    asTutor ? programId : "",
     page,
     8,
     status,
     search,
   );
+  const allAssessments = useAllStaffAssessments(
+    page,
+    8,
+    status,
+    search,
+    !isSessionLoading && Boolean(user) && !asTutor,
+  );
+  const { data, isError, error, isLoading } = asTutor
+    ? programAssessments
+    : allAssessments;
 
   const assessments = Array.isArray(data?.assessments) ? data.assessments : [];
   const pagination = data?.pagination;
@@ -116,7 +129,7 @@ export function AssessmentsPage() {
               : "Please refresh and try again."
           }
         />
-      ) : !programId ? (
+      ) : asTutor && !programId ? (
         <DashboardEmptyState
           icon={ClipboardList}
           title="You haven't created an assessment yet"
