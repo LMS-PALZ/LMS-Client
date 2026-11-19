@@ -14,6 +14,7 @@ export function usePublishAssessmentMutation(programId: string) {
     onSuccess: (res) => {
       mutationToast.success(res.message || "Assessment published.");
       void qc.invalidateQueries({ queryKey: ["assessments", programId] });
+      void qc.invalidateQueries({ queryKey: ["assessments", "all"] });
       void qc.invalidateQueries({ queryKey: ["assessment"] });
     },
     onError: (error) => {
@@ -36,6 +37,7 @@ export function useDraftAssessmentMutation(programId: string) {
     onSuccess: (res) => {
       mutationToast.success(res.message || "Assessment moved to draft.");
       void qc.invalidateQueries({ queryKey: ["assessments", programId] });
+      void qc.invalidateQueries({ queryKey: ["assessments", "all"] });
       void qc.invalidateQueries({ queryKey: ["assessment"] });
     },
     onError: (error) => {

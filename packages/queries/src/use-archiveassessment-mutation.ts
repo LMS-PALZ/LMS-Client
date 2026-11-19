@@ -12,6 +12,7 @@ export function useArchiveAssessmentMutation(programId: string) {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["assessments", programId] });
+      void qc.invalidateQueries({ queryKey: ["assessments", "all"] });
     },
   });
 }
